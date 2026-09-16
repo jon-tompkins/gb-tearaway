@@ -1,0 +1,53 @@
+{
+  "kids": [
+    {
+      "id": "demo-sam",
+      "name": "Sam",
+      "ageBand": "7-9",
+      "timezone": "America/New_York",
+      "printTime": "07:00",
+      "modules": [
+        "word",
+        "fact",
+        "maze",
+        "history",
+        "weather"
+      ],
+      "watchlist": [
+        "AAPL",
+        "DIS",
+        "NKE"
+      ],
+      "events": [
+        {
+          "id": "evt_soccer",
+          "title": "Sam's soccer practice",
+          "date": "2026-09-16",
+          "time": "16:30"
+        },
+        {
+          "id": "evt_library",
+          "title": "Library books due",
+          "date": "2026-09-17"
+        },
+        {
+          "id": "evt_grandma",
+          "title": "Call Grandma",
+          "date": "2026-09-18",
+          "time": "18:00"
+        }
+      ],
+      "createdAt": "2026-09-16T12:00:00.000Z"
+    }
+  ],
+  "activeKidId": "demo-sam",
+  "settings": {
+    "paperWidth": "58mm",
+    "timezone": "America/New_York",
+    "printTime": "07:00",
+    "weatherCity": "Brooklyn",
+    "weatherZip": "11201"
+  },
+  "lastPrintByKid": {},
+  "nonceByKid": {}
+}

@@ -1,0 +1,163 @@
+"use client";
+
+import { useMemo, useRef, useState } from "react";
+import type { PrintJob, StripSection } from "@/lib/types";
+import { mazeToSvg } from "@/lib/puzzles/maze";
+import { sudokuToSvg } from "@/lib/puzzles/sudoku";
+
+function SectionBlock({
+  section,
+  showKeys,
+}: {
+  section: StripSection;
+  showKeys: boolean;
+}) {
+  if (section.kind === "header") {
+    return (
+      <header className="rule-double mb-3 pb-2 text-center">
+        <div className="masthead-display text-[1.4rem] leading-tight tracking-tight">
+          {section.lines[0]}
+        </div>
+        <div className="mt-1.5 text-[0.78rem] font-semibold tracking-[0.14em]">
+          {section.lines[1]}
+        </div>
+        <div className="mono-meta mt-1 text-ink-soft">{section.lines[2]}</div>
+        <div className="mono-meta text-ink-soft/80">{section.lines[3]}</div>
+      </header>
+    );
+  }
+
+  if (section.kind === "footer") {
+    return (
+      <footer className="mt-2 pt-2 text-center">
+        <div className="perf-line mb-2" />
+        <div className="text-[0.72rem] font-bold tracking-[0.24em] text-stamp">TEAR HERE</div>
+        <p className="mt-2 text-[0.68rem] leading-snug text-ink-soft">{section.lines[1]}</p>
+        <p className="mt-1 text-[0.6rem] uppercase tracking-[0.16em] text-ink-soft/70">
+          {section.lines[2]}
+        </p>
+      </footer>
+    );
+  }
+
+  const svg =
+    section.kind === "maze" && section.maze
+      ? mazeToSvg(section.maze, { showPath: showKeys })
+      : section.kind === "sudoku" && section.sudoku
+        ? sudokuToSvg(section.sudoku, { showSolution: showKeys })
+        : null;
+
+  return (
+    <section className="border-b border-dashed border-rule py-2.5 last:border-0">
+      <h3 className="mb-1 text-[0.68rem] font-bold uppercase tracking-[0.16em] text-stamp">
+        {section.title}
+      </h3>
+      {section.lines.map((line, i) => (
+        <p key={i} className="text-[0.84rem] leading-snug text-ink">
+          {line}
+        </p>
+      ))}
+      {svg ? (
+        <div
+          className="mt-2 flex justify-center [&_svg]:max-w-full"
+          dangerouslySetInnerHTML={{ __html: svg }}
+        />
+      ) : null}
+    </section>
+  );
+}
+
+export function StripPreview({
+  job,
+  emptyHint,
+  showParentKeyToggle = true,
+}: {
+  job: PrintJob | null;
+  emptyHint?: string;
+  showParentKeyToggle?: boolean;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [showKeys, setShowKeys] = useState(false);
+  const [busy, setBusy] = useState(false);
+
+  const hasPuzzle = useMemo(
+    () => !!job?.sections.some((s) => s.kind === "maze" || s.kind === "sudoku"),
+    [job],
+  );
+
+  async function downloadPng() {
+    if (!ref.current || !job) return;
+    setBusy(true);
+    try {
+      const { toPng } = await import("html-to-image");
+      const dataUrl = await toPng(ref.current, {
+        pixelRatio: 2,
+        backgroundColor: "#f7f1e3",
+        cacheBust: true,
+      });
+      const a = document.createElement("a");
+      a.href = dataUrl;
+      a.download = `tearaway-${job.kidName.toLowerCase()}-${job.date}.png`;
+      a.click();
+    } catch (err) {
+      console.error(err);
+      window.alert("Couldn’t export PNG in this browser. Try Chrome or Edge.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="w-full">
+      <div className="relative mx-auto flex w-full max-w-[384px] justify-center">
+        <div
+          ref={ref}
+          className="strip-shell paper-grain w-full px-3.5 py-3.5"
+          style={{ width: job?.widthPx ? Math.min(job.widthPx, 384) : 384 }}
+        >
+          <div className="strip-curl" aria-hidden />
+          {job ? (
+            job.sections.map((s, i) => (
+              <SectionBlock key={`${s.id}-${i}`} section={s} showKeys={showKeys} />
+            ))
+          ) : (
+            <div className="px-2 py-10 text-center">
+              <div className="masthead-display text-lg">Tearaway Times</div>
+              <p className="mt-3 text-sm text-ink-soft">
+                {emptyHint ?? "Hit Print now to generate today’s 58mm morning strip."}
+              </p>
+              <div className="perf-line mx-auto mt-8 w-4/5" />
+              <div className="mt-2 text-[0.65rem] font-bold tracking-[0.2em] text-stamp">
+                TEAR HERE
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {job ? (
+        <div className="mx-auto mt-4 flex max-w-[384px] flex-wrap items-center justify-center gap-2">
+          <button type="button" onClick={downloadPng} disabled={busy} className="btn-secondary text-sm">
+            {busy ? "Saving…" : "Download PNG"}
+          </button>
+          {showParentKeyToggle && hasPuzzle ? (
+            <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-rule bg-paper/80 px-3 py-2 text-sm text-ink-soft">
+              <input
+                type="checkbox"
+                checked={showKeys}
+                onChange={(e) => setShowKeys(e.target.checked)}
+                className="accent-stamp"
+              />
+              Parent key
+            </label>
+          ) : null}
+        </div>
+      ) : null}
+      {showKeys ? (
+        <p className="mx-auto mt-2 max-w-[384px] text-center text-xs text-ink-soft">
+          Parent key is on-screen only. It is not part of the printed strip.
+        </p>
+      ) : null}
+    </div>
+  );
+}
