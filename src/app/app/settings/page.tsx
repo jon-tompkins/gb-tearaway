@@ -157,15 +157,19 @@ export default function SettingsPage() {
             </div>
           </div>
           <div className="field">
-            <label htmlFor="pw">Paper width</label>
+            <label htmlFor="pw">Paper size</label>
             <select
               id="pw"
               value={paperWidth}
               onChange={(e) => setPaperWidth(e.target.value as PaperWidth)}
             >
-              <option value="58mm">58mm (default · ~384px)</option>
-              <option value="80mm">80mm</option>
+              <option value="58mm">58mm thermal strip (~384px) · shipping now</option>
+              <option value="80mm">80mm thermal (wider)</option>
             </select>
+            <p className="mt-2 text-xs text-ink-soft">
+              Software-first GTM: web (and later email) delivery. US Letter 8.5×11 for home Wi‑Fi
+              printers is planned — not selectable yet. Thermal hardware is an upgrade later.
+            </p>
           </div>
         </section>
 

@@ -68,6 +68,16 @@ export async function fetchPreview(): Promise<PrintJob> {
   return res.json() as Promise<PrintJob>;
 }
 
+/** Bump nonce server-side and return a reshuffled strip for the same kid/day. */
+export async function reshufflePreview(): Promise<PrintJob> {
+  const res = await fetch("/api/print-jobs/reshuffle", { method: "POST" });
+  if (!res.ok) {
+    const err = (await res.json().catch(() => ({}))) as { error?: string };
+    throw new Error(err.error || "Reshuffle failed");
+  }
+  return res.json() as Promise<PrintJob>;
+}
+
 export async function printNow(): Promise<PrintJob> {
   const res = await fetch("/api/print-jobs/print-now", { method: "POST" });
   if (!res.ok) {

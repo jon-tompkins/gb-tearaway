@@ -9,17 +9,30 @@ import { StripPreview } from "@/components/StripPreview";
 import {
   fetchPreview,
   printNow,
+  reshufflePreview,
   useAppStore,
 } from "@/lib/clientStore";
 import { formatTime12, nextPrintLabel } from "@/lib/dates";
 import { moduleById } from "@/lib/modules";
 import type { PrintJob } from "@/lib/types";
 
+const HISTORY_MAX = 5;
+
+function sectionTeaser(job: PrintJob): string {
+  const bits = job.sections
+    .filter((s) => s.kind !== "header" && s.kind !== "footer")
+    .slice(0, 3)
+    .map((s) => s.title);
+  return bits.join(" · ") || "Strip";
+}
+
 export default function DashboardPage() {
   const router = useRouter();
   const { store, hydrated, error: storeError, activeKid, setActiveKid, reload } = useAppStore();
   const [job, setJob] = useState<PrintJob | null>(null);
+  const [history, setHistory] = useState<PrintJob[]>([]);
   const [busy, setBusy] = useState(false);
+  const [generating, setGenerating] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
   const [loadingPreview, setLoadingPreview] = useState(false);
 
@@ -29,6 +42,12 @@ export default function DashboardPage() {
       router.replace("/app/setup");
     }
   }, [hydrated, store, router]);
+
+  // Clear compare history when switching kids
+  useEffect(() => {
+    setHistory([]);
+    setJob(null);
+  }, [activeKid?.id]);
 
   const loadPreview = useCallback(async () => {
     if (!activeKid) return;
@@ -48,19 +67,50 @@ export default function DashboardPage() {
     if (hydrated && activeKid) void loadPreview();
   }, [hydrated, activeKid?.id, activeKid?.modules.join(","), loadPreview]);
 
+  async function onGenerateNew() {
+    if (!activeKid) return;
+    setGenerating(true);
+    setMsg(null);
+    try {
+      const next = await reshufflePreview();
+      setHistory((h) => {
+        if (!job) return h;
+        return [job, ...h.filter((j) => j.id !== job.id)].slice(0, HISTORY_MAX);
+      });
+      setJob(next);
+      setMsg(`New strip · seed ${next.nonce}`);
+      await reload();
+    } catch (e) {
+      setMsg(e instanceof Error ? e.message : "Generate failed");
+    } finally {
+      setGenerating(false);
+    }
+  }
+
   async function onPrintNow() {
     setBusy(true);
     setMsg(null);
     try {
       const printed = await printNow();
       setJob(printed);
-      setMsg(`Queued for ${printed.kidName} · ${printed.date}`);
+      setMsg(`Queued for ${printed.kidName} · ${printed.date} · seed ${printed.nonce}`);
       await reload();
     } catch (e) {
       setMsg(e instanceof Error ? e.message : "Print failed");
     } finally {
       setBusy(false);
     }
+  }
+
+  function restoreFromHistory(past: PrintJob) {
+    if (job && job.id !== past.id) {
+      setHistory((h) => {
+        const without = h.filter((j) => j.id !== past.id);
+        return [job, ...without].slice(0, HISTORY_MAX);
+      });
+    }
+    setJob(past);
+    setMsg(`Comparing seed ${past.nonce}`);
   }
 
   if (!hydrated) {
@@ -91,11 +141,12 @@ export default function DashboardPage() {
     activeKid.printTime || settings.printTime,
     activeKid.timezone || settings.timezone,
   );
+  const currentNonce = job?.nonce ?? store.nonceByKid[activeKid.id] ?? 0;
 
   return (
     <AppShell
       title={`Good morning, ${activeKid.name}`}
-      subtitle="58mm strip preview · schedule · Print now for the future ESP32 bridge"
+      subtitle="58mm strip preview · reshuffle to judge quality · Print now for the future ESP32 bridge"
     >
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <KidSwitcher
@@ -127,12 +178,24 @@ export default function DashboardPage() {
               Modules:{" "}
               {activeKid.modules.map((id) => moduleById(id).name).join(" · ")}
             </p>
+            <p className="mt-2 text-xs text-ink-soft">
+              Content seed: <span className="font-semibold text-ink">{currentNonce}</span>{" "}
+              (date + name + seed)
+            </p>
           </div>
 
           <div className="card flex flex-wrap items-center gap-3">
             <button
               type="button"
               className="btn-primary"
+              disabled={generating || loadingPreview}
+              onClick={() => void onGenerateNew()}
+            >
+              {generating ? "Generating…" : "Generate new strip"}
+            </button>
+            <button
+              type="button"
+              className="btn-secondary"
               disabled={busy}
               onClick={() => void onPrintNow()}
             >
@@ -141,7 +204,7 @@ export default function DashboardPage() {
             <button
               type="button"
               className="btn-secondary"
-              disabled={loadingPreview}
+              disabled={loadingPreview || generating}
               onClick={() => void loadPreview()}
             >
               {loadingPreview ? "Refreshing…" : "Refresh preview"}
@@ -150,10 +213,58 @@ export default function DashboardPage() {
           </div>
 
           <p className="text-xs text-ink-soft">
-            Print now saves a job to the store for{" "}
-            <code className="text-[0.7rem]">GET /api/print-jobs/latest</code>. Same-day
-            content is deterministic for date + first name.
+            <strong className="font-semibold text-ink">Generate new strip</strong> bumps an
+            explicit seed so the same kid and day reshuffles. Print now saves the current seed to{" "}
+            <code className="text-[0.7rem]">GET /api/print-jobs/latest</code>.
           </p>
+
+          {history.length > 0 ? (
+            <div className="card space-y-3">
+              <div className="mono-meta text-stamp">Recent previews</div>
+              <p className="text-xs text-ink-soft">
+                Last {history.length} generated strip{history.length === 1 ? "" : "s"} — tap to
+                compare.
+              </p>
+              <ul className="space-y-2">
+                {history.map((h) => {
+                  const active = job?.id === h.id;
+                  return (
+                    <li key={h.id}>
+                      <button
+                        type="button"
+                        onClick={() => restoreFromHistory(h)}
+                        className={`flex w-full items-start gap-3 rounded-xl border px-3 py-2.5 text-left transition ${
+                          active
+                            ? "border-ink bg-ink text-cream"
+                            : "border-rule bg-paper hover:border-ink/30"
+                        }`}
+                      >
+                        <span
+                          className={`mt-0.5 rounded-full px-2 py-0.5 text-[0.65rem] font-bold tabular-nums ${
+                            active ? "bg-cream text-ink" : "bg-cream text-ink-soft"
+                          }`}
+                        >
+                          #{h.nonce}
+                        </span>
+                        <span className="min-w-0 flex-1">
+                          <span className={`block text-sm font-semibold ${active ? "" : "text-ink"}`}>
+                            {sectionTeaser(h)}
+                          </span>
+                          <span
+                            className={`mt-0.5 block truncate text-xs ${
+                              active ? "text-cream/70" : "text-ink-soft"
+                            }`}
+                          >
+                            {h.sections.find((s) => s.kind === "text")?.lines[0] ?? h.date}
+                          </span>
+                        </span>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          ) : null}
 
           <div className="card space-y-2">
             <div className="mono-meta text-stamp">Firmware bridge</div>
@@ -203,7 +314,9 @@ export default function DashboardPage() {
         </div>
 
         <div>
-          <div className="mb-3 text-center mono-meta text-ink-soft">58mm preview · ~384px</div>
+          <div className="mb-3 text-center mono-meta text-ink-soft">
+            58mm preview · ~384px · seed {currentNonce}
+          </div>
           <StripPreview job={job} emptyHint="Loading today’s strip…" />
         </div>
       </div>

@@ -8,9 +8,36 @@ export type ModuleId =
   | "history"
   | "weather"
   | "stocks"
-  | "calendar";
+  | "calendar"
+  | "joke"
+  | "doodle"
+  | "riddle"
+  | "spanish"
+  | "wyr"
+  | "poem"
+  | "wordfind"
+  | "dots"
+  | "news_world"
+  | "news_national"
+  | "news_city"
+  | "news_tech"
+  | "news_gamer";
 
+/**
+ * Delivery / paper target.
+ * GTM is software-first (web/email + future US Letter for home Wi‑Fi printers).
+ * Thermal 58mm is the current strip; 80mm stays for wider thermals.
+ * TODO: add "letter" (8.5×11) layout + email delivery — not blocking this pass.
+ */
 export type PaperWidth = "58mm" | "80mm";
+
+export type ModuleCategoryId =
+  | "play"
+  | "words"
+  | "facts"
+  | "news"
+  | "today"
+  | "create";
 
 export interface CalendarEvent {
   id: string;
@@ -66,6 +93,26 @@ export interface SudokuData {
   label: string;
 }
 
+export interface WordFindData {
+  cols: number;
+  rows: number;
+  grid: string[][];
+  words: string[];
+}
+
+export interface DotPoint {
+  n: number;
+  x: number;
+  y: number;
+}
+
+export interface DotsData {
+  points: DotPoint[];
+  caption: string;
+  /** viewBox width/height for SVG */
+  size: number;
+}
+
 export interface WordItem {
   word: string;
   phonetic: string;
@@ -108,6 +155,8 @@ export interface StripSection {
     | "text"
     | "maze"
     | "sudoku"
+    | "wordfind"
+    | "dots"
     | "weather"
     | "stocks"
     | "calendar"
@@ -115,10 +164,12 @@ export interface StripSection {
   lines: string[];
   maze?: MazeData;
   sudoku?: SudokuData;
+  wordfind?: WordFindData;
+  dots?: DotsData;
   weather?: WeatherSnapshot;
   stocks?: StockQuote[];
   events?: CalendarEvent[];
-  /** Optional pre-rendered SVG for maze/sudoku (paper has no parent key). */
+  /** Optional pre-rendered SVG for maze/sudoku/wordfind/dots (paper has no parent key). */
   svg?: string;
 }
 

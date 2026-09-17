@@ -45,7 +45,7 @@ function SectionBlock({
       ? mazeToSvg(section.maze, { showPath: showKeys })
       : section.kind === "sudoku" && section.sudoku
         ? sudokuToSvg(section.sudoku, { showSolution: showKeys })
-        : null;
+        : section.svg || null;
 
   return (
     <section className="border-b border-dashed border-rule py-2.5 last:border-0">

@@ -11,11 +11,20 @@ import { mulberry32, pick, stripSeed, uid } from "./rng";
 import { pickWord } from "./content/words";
 import { pickFact } from "./content/facts";
 import { pickHistory } from "./content/history";
+import { pickJoke } from "./content/jokes";
+import { pickDoodle } from "./content/doodles";
+import { pickRiddle } from "./content/riddles";
+import { pickSpanish } from "./content/spanish";
+import { pickWyr } from "./content/wyr";
+import { pickPoem } from "./content/poems";
+import { isNewsModule, pickNews } from "./content/news";
 import { eventsForToday, formatEventLine } from "./content/stubs";
 import { mockStocks } from "./stocks";
 import { mockWeather } from "./weather";
 import { generateMaze, mazeToSvg } from "./puzzles/maze";
 import { generateSudoku, sudokuToSvg } from "./puzzles/sudoku";
+import { generateWordFind, wordFindToSvg } from "./puzzles/wordfind";
+import { generateDots, dotsToSvg } from "./puzzles/dots";
 import { moduleById } from "./modules";
 import { buildPreviewHtml } from "./previewHtml";
 
@@ -27,7 +36,7 @@ export interface GenerateOptions {
 }
 
 /**
- * Build a PrintJob for a kid. Content is deterministic for date + first name.
+ * Build a PrintJob for a kid. Content is deterministic for date + first name + nonce.
  */
 export function generateStrip(
   kid: KidProfile,
@@ -42,6 +51,7 @@ export function generateStrip(
   const seed = stripSeed(date, firstName, nonce);
   const rng = mulberry32(seed);
   const { weekday, dateLabel } = formatStripDate(date);
+  // GTM: 58mm strip now. TODO: "letter" (8.5×11) + email delivery later.
   const paperWidthMm = settings.paperWidth === "80mm" ? 80 : 58;
   const widthPx = paperWidthMm === 58 ? STRIP_WIDTH_PX : 576;
 
@@ -187,6 +197,122 @@ export function generateStrip(
         kind: "calendar",
         lines,
         events: todays,
+      });
+      continue;
+    }
+    if (moduleId === "joke") {
+      const joke = pickJoke(kid.ageBand, rng);
+      sections.push({
+        id: `joke-${hashish(joke.setup)}`,
+        moduleId,
+        title: meta.name,
+        kind: "text",
+        lines: [joke.setup, joke.punchline],
+      });
+      continue;
+    }
+    if (moduleId === "doodle") {
+      const doodle = pickDoodle(kid.ageBand, rng);
+      sections.push({
+        id: `doodle-${hashish(doodle.prompt)}`,
+        moduleId,
+        title: meta.name,
+        kind: "text",
+        lines: [doodle.prompt, doodle.tip, "Draw in the margin or on the back."],
+      });
+      continue;
+    }
+    if (moduleId === "riddle") {
+      const riddle = pickRiddle(kid.ageBand, rng);
+      sections.push({
+        id: `riddle-${hashish(riddle.question)}`,
+        moduleId,
+        title: meta.name,
+        kind: "text",
+        lines: [
+          riddle.question,
+          "Think… then peek:",
+          `Answer: ${riddle.answer}`,
+        ],
+      });
+      continue;
+    }
+    if (moduleId === "spanish") {
+      const word = pickSpanish(kid.ageBand, rng);
+      sections.push({
+        id: `spanish-${word.spanish}`,
+        moduleId,
+        title: meta.name,
+        kind: "text",
+        lines: [
+          `${word.spanish.toUpperCase()}  ·  ${word.phonetic}`,
+          `Means: ${word.english}`,
+          word.example,
+        ],
+      });
+      continue;
+    }
+    if (moduleId === "wyr") {
+      const wyr = pickWyr(kid.ageBand, rng);
+      sections.push({
+        id: `wyr-${hashish(wyr.a + wyr.b)}`,
+        moduleId,
+        title: meta.name,
+        kind: "text",
+        lines: [`A) ${wyr.a}`, `B) ${wyr.b}`, wyr.nudge],
+      });
+      continue;
+    }
+    if (moduleId === "poem") {
+      const poem = pickPoem(kid.ageBand, rng);
+      sections.push({
+        id: `poem-${hashish(poem.title)}`,
+        moduleId,
+        title: meta.name,
+        kind: "text",
+        lines: [poem.title, ...poem.lines],
+      });
+      continue;
+    }
+    if (moduleId === "wordfind") {
+      const wordfind = generateWordFind((seed ^ 0x5746) >>> 0, kid.ageBand);
+      const svg = wordFindToSvg(wordfind);
+      sections.push({
+        id: `wordfind-${wordfind.cols}x${wordfind.rows}`,
+        moduleId,
+        title: meta.name,
+        kind: "wordfind",
+        lines: [
+          `Find: ${wordfind.words.join(" · ")}`,
+          `${wordfind.cols}×${wordfind.rows} · circle each word`,
+        ],
+        wordfind,
+        svg,
+      });
+      continue;
+    }
+    if (moduleId === "dots") {
+      const dots = generateDots((seed ^ 0x444f) >>> 0, kid.ageBand);
+      const svg = dotsToSvg(dots);
+      sections.push({
+        id: `dots-${dots.points.length}`,
+        moduleId,
+        title: meta.name,
+        kind: "dots",
+        lines: [dots.caption, `Dots 1–${dots.points.length}. Pencil, then giggle.`],
+        dots,
+        svg,
+      });
+      continue;
+    }
+    if (isNewsModule(moduleId)) {
+      const news = pickNews(moduleId, kid.ageBand, rng);
+      sections.push({
+        id: `${moduleId}-${hashish(news.headline)}`,
+        moduleId,
+        title: meta.name,
+        kind: "text",
+        lines: [news.headline, news.blurb, news.wonder],
       });
       continue;
     }

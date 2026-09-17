@@ -8,10 +8,10 @@
       "printTime": "07:00",
       "modules": [
         "word",
-        "fact",
+        "joke",
+        "doodle",
         "maze",
-        "history",
-        "weather"
+        "spanish"
       ],
       "watchlist": [
         "AAPL",

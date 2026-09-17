@@ -1,4 +1,4 @@
-import type { MazeData, PrintJob, StripSection, SudokuData } from "@/lib/types";
+import type { DotsData, MazeData, PrintJob, StripSection, SudokuData, WordFindData } from "@/lib/types";
 
 const INK = "#11110e";
 const PAPER = "#f6f0dd";
@@ -129,6 +129,65 @@ function SudokuBoxes({ sudoku }: { sudoku: SudokuData }) {
   );
 }
 
+function WordFindBoxes({ data }: { data: WordFindData }) {
+  const cell = Math.min(28, Math.floor(340 / data.cols));
+  return (
+    <div style={{ display: "flex", flexDirection: "column", border: "1px solid #11110e" }}>
+      {data.grid.map((row, r) => (
+        <div key={r} style={{ display: "flex", flexDirection: "row" }}>
+          {row.map((ch, c) => (
+            <div
+              key={c}
+              style={{
+                width: cell,
+                height: cell,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: Math.max(10, cell * 0.5),
+                fontWeight: 700,
+                borderRightWidth: c === data.cols - 1 ? 0 : 1,
+                borderBottomWidth: r === data.rows - 1 ? 0 : 1,
+                borderRightStyle: "solid",
+                borderBottomStyle: "solid",
+                borderRightColor: INK,
+                borderBottomColor: INK,
+              }}
+            >
+              {ch}
+            </div>
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function DotsBoxes({ data }: { data: DotsData }) {
+  const size = 280;
+  return (
+    <div style={{ display: "flex", position: "relative", width: size, height: size }}>
+      {data.points.map((pt) => (
+        <div
+          key={pt.n}
+          style={{
+            display: "flex",
+            position: "absolute",
+            left: Math.round(pt.x * size) - 6,
+            top: Math.round(pt.y * size) - 6,
+            width: 22,
+            height: 16,
+            fontSize: 11,
+            fontWeight: 700,
+          }}
+        >
+          {`•${pt.n}`}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function SectionView({ section }: { section: StripSection }) {
   if (section.kind === "header") {
     return (
@@ -184,6 +243,16 @@ function SectionView({ section }: { section: StripSection }) {
       {section.kind === "sudoku" && section.sudoku ? (
         <div style={{ display: "flex", marginTop: 8, justifyContent: "center" }}>
           <SudokuBoxes sudoku={section.sudoku} />
+        </div>
+      ) : null}
+      {section.kind === "wordfind" && section.wordfind ? (
+        <div style={{ display: "flex", marginTop: 8, justifyContent: "center" }}>
+          <WordFindBoxes data={section.wordfind} />
+        </div>
+      ) : null}
+      {section.kind === "dots" && section.dots ? (
+        <div style={{ display: "flex", marginTop: 8, justifyContent: "center" }}>
+          <DotsBoxes data={section.dots} />
         </div>
       ) : null}
       <Rule />

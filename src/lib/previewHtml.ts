@@ -1,6 +1,8 @@
 import type { PrintJob, StripSection } from "./types";
 import { mazeToSvg } from "./puzzles/maze";
 import { sudokuToSvg } from "./puzzles/sudoku";
+import { wordFindToSvg } from "./puzzles/wordfind";
+import { dotsToSvg } from "./puzzles/dots";
 
 function esc(s: string): string {
   return s
@@ -34,7 +36,11 @@ function sectionHtml(section: StripSection): string {
       ? mazeToSvg(section.maze, { showPath: false })
       : section.kind === "sudoku" && section.sudoku
         ? sudokuToSvg(section.sudoku, { showSolution: false })
-        : "");
+        : section.kind === "wordfind" && section.wordfind
+          ? wordFindToSvg(section.wordfind)
+          : section.kind === "dots" && section.dots
+            ? dotsToSvg(section.dots)
+            : "");
 
   const lines = section.lines.map((l) => `<p>${esc(l)}</p>`).join("");
   return `<section class="sec">

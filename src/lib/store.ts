@@ -5,7 +5,9 @@ import {
   DEFAULT_MODULES,
   DEFAULT_SETTINGS,
   DEFAULT_WATCHLIST,
+  type ModuleId,
 } from "./types";
+import { isModuleId } from "./modules";
 import { defaultDemoEvents } from "./content/stubs";
 import { uid } from "./rng";
 
@@ -40,6 +42,16 @@ export function emptyState(): AppState {
   };
 }
 
+
+function sanitizeModules(raw: unknown): ModuleId[] {
+  const ids = Array.isArray(raw) ? raw.filter((id): id is ModuleId => typeof id === "string" && isModuleId(id)) : [];
+  const unique: ModuleId[] = [];
+  for (const id of ids) {
+    if (!unique.includes(id)) unique.push(id);
+  }
+  return unique.length ? unique : [...DEFAULT_MODULES];
+}
+
 function normalize(raw: Partial<AppState> | null | undefined): AppState {
   const base = emptyState();
   if (!raw || !Array.isArray(raw.kids) || raw.kids.length === 0) return base;
@@ -47,7 +59,7 @@ function normalize(raw: Partial<AppState> | null | undefined): AppState {
     kids: raw.kids.map((k) => ({
       ...seedKid(k),
       ...k,
-      modules: Array.isArray(k.modules) && k.modules.length ? k.modules : [...DEFAULT_MODULES],
+      modules: sanitizeModules(k.modules),
       watchlist: Array.isArray(k.watchlist) ? k.watchlist : [...DEFAULT_WATCHLIST],
       events: Array.isArray(k.events) ? k.events : [],
     })),

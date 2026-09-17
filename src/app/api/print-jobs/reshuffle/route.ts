@@ -1,19 +1,25 @@
 import { NextResponse } from "next/server";
 import { generateStrip } from "@/lib/generateStrip";
-import { getActiveKid, getSettings, readStore, savePrintJob } from "@/lib/store";
+import { getActiveKid, getSettings, readStore, writeStore } from "@/lib/store";
 import { fetchWeather } from "@/lib/weather";
 
 export const runtime = "nodejs";
 
-/** Generate & save today's job using the current preview nonce. */
+/**
+ * Bump the active kid's content nonce and return a fresh strip preview.
+ * Same calendar day + name, different content — for judging quality.
+ */
 export async function POST() {
   const store = await readStore();
   const kid = await getActiveKid(store);
   if (!kid) {
-    return NextResponse.json({ error: "No kid profile — complete setup first" }, { status: 404 });
+    return NextResponse.json({ error: "No kid profile" }, { status: 404 });
   }
   const settings = getSettings(store);
-  const nonce = store.nonceByKid[kid.id] ?? 0;
+  const prev = store.nonceByKid[kid.id] ?? 0;
+  const nonce = prev + 1;
+  store.nonceByKid = { ...store.nonceByKid, [kid.id]: nonce };
+  await writeStore(store);
 
   let weather;
   if (kid.modules.includes("weather")) {
@@ -26,7 +32,5 @@ export async function POST() {
   }
 
   const job = generateStrip(kid, settings, { nonce, weather });
-  job.status = "queued";
-  await savePrintJob(job);
   return NextResponse.json(job);
 }
