@@ -3,16 +3,17 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AppShell } from "@/components/AppNav";
-import { ModulePicker } from "@/components/ModulePicker";
+import { ModuleLibrary, SlotStripEditor } from "@/components/ModulePicker";
 import { useAppStore } from "@/lib/clientStore";
-import type { ModuleId } from "@/lib/types";
-import { MAX_SLOTS, MIN_SLOTS } from "@/lib/types";
-import { moduleById } from "@/lib/modules";
+import type { ModuleSlot, PaperSize } from "@/lib/types";
+import { flattenSlotModules, resizeSlotsForPaper } from "@/lib/slots";
 
 export default function ModulesPage() {
   const router = useRouter();
   const { store, hydrated, activeKid, save } = useAppStore();
-  const [modules, setModules] = useState<ModuleId[]>([]);
+  const [paperSize, setPaperSize] = useState<PaperSize>("strip58");
+  const [slots, setSlots] = useState<ModuleSlot[]>([]);
+  const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -22,27 +23,44 @@ export default function ModulesPage() {
       router.replace("/app/setup");
       return;
     }
-    if (activeKid) setModules([...activeKid.modules]);
+    if (activeKid) {
+      const size = activeKid.paperSize || "strip58";
+      const nextSlots = resizeSlotsForPaper(activeKid.slots || [], size);
+      setPaperSize(size);
+      setSlots(nextSlots);
+      setSelectedSlotId(nextSlots[0]?.id ?? null);
+    }
   }, [hydrated, store, activeKid, router]);
 
-  function move(index: number, dir: -1 | 1) {
-    const next = [...modules];
-    const j = index + dir;
-    if (j < 0 || j >= next.length) return;
-    [next[index], next[j]] = [next[j], next[index]];
-    setModules(next);
+  function onPaperSize(size: PaperSize) {
+    setPaperSize(size);
+    setSlots((prev) => {
+      const next = resizeSlotsForPaper(prev, size);
+      setSelectedSlotId((sel) =>
+        next.some((s) => s.id === sel) ? sel : next[0]?.id ?? null,
+      );
+      return next;
+    });
   }
 
   async function onSave() {
     if (!activeKid) return;
-    if (modules.length < MIN_SLOTS || modules.length > MAX_SLOTS) {
-      setStatus(`Need ${MIN_SLOTS}–${MAX_SLOTS} modules.`);
+    const filled = slots.filter((s) => s.moduleIds.length > 0);
+    if (filled.length === 0) {
+      setStatus("Add at least one module to a slot before saving.");
       return;
     }
     setBusy(true);
     setStatus(null);
     try {
-      await save({ kid: { id: activeKid.id, modules } });
+      await save({
+        kid: {
+          id: activeKid.id,
+          paperSize,
+          slots,
+          modules: flattenSlotModules(slots),
+        },
+      });
       setStatus("Saved.");
     } catch (e) {
       setStatus(e instanceof Error ? e.message : "Save failed");
@@ -62,48 +80,29 @@ export default function ModulesPage() {
   return (
     <AppShell
       title="Modules"
-      subtitle={`Enable 3–5 slots for ${activeKid.name}. Order is print order — use arrows to reorder.`}
+      subtitle={`Paper size → fixed slots for ${activeKid.name}. Multi-module slots rotate in order or at random each generate.`}
     >
-      <div className="mb-8 space-y-2">
-        <h2 className="font-display text-lg text-ink">Print order</h2>
-        <ul className="space-y-2">
-          {modules.map((id, i) => (
-            <li
-              key={id}
-              className="flex items-center gap-3 rounded-2xl border border-rule bg-paper px-3 py-2"
-            >
-              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-ink text-xs font-bold text-cream">
-                {i + 1}
-              </span>
-              <span className="flex-1 font-semibold text-ink">{moduleById(id).name}</span>
-              <button
-                type="button"
-                className="btn-secondary px-2 py-1 text-xs"
-                onClick={() => move(i, -1)}
-                disabled={i === 0}
-                aria-label="Move up"
-              >
-                ↑
-              </button>
-              <button
-                type="button"
-                className="btn-secondary px-2 py-1 text-xs"
-                onClick={() => move(i, 1)}
-                disabled={i === modules.length - 1}
-                aria-label="Move down"
-              >
-                ↓
-              </button>
-            </li>
-          ))}
-        </ul>
+      <div className="mb-10">
+        <SlotStripEditor
+          paperSize={paperSize}
+          slots={slots}
+          selectedSlotId={selectedSlotId}
+          onSelectSlot={setSelectedSlotId}
+          onChangeSlots={setSlots}
+          onChangePaperSize={onPaperSize}
+        />
       </div>
 
-      <ModulePicker selected={modules} onChange={setModules} />
+      <ModuleLibrary
+        slots={slots}
+        selectedSlotId={selectedSlotId}
+        onChangeSlots={setSlots}
+        modulePoolLimit={store?.settings.modulePoolLimit ?? null}
+      />
 
       <div className="mt-8 flex flex-wrap items-center gap-3">
         <button type="button" className="btn-primary" disabled={busy} onClick={() => void onSave()}>
-          {busy ? "Saving…" : "Save modules"}
+          {busy ? "Saving…" : "Save slots"}
         </button>
         {status ? <span className="text-sm text-ink-soft">{status}</span> : null}
       </div>

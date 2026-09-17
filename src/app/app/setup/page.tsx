@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { AppShell } from "@/components/AppNav";
-import { ModulePicker } from "@/components/ModulePicker";
+import { ModulePicker, PaperSizeToggle } from "@/components/ModulePicker";
 import { useAppStore } from "@/lib/clientStore";
 import {
   AGE_BANDS,
@@ -12,14 +12,17 @@ import {
   TIMEZONES,
   type AgeBand,
   type ModuleId,
+  type PaperSize,
 } from "@/lib/types";
+import { migrateModulesToSlots } from "@/lib/slots";
 
 export default function SetupPage() {
   const router = useRouter();
   const { save, hydrated } = useAppStore();
   const [name, setName] = useState("");
   const [ageBand, setAgeBand] = useState<AgeBand>("7-9");
-  const [modules, setModules] = useState<ModuleId[]>([...DEFAULT_MODULES]);
+  const [paperSize, setPaperSize] = useState<PaperSize>("strip58");
+  const [modules, setModules] = useState<ModuleId[]>([...DEFAULT_MODULES].slice(0, 4));
   const [timezone, setTimezone] = useState(DEFAULT_SETTINGS.timezone);
   const [printTime, setPrintTime] = useState(DEFAULT_SETTINGS.printTime);
   const [busy, setBusy] = useState(false);
@@ -31,17 +34,20 @@ export default function SetupPage() {
       setError("Give them a first name.");
       return;
     }
-    if (modules.length < 3) {
-      setError("Pick at least 3 modules.");
+    if (modules.length < 1) {
+      setError("Pick at least one module to seed the slots.");
       return;
     }
     setBusy(true);
     setError(null);
     try {
+      const slots = migrateModulesToSlots(modules, paperSize);
       await save({
         createKid: {
           name: name.trim(),
           ageBand,
+          paperSize,
+          slots,
           modules,
           timezone,
           printTime,
@@ -49,6 +55,7 @@ export default function SetupPage() {
         settings: {
           timezone,
           printTime,
+          paperSize,
         },
       });
       router.push("/app");
@@ -70,7 +77,7 @@ export default function SetupPage() {
   return (
     <AppShell
       title="Set up this kitchen"
-      subtitle="Kids are profiles, not users. One name, an age band, and 3–5 morning modules."
+      subtitle="Kids are profiles, not users. Pick a paper size, a name, and a few starter modules — refine slots later."
     >
       <form onSubmit={onSubmit} className="mx-auto max-w-2xl space-y-8">
         <div className="card space-y-4">
@@ -113,6 +120,13 @@ export default function SetupPage() {
                 </button>
               ))}
             </div>
+          </div>
+
+          <div>
+            <div className="mb-2 text-xs font-semibold uppercase tracking-[0.08em] text-ink-soft">
+              Paper size
+            </div>
+            <PaperSizeToggle value={paperSize} onChange={setPaperSize} />
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">

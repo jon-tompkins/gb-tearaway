@@ -2,7 +2,7 @@
 
 Every morning, something fun and a little smart waits for your kid on paper.
 
-Tearaway is the **parent web app** for a 58mm kitchen thermal strip. Parents configure a kid profile (name, age band, modules, print time, weather, watchlist, calendar). Kids never log in — they are profiles, not accounts (COPPA).
+Tearaway is the **parent web app** for a kitchen strip (58mm thermal today; US Letter / N80 next). Parents configure a kid profile (name, age band, **paper size → slots**, print time, weather, watchlist, calendar). Kids never log in — they are profiles, not accounts (COPPA).
 
 This MVP is a **local demo**: no auth, no Stripe, no secrets, no real printer. Config lives in `data/store.json` (seeded from `data/store.sample.json`).
 
@@ -28,16 +28,47 @@ npm start
 | Path | What |
 |------|------|
 | `/` | Marketing home |
-| `/app` | Dashboard — live 58mm strip preview, **Generate new strip**, recent preview history, **Print now** |
-| `/app/setup` | Create a kid (name + age band + modules) |
-| `/app/modules` | Enable 3–5 modules, reorder |
-| `/app/settings` | Timezone / print time, weather city or ZIP, stock watchlist, calendar events |
+| `/app` | Dashboard — live strip/letter preview, **Generate new strip**, recent preview history, **Print now** |
+| `/app/setup` | Create a kid (name + age band + paper size + starter modules) |
+| `/app/modules` | **Paper size** → fixed **slots**; add modules into slots; in-order / random when a slot has 2+ |
+| `/app/settings` | Timezone / print time, weather, watchlist, calendar; tier stub (`modulePoolLimit`) |
 
 Aliases that redirect: `/dashboard` → `/app`, `/setup` → `/app/setup`, `/modules` → `/app/modules`, `/settings` → `/app/settings`.
 
+### Paper size → slots (per kid)
+
+**`paperSize` and `slots` live on each kid** (not global kitchen settings). Kitchen `settings.paperSize` is only the default for newly created kids.
+
+| Paper size | Slots | Preview |
+|------------|-------|---------|
+| `strip58` | **4** | Classic ~384px thermal strip |
+| `letter` | **7** | Wider ~612px letter-ish page (2-column body) |
+
+Flow on `/app/modules`:
+
+1. Choose paper size → slot count updates
+2. Select a slot → click modules in the library to add
+3. If a slot has **2+** modules, pick mode **in order** or **random**
+4. Each generate / print resolves **one** module per non-empty slot from that mode
+
+Empty slots are skipped at generate time; save requires at least one filled slot.
+
+### Slot resolution
+
+- **0 modules** → skip
+- **1 module** (or mode `single`) → that module
+- **many + `in_order`** → `moduleIds[cursor % length]`; cursor advances after each successful **Generate** / **Print now** (persisted in `store.json`)
+- **many + `random`** → seeded RNG from `date + kid first name + nonce + slotId` (reshuffle changes outcome)
+
+Legacy flat `kid.modules: ModuleId[]` is still written (unique pool across slots) and migrated into slots on read if `slots` is missing.
+
 ### Generate new strip
 
-On `/app`, **Generate new strip** bumps an explicit per-kid **nonce/seed** (stored in `nonceByKid`) and regenerates the preview immediately. Same calendar date + kid name, different content — so you can reshuffle and judge quality. The dashboard keeps the last **3–5** generated previews on-page for side-by-side comparison. **Print now** saves a job using the **current** seed (matches what you’re looking at). **Refresh preview** reloads without bumping the seed.
+On `/app`, **Generate new strip** bumps the per-kid **nonce**, regenerates the preview (random slots reshuffle; in-order slots use the current cursor then advance), and keeps the last **3–5** previews for comparison. **Print now** saves a job using the **current** seed and slot picks, then advances in-order cursors. **Refresh preview** reloads without bumping the seed or cursors.
+
+### Subscription / pool limit (stub only)
+
+`settings.modulePoolLimit: number | null` — `null` unlocks all first-party modules (MVP). Later tiers can cap how many unique modules sit in a kid’s pool. **No Stripe / payments** in this build. Settings shows a short note.
 
 ## Firmware / print-job contract
 
@@ -46,12 +77,12 @@ The parent UI is not required for printing. Later firmware (ESP32 + Oreilet 58mm
 | URL | What |
 |-----|------|
 | `GET /api/render?kid=<id>` | HTML of today’s strip (default `format=html`) |
-| `GET /api/render?kid=<id>&format=png` | PNG, 384px wide (~58mm @ 203 dpi), variable height |
+| `GET /api/render?kid=<id>&format=png` | PNG preview (strip width today) |
 | `GET /api/render?kid=<id>&format=json` | Structured `PrintJob` (sections + meta; no HTML) |
 | `GET /strip/<id>` | Same HTML strip in a page (iframe preview) |
-| `GET /api/print-jobs/preview` | Generate for the **active** kid (does not persist; uses current nonce) |
-| `POST /api/print-jobs/reshuffle` | Bump nonce + return a fresh preview for the active kid |
-| `POST /api/print-jobs/print-now` | Generate + save as queued job (current nonce) |
+| `GET /api/print-jobs/preview` | Generate for the **active** kid (no persist; no cursor advance) |
+| `POST /api/print-jobs/reshuffle` | Bump nonce + preview + advance in-order cursors |
+| `POST /api/print-jobs/print-now` | Generate + save queued job + advance in-order cursors |
 | `GET /api/print-jobs/latest` | Last queued job for the active kid |
 | `GET` / `PUT /api/store` | Read / patch JSON store |
 | `GET /api/weather` | Open-Meteo snapshot (falls back to mock offline) |
@@ -66,15 +97,9 @@ Example: `/api/render?kid=demo-sam&date=2026-09-16&format=png`
 
 No ESC/POS yet. No talk to a real printer. HTML/PNG/JSON is the handoff.
 
-## Delivery / paper (GTM)
-
-Software-first: web (and later email) delivery. Current layout is the **58mm kitchen strip** (~384px). Settings still offer 80mm thermal. **US Letter 8.5×11** for home Wi‑Fi printers is planned (not selectable yet). Thermal hardware is an upgrade later.
-
 ## Modules (deterministic content)
 
-Content is seeded by **date + kid first name + nonce**. Same inputs → same strip. Bumping the nonce (Generate new strip) reshuffles without changing the day.
-
-Parents pick **3–5 slots**. `/app/modules` groups first-party modules by category.
+Content is seeded by **date + kid first name + nonce**. Same inputs → same strip. Bumping the nonce (Generate new strip) reshuffles without changing the day. Multi-module slots add another layer of pick resolution (above).
 
 ### Play / puzzles
 
@@ -129,7 +154,7 @@ Wonder + discovery tone. No violence / politics anxiety. City news is generic �
 | Tiny Doodle | 30-second drawing prompt for the strip margin |
 | Would You Rather | Two choices + a tiny debate nudge |
 
-Demo kid defaults: word · joke · doodle · maze · spanish.
+Demo kid (`data/store.sample.json`): strip58 with four slots — word · joke/riddle (in order) · doodle/wyr/poem (random) · maze/spanish (in order).
 
 ### Marketplace (coming soon — not built)
 
@@ -140,6 +165,19 @@ Space Week, Scorecard, Gratitude Note, Tongue Twister — shown in the modules U
 - Runtime store: `data/store.json` (gitignored)
 - Seed / sample: `data/store.sample.json` (committed)
 - No env vars required
+
+### Store shape (slots)
+
+```ts
+kid.paperSize: "strip58" | "letter"
+kid.slots: Array<{
+  id: string
+  moduleIds: ModuleId[]
+  mode: "single" | "in_order" | "random"
+  cursor?: number  // in_order only
+}>
+settings.modulePoolLimit: number | null  // null = all unlocked
+```
 
 ## Stack
 

@@ -6,18 +6,35 @@
       "ageBand": "7-9",
       "timezone": "America/New_York",
       "printTime": "07:00",
-      "modules": [
-        "word",
-        "joke",
-        "doodle",
-        "maze",
-        "spanish"
+      "paperSize": "strip58",
+      "slots": [
+        {
+          "id": "slot-0",
+          "moduleIds": ["word"],
+          "mode": "single",
+          "cursor": 0
+        },
+        {
+          "id": "slot-1",
+          "moduleIds": ["joke", "riddle"],
+          "mode": "in_order",
+          "cursor": 0
+        },
+        {
+          "id": "slot-2",
+          "moduleIds": ["doodle", "wyr", "poem"],
+          "mode": "random",
+          "cursor": 0
+        },
+        {
+          "id": "slot-3",
+          "moduleIds": ["maze", "spanish"],
+          "mode": "in_order",
+          "cursor": 0
+        }
       ],
-      "watchlist": [
-        "AAPL",
-        "DIS",
-        "NKE"
-      ],
+      "modules": ["word", "joke", "riddle", "doodle", "wyr", "poem", "maze", "spanish"],
+      "watchlist": ["AAPL", "DIS", "NKE"],
       "events": [
         {
           "id": "evt_soccer",
@@ -42,11 +59,12 @@
   ],
   "activeKidId": "demo-sam",
   "settings": {
-    "paperWidth": "58mm",
+    "paperSize": "strip58",
     "timezone": "America/New_York",
     "printTime": "07:00",
     "weatherCity": "Brooklyn",
-    "weatherZip": "11201"
+    "weatherZip": "11201",
+    "modulePoolLimit": null
   },
   "lastPrintByKid": {},
   "nonceByKid": {}

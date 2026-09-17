@@ -52,12 +52,29 @@ function sectionHtml(section: StripSection): string {
 
 /** Pure HTML/SVG preview — no react-dom/server. */
 export function buildPreviewHtml(job: PrintJob): string {
-  const width = Math.min(job.widthPx || 384, 384);
-  const body = job.sections.map(sectionHtml).join("\n");
+  const isLetter = job.paperSize === "letter";
+  const width = isLetter ? Math.min(job.widthPx || 612, 612) : Math.min(job.widthPx || 384, 384);
+  const header = job.sections.find((s) => s.kind === "header");
+  const footer = job.sections.find((s) => s.kind === "footer");
+  const body = job.sections.filter((s) => s.kind !== "header" && s.kind !== "footer");
+
+  const bodyHtml = isLetter
+    ? `<div class="cols">${body.map(sectionHtml).join("\n")}</div>`
+    : body.map(sectionHtml).join("\n");
+
+  const html = [
+    header ? sectionHtml(header) : "",
+    bodyHtml,
+    footer ? sectionHtml(footer) : "",
+  ].join("\n");
+
   return `<!DOCTYPE html><html><head><meta charset="utf-8"/>
 <style>
   body{margin:0;background:#f4eee3;color:#1c1915;font-family:ui-monospace,Menlo,monospace}
-  .strip{width:${width}px;margin:0 auto;background:#f7f1e3;padding:14px 14px 18px;box-sizing:border-box;border:1px solid rgba(28,25,21,.12)}
+  .strip{width:${width}px;margin:0 auto;background:#f7f1e3;padding:14px 14px 18px;box-sizing:border-box;border:1px solid rgba(28,25,21,.12)${
+    isLetter ? ";min-height:792px" : ""
+  }}
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:4px 16px}
   .mast{font-family:Georgia,serif;font-weight:700;font-size:22px;text-align:center;letter-spacing:-.02em}
   .for{text-align:center;font-size:12px;font-weight:700;letter-spacing:.14em;margin-top:6px}
   .meta{text-align:center;font-size:10px;letter-spacing:.04em;text-transform:uppercase;margin-top:2px}
@@ -68,10 +85,10 @@ export function buildPreviewHtml(job: PrintJob): string {
   .sec p{margin:0 0 4px;font-size:13px;line-height:1.35}
   .fig{margin-top:8px;text-align:center}
   .fig svg{max-width:100%;height:auto}
-  .ftr{text-align:center;padding-top:8px}
+  .ftr{text-align:center;padding-top:8px;grid-column:1/-1}
   .perf{border-top:2px dashed #cfc4b0;margin:0 10% 8px}
   .tear{font-size:11px;font-weight:700;letter-spacing:.24em;color:#c45c26}
   .closer{font-size:11px;opacity:.8;margin:8px 0 4px}
   .brand{font-size:9px;letter-spacing:.16em;text-transform:uppercase;opacity:.55}
-</style></head><body><div class="strip">${body}</div></body></html>`;
+</style></head><body><div class="strip">${html}</div></body></html>`;
 }

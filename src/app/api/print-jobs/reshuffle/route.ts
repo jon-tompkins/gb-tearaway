@@ -2,12 +2,17 @@ import { NextResponse } from "next/server";
 import { generateStrip } from "@/lib/generateStrip";
 import { getActiveKid, getSettings, readStore, writeStore } from "@/lib/store";
 import { fetchWeather } from "@/lib/weather";
+import {
+  advanceInOrderCursors,
+  ensureKidSlots,
+  flattenSlotModules,
+} from "@/lib/slots";
 
 export const runtime = "nodejs";
 
 /**
- * Bump the active kid's content nonce and return a fresh strip preview.
- * Same calendar day + name, different content — for judging quality.
+ * Bump the active kid's content nonce, return a fresh strip using current
+ * in_order cursors, then advance those cursors for the next run.
  */
 export async function POST() {
   const store = await readStore();
@@ -19,10 +24,12 @@ export async function POST() {
   const prev = store.nonceByKid[kid.id] ?? 0;
   const nonce = prev + 1;
   store.nonceByKid = { ...store.nonceByKid, [kid.id]: nonce };
-  await writeStore(store);
+
+  const kidNorm = ensureKidSlots(kid);
+  const pool = flattenSlotModules(kidNorm.slots);
 
   let weather;
-  if (kid.modules.includes("weather")) {
+  if (pool.includes("weather")) {
     weather = await fetchWeather({
       city: settings.weatherCity,
       zip: settings.weatherZip,
@@ -31,6 +38,18 @@ export async function POST() {
     });
   }
 
-  const job = generateStrip(kid, settings, { nonce, weather });
+  // Generate with current cursors (matches prior preview's slot picks + new nonce)
+  const job = generateStrip(kidNorm, settings, { nonce, weather });
+
+  // Persist nonce + advanced in_order cursors
+  const idx = store.kids.findIndex((k) => k.id === kid.id);
+  if (idx >= 0) {
+    store.kids[idx] = {
+      ...kidNorm,
+      slots: advanceInOrderCursors(kidNorm.slots),
+    };
+  }
+  await writeStore(store);
+
   return NextResponse.json(job);
 }

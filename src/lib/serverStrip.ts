@@ -1,18 +1,31 @@
 import { generateStrip } from "./generateStrip";
-import { getSettings, readStore } from "./store";
+import { getSettings, readStore, writeStore } from "./store";
 import { fetchWeather } from "./weather";
 import type { KidProfile, PrintJob } from "./types";
+import {
+  advanceInOrderCursors,
+  ensureKidSlots,
+  flattenSlotModules,
+} from "./slots";
 
 export async function buildJobForKid(
   kid: KidProfile,
-  opts: { dateISO?: string; nonce?: number; persistStatus?: PrintJob["status"] } = {},
+  opts: {
+    dateISO?: string;
+    nonce?: number;
+    persistStatus?: PrintJob["status"];
+    /** Advance in_order cursors after this generate (reshuffle / print). */
+    advanceCursors?: boolean;
+  } = {},
 ): Promise<PrintJob> {
   const store = await readStore();
   const settings = getSettings(store);
   const nonce = opts.nonce ?? store.nonceByKid[kid.id] ?? 0;
+  const kidNorm = ensureKidSlots(kid);
+  const pool = flattenSlotModules(kidNorm.slots);
 
   let weather;
-  if (kid.modules.includes("weather")) {
+  if (pool.includes("weather")) {
     weather = await fetchWeather({
       city: settings.weatherCity,
       zip: settings.weatherZip,
@@ -21,12 +34,24 @@ export async function buildJobForKid(
     });
   }
 
-  const job = generateStrip(kid, settings, {
+  const job = generateStrip(kidNorm, settings, {
     nonce,
     weather,
     dateISO: opts.dateISO,
   });
   if (opts.persistStatus) job.status = opts.persistStatus;
+
+  if (opts.advanceCursors) {
+    const idx = store.kids.findIndex((k) => k.id === kid.id);
+    if (idx >= 0) {
+      store.kids[idx] = {
+        ...store.kids[idx],
+        slots: advanceInOrderCursors(store.kids[idx].slots),
+      };
+      await writeStore(store);
+    }
+  }
+
   return job;
 }
 

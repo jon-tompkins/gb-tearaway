@@ -24,12 +24,51 @@ export type ModuleId =
   | "news_gamer";
 
 /**
- * Delivery / paper target.
- * GTM is software-first (web/email + future US Letter for home Wi‑Fi printers).
- * Thermal 58mm is the current strip; 80mm stays for wider thermals.
- * TODO: add "letter" (8.5×11) layout + email delivery — not blocking this pass.
+ * Paper / slot template.
+ * - strip58: 58mm thermal strip → 4 fixed slots
+ * - letter: US Letter / N80 roll → 7 fixed slots
+ * Legacy paperWidth ("58mm"|"80mm") is migrated to strip58 on read.
  */
+export type PaperSize = "strip58" | "letter";
+
+/** @deprecated Use PaperSize. Kept for migrating old store.json. */
 export type PaperWidth = "58mm" | "80mm";
+
+export type SlotMode = "single" | "in_order" | "random";
+
+/** One fixed strip position. May hold multiple modules with a pick mode. */
+export interface ModuleSlot {
+  id: string;
+  moduleIds: ModuleId[];
+  mode: SlotMode;
+  /** Index into moduleIds for in_order; advanced after generate/print. */
+  cursor?: number;
+}
+
+export const PAPER_SLOT_COUNTS: Record<PaperSize, number> = {
+  strip58: 4,
+  letter: 7,
+};
+
+export const PAPER_SIZE_META: {
+  id: PaperSize;
+  label: string;
+  blurb: string;
+  slots: number;
+}[] = [
+  {
+    id: "strip58",
+    label: "58mm strip",
+    blurb: "Kitchen thermal strip · 4 slots",
+    slots: 4,
+  },
+  {
+    id: "letter",
+    label: "US Letter / N80",
+    blurb: "Home printer page · 7 slots",
+    slots: 7,
+  },
+];
 
 export type ModuleCategoryId =
   | "play"
@@ -52,6 +91,14 @@ export interface KidProfile {
   ageBand: AgeBand;
   timezone: string;
   printTime: string;
+  /** Per-kid paper template (controls slot count). */
+  paperSize: PaperSize;
+  /** Fixed slots for the chosen paper size. */
+  slots: ModuleSlot[];
+  /**
+   * Legacy flat list — kept in sync as the unique pool across slots.
+   * Prefer `slots` + resolveActiveModules for generate/print.
+   */
   modules: ModuleId[];
   watchlist: string[];
   events: CalendarEvent[];
@@ -59,11 +106,23 @@ export interface KidProfile {
 }
 
 export interface AppSettings {
-  paperWidth: PaperWidth;
+  /**
+   * Kitchen default paper size for new kids.
+   * Active layout lives on each kid (`kid.paperSize` + `kid.slots`).
+   */
+  paperSize: PaperSize;
+  /** @deprecated Migrated to paperSize. */
+  paperWidth?: PaperWidth;
   timezone: string;
   printTime: string;
   weatherCity: string;
   weatherZip: string;
+  /**
+   * Future subscription tier: max unique modules in a kid's pool.
+   * null = unlock all first-party modules (MVP default).
+   * Do not enforce payments here — structure only.
+   */
+  modulePoolLimit: number | null;
 }
 
 export interface MazeCell {
@@ -183,7 +242,9 @@ export interface PrintJob {
   kidName: string;
   ageBand: AgeBand;
   modules: ModuleId[];
-  paperWidthMm: 58 | 80;
+  paperSize: PaperSize;
+  /** Physical width hint: 58 (strip), 80 (legacy), or 216 (letter ~8.5in @ 203dpi preview scale). */
+  paperWidthMm: 58 | 80 | 216;
   dpi: 203;
   widthPx: number;
   sections: StripSection[];
@@ -205,9 +266,12 @@ export interface AppState {
 }
 
 export const STRIP_WIDTH_PX = 384;
+/** Letter preview width — readable page, not full 203dpi. */
+export const LETTER_WIDTH_PX = 612;
 export const STRIP_DPI = 203;
-export const MIN_SLOTS = 3;
-export const MAX_SLOTS = 5;
+/** @deprecated Slot count is fixed by paperSize (4 or 7). */
+export const MIN_SLOTS = 1;
+export const MAX_SLOTS = 7;
 
 export const AGE_BANDS: { id: AgeBand; label: string; hint: string }[] = [
   { id: "4-6", label: "4–6", hint: "Short words, chunky maze, 4×4 numbers" },
@@ -239,9 +303,10 @@ export const DEFAULT_MODULES: ModuleId[] = [
 export const DEFAULT_WATCHLIST = ["AAPL", "DIS", "NKE"];
 
 export const DEFAULT_SETTINGS: AppSettings = {
-  paperWidth: "58mm",
+  paperSize: "strip58",
   timezone: "America/New_York",
   printTime: "07:00",
   weatherCity: "Brooklyn",
   weatherZip: "11201",
+  modulePoolLimit: null,
 };

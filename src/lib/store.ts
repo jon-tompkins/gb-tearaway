@@ -6,25 +6,60 @@ import {
   DEFAULT_SETTINGS,
   DEFAULT_WATCHLIST,
   type ModuleId,
+  type PaperSize,
 } from "./types";
-import { isModuleId } from "./modules";
 import { defaultDemoEvents } from "./content/stubs";
 import { uid } from "./rng";
+import {
+  defaultSlotsForNewKid,
+  ensureKidSlots,
+  flattenSlotModules,
+  isPaperSize,
+  migrateModulesToSlots,
+  resizeSlotsForPaper,
+  sanitizeModuleIds,
+  sanitizeSlots,
+} from "./slots";
 
 const DATA_DIR = path.join(process.cwd(), "data");
 const STORE_PATH = path.join(DATA_DIR, "store.json");
 const SAMPLE_PATH = path.join(DATA_DIR, "store.sample.json");
 
+function migratePaperSize(settings: Partial<AppSettings> | undefined, kid?: Partial<KidProfile>): PaperSize {
+  if (kid && isPaperSize(kid.paperSize)) return kid.paperSize;
+  if (settings && isPaperSize(settings.paperSize)) return settings.paperSize;
+  // Legacy paperWidth
+  const pw = settings?.paperWidth;
+  if (pw === "80mm" || pw === "58mm") return "strip58";
+  return DEFAULT_SETTINGS.paperSize;
+}
+
 export function seedKid(overrides: Partial<KidProfile> = {}): KidProfile {
   const timezone = overrides.timezone || DEFAULT_SETTINGS.timezone;
   const name = overrides.name || "Sam";
+  const paperSize = isPaperSize(overrides.paperSize)
+    ? overrides.paperSize
+    : DEFAULT_SETTINGS.paperSize;
+  const legacyModules = overrides.modules
+    ? sanitizeModuleIds(overrides.modules)
+    : [...DEFAULT_MODULES];
+  const slots =
+    overrides.slots && Array.isArray(overrides.slots) && overrides.slots.length > 0
+      ? sanitizeSlots(overrides.slots, paperSize, legacyModules)
+      : migrateModulesToSlots(
+          legacyModules.length ? legacyModules : [...DEFAULT_MODULES],
+          paperSize,
+        );
+  const modules = flattenSlotModules(slots);
   return {
     id: overrides.id || "demo-sam",
     name,
     ageBand: overrides.ageBand || "7-9",
     timezone,
     printTime: overrides.printTime || DEFAULT_SETTINGS.printTime,
-    modules: overrides.modules ? [...overrides.modules] : [...DEFAULT_MODULES],
+    paperSize,
+    slots,
+    modules: modules.length ? modules : [...DEFAULT_MODULES],
     watchlist: overrides.watchlist ? [...overrides.watchlist] : [...DEFAULT_WATCHLIST],
     events: overrides.events ?? defaultDemoEvents(timezone, name),
     createdAt: overrides.createdAt || new Date().toISOString(),
@@ -32,7 +67,11 @@ export function seedKid(overrides: Partial<KidProfile> = {}): KidProfile {
 }
 
 export function emptyState(): AppState {
-  const kid = seedKid();
+  const kid = seedKid({
+    slots: defaultSlotsForNewKid("strip58"),
+    modules: ["word", "joke", "doodle", "maze"],
+    paperSize: "strip58",
+  });
   return {
     kids: [kid],
     activeKidId: kid.id,
@@ -42,32 +81,46 @@ export function emptyState(): AppState {
   };
 }
 
-
-function sanitizeModules(raw: unknown): ModuleId[] {
-  const ids = Array.isArray(raw) ? raw.filter((id): id is ModuleId => typeof id === "string" && isModuleId(id)) : [];
-  const unique: ModuleId[] = [];
-  for (const id of ids) {
-    if (!unique.includes(id)) unique.push(id);
-  }
-  return unique.length ? unique : [...DEFAULT_MODULES];
+function normalizeSettings(raw: Partial<AppSettings> | null | undefined): AppSettings {
+  const paperSize = migratePaperSize(raw ?? undefined);
+  return {
+    ...DEFAULT_SETTINGS,
+    ...(raw ?? {}),
+    paperSize,
+    modulePoolLimit:
+      raw?.modulePoolLimit === undefined
+        ? null
+        : raw.modulePoolLimit === null
+          ? null
+          : typeof raw.modulePoolLimit === "number"
+            ? raw.modulePoolLimit
+            : null,
+  };
 }
 
 function normalize(raw: Partial<AppState> | null | undefined): AppState {
   const base = emptyState();
   if (!raw || !Array.isArray(raw.kids) || raw.kids.length === 0) return base;
+  const settings = normalizeSettings(raw.settings);
   return {
-    kids: raw.kids.map((k) => ({
-      ...seedKid(k),
-      ...k,
-      modules: sanitizeModules(k.modules),
-      watchlist: Array.isArray(k.watchlist) ? k.watchlist : [...DEFAULT_WATCHLIST],
-      events: Array.isArray(k.events) ? k.events : [],
-    })),
+    kids: raw.kids.map((k) => {
+      const paperSize = migratePaperSize(raw.settings, k);
+      const seeded = seedKid({ ...k, paperSize });
+      return ensureKidSlots({
+        ...seeded,
+        ...k,
+        paperSize,
+        slots: seeded.slots,
+        modules: seeded.modules,
+        watchlist: Array.isArray(k.watchlist) ? k.watchlist : [...DEFAULT_WATCHLIST],
+        events: Array.isArray(k.events) ? k.events : [],
+      });
+    }),
     activeKidId:
       raw.activeKidId && raw.kids.some((k) => k.id === raw.activeKidId)
         ? raw.activeKidId
         : raw.kids[0]?.id ?? null,
-    settings: { ...DEFAULT_SETTINGS, ...(raw.settings ?? {}) },
+    settings,
     lastPrintByKid: raw.lastPrintByKid ?? {},
     nonceByKid: raw.nonceByKid ?? {},
   };
@@ -119,12 +172,19 @@ export async function patchStore(
   const store = await readStore();
 
   if (patch.createKid) {
+    const paperSize = isPaperSize(patch.createKid.paperSize)
+      ? patch.createKid.paperSize
+      : store.settings.paperSize || DEFAULT_SETTINGS.paperSize;
     const kid = seedKid({
       ...patch.createKid,
+      paperSize,
+      slots:
+        patch.createKid.slots ??
+        defaultSlotsForNewKid(paperSize),
       id: patch.createKid.id || uid("kid"),
       createdAt: new Date().toISOString(),
     });
-    store.kids.push(kid);
+    store.kids.push(ensureKidSlots(kid));
     store.activeKidId = kid.id;
   }
 
@@ -132,14 +192,21 @@ export async function patchStore(
     const id = patch.kid.id || store.activeKidId;
     const idx = store.kids.findIndex((k) => k.id === id);
     if (idx >= 0) {
-      store.kids[idx] = { ...store.kids[idx], ...patch.kid, id: store.kids[idx].id };
+      const merged = { ...store.kids[idx], ...patch.kid, id: store.kids[idx].id };
+      // If paperSize changed, resize slots
+      if (patch.kid.paperSize && patch.kid.paperSize !== store.kids[idx].paperSize) {
+        merged.slots = resizeSlotsForPaper(
+          patch.kid.slots ?? store.kids[idx].slots,
+          patch.kid.paperSize,
+        );
+      }
+      store.kids[idx] = ensureKidSlots(merged);
       store.activeKidId = store.kids[idx].id;
     }
   }
 
   if (patch.settings) {
-    store.settings = { ...store.settings, ...patch.settings };
-    // Mirror timezone/printTime onto active kid for strip generation
+    store.settings = normalizeSettings({ ...store.settings, ...patch.settings });
     const active = store.kids.find((k) => k.id === store.activeKidId);
     if (active) {
       if (patch.settings.timezone) active.timezone = patch.settings.timezone;
@@ -148,7 +215,7 @@ export async function patchStore(
   }
 
   if (patch.activeKidId !== undefined) store.activeKidId = patch.activeKidId;
-  if (patch.kids) store.kids = patch.kids;
+  if (patch.kids) store.kids = patch.kids.map((k) => ensureKidSlots(k));
   if (patch.lastPrintByKid) store.lastPrintByKid = patch.lastPrintByKid;
   if (patch.nonceByKid) store.nonceByKid = patch.nonceByKid;
 
@@ -163,5 +230,14 @@ export async function savePrintJob(job: PrintJob): Promise<AppState> {
 }
 
 export function getSettings(store: AppState): AppSettings {
-  return { ...DEFAULT_SETTINGS, ...store.settings };
+  return normalizeSettings(store.settings);
+}
+
+/** Apply pool limit (future tiers). MVP: null = all unlocked. */
+export function applyModulePoolLimit(
+  moduleIds: ModuleId[],
+  limit: number | null | undefined,
+): ModuleId[] {
+  if (limit == null || limit <= 0) return moduleIds;
+  return moduleIds.slice(0, limit);
 }

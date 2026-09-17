@@ -15,6 +15,7 @@ import {
 import { formatTime12, nextPrintLabel } from "@/lib/dates";
 import { moduleById } from "@/lib/modules";
 import type { PrintJob } from "@/lib/types";
+import { PAPER_SIZE_META } from "@/lib/types";
 
 const HISTORY_MAX = 5;
 
@@ -65,7 +66,13 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (hydrated && activeKid) void loadPreview();
-  }, [hydrated, activeKid?.id, activeKid?.modules.join(","), loadPreview]);
+  }, [
+    hydrated,
+    activeKid?.id,
+    activeKid?.paperSize,
+    activeKid?.slots?.map((s) => `${s.id}:${s.moduleIds.join("+")}:${s.mode}:${s.cursor ?? 0}`).join("|"),
+    loadPreview,
+  ]);
 
   async function onGenerateNew() {
     if (!activeKid) return;
@@ -146,7 +153,7 @@ export default function DashboardPage() {
   return (
     <AppShell
       title={`Good morning, ${activeKid.name}`}
-      subtitle="58mm strip preview · reshuffle to judge quality · Print now for the future ESP32 bridge"
+      subtitle="Slot-resolved preview · reshuffle rotates in-order / random slots · Print now for the future ESP32 bridge"
     >
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <KidSwitcher
@@ -164,7 +171,13 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_400px]">
+      <div
+        className={`grid gap-8 ${
+          activeKid.paperSize === "letter"
+            ? "lg:grid-cols-[minmax(0,1fr)_minmax(320px,640px)]"
+            : "lg:grid-cols-[minmax(0,1fr)_400px]"
+        }`}
+      >
         <div className="space-y-4">
           <div className="card">
             <div className="mono-meta text-stamp">Scheduled print</div>
@@ -175,8 +188,14 @@ export default function DashboardPage() {
               {schedule} · {activeKid.timezone || settings.timezone}
             </p>
             <p className="mt-3 text-sm text-ink-soft">
-              Modules:{" "}
-              {activeKid.modules.map((id) => moduleById(id).name).join(" · ")}
+              Paper:{" "}
+              <strong className="text-ink">
+                {PAPER_SIZE_META.find((p) => p.id === (activeKid.paperSize || "strip58"))?.label ??
+                  activeKid.paperSize}
+              </strong>
+              {" · "}
+              Today&apos;s pick:{" "}
+              {(job?.modules ?? activeKid.modules).map((id) => moduleById(id).name).join(" · ")}
             </p>
             <p className="mt-2 text-xs text-ink-soft">
               Content seed: <span className="font-semibold text-ink">{currentNonce}</span>{" "}
@@ -315,7 +334,9 @@ export default function DashboardPage() {
 
         <div>
           <div className="mb-3 text-center mono-meta text-ink-soft">
-            58mm preview · ~384px · seed {currentNonce}
+            {activeKid.paperSize === "letter"
+              ? `Letter preview · ~612px · seed ${currentNonce}`
+              : `58mm preview · ~384px · seed ${currentNonce}`}
           </div>
           <StripPreview job={job} emptyHint="Loading today’s strip…" />
         </div>

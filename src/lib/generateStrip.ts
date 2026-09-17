@@ -5,7 +5,7 @@ import type {
   StripSection,
   WeatherSnapshot,
 } from "./types";
-import { STRIP_DPI, STRIP_WIDTH_PX } from "./types";
+import { LETTER_WIDTH_PX, STRIP_DPI, STRIP_WIDTH_PX } from "./types";
 import { dateISOInZone, formatStripDate, formatTime12 } from "./dates";
 import { mulberry32, pick, stripSeed, uid } from "./rng";
 import { pickWord } from "./content/words";
@@ -27,6 +27,7 @@ import { generateWordFind, wordFindToSvg } from "./puzzles/wordfind";
 import { generateDots, dotsToSvg } from "./puzzles/dots";
 import { moduleById } from "./modules";
 import { buildPreviewHtml } from "./previewHtml";
+import { ensureKidSlots, resolveActiveModules } from "./slots";
 
 export interface GenerateOptions {
   nonce?: number;
@@ -51,9 +52,17 @@ export function generateStrip(
   const seed = stripSeed(date, firstName, nonce);
   const rng = mulberry32(seed);
   const { weekday, dateLabel } = formatStripDate(date);
-  // GTM: 58mm strip now. TODO: "letter" (8.5×11) + email delivery later.
-  const paperWidthMm = settings.paperWidth === "80mm" ? 80 : 58;
-  const widthPx = paperWidthMm === 58 ? STRIP_WIDTH_PX : 576;
+
+  const kidNorm = ensureKidSlots(kid);
+  const paperSize = kidNorm.paperSize;
+  const { moduleIds: activeModules } = resolveActiveModules(kidNorm.slots, {
+    dateISO: date,
+    kidFirstName: firstName,
+    nonce,
+  });
+
+  const paperWidthMm = paperSize === "letter" ? 216 : 58;
+  const widthPx = paperSize === "letter" ? LETTER_WIDTH_PX : STRIP_WIDTH_PX;
 
   const sections: StripSection[] = [];
 
@@ -70,7 +79,7 @@ export function generateStrip(
     ],
   });
 
-  for (const moduleId of kid.modules) {
+  for (const moduleId of activeModules) {
     const meta = moduleById(moduleId);
     if (moduleId === "word") {
       const word = pickWord(kid.ageBand, rng);
@@ -341,8 +350,9 @@ export function generateStrip(
     kidId: kid.id,
     kidName: kid.name,
     ageBand: kid.ageBand,
-    modules: [...kid.modules],
-    paperWidthMm: paperWidthMm as 58 | 80,
+    modules: [...activeModules],
+    paperSize,
+    paperWidthMm: paperWidthMm as 58 | 80 | 216,
     dpi: STRIP_DPI,
     widthPx,
     sections,

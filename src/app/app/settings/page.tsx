@@ -9,7 +9,6 @@ import {
   DEFAULT_SETTINGS,
   TIMEZONES,
   type CalendarEvent,
-  type PaperWidth,
 } from "@/lib/types";
 
 export default function SettingsPage() {
@@ -18,7 +17,6 @@ export default function SettingsPage() {
 
   const [timezone, setTimezone] = useState(DEFAULT_SETTINGS.timezone);
   const [printTime, setPrintTime] = useState(DEFAULT_SETTINGS.printTime);
-  const [paperWidth, setPaperWidth] = useState<PaperWidth>("58mm");
   const [weatherCity, setWeatherCity] = useState(DEFAULT_SETTINGS.weatherCity);
   const [weatherZip, setWeatherZip] = useState(DEFAULT_SETTINGS.weatherZip);
   const [watchlist, setWatchlist] = useState("AAPL, DIS, NKE");
@@ -39,7 +37,6 @@ export default function SettingsPage() {
     if (!activeKid || !store) return;
     setTimezone(activeKid.timezone || store.settings.timezone);
     setPrintTime(activeKid.printTime || store.settings.printTime);
-    setPaperWidth(store.settings.paperWidth || "58mm");
     setWeatherCity(store.settings.weatherCity || "");
     setWeatherZip(store.settings.weatherZip || "");
     setWatchlist((activeKid.watchlist || []).join(", "));
@@ -60,7 +57,6 @@ export default function SettingsPage() {
         settings: {
           timezone,
           printTime,
-          paperWidth,
           weatherCity: weatherCity.trim(),
           weatherZip: weatherZip.trim(),
         },
@@ -156,21 +152,30 @@ export default function SettingsPage() {
               />
             </div>
           </div>
-          <div className="field">
-            <label htmlFor="pw">Paper size</label>
-            <select
-              id="pw"
-              value={paperWidth}
-              onChange={(e) => setPaperWidth(e.target.value as PaperWidth)}
-            >
-              <option value="58mm">58mm thermal strip (~384px) · shipping now</option>
-              <option value="80mm">80mm thermal (wider)</option>
-            </select>
-            <p className="mt-2 text-xs text-ink-soft">
-              Software-first GTM: web (and later email) delivery. US Letter 8.5×11 for home Wi‑Fi
-              printers is planned — not selectable yet. Thermal hardware is an upgrade later.
-            </p>
-          </div>
+          <p className="text-xs text-ink-soft">
+            Paper size and slots live on the{" "}
+            <a href="/app/modules" className="font-semibold text-ink underline">
+              Modules
+            </a>{" "}
+            page (per kid). Kitchen schedule here is shared defaults.
+          </p>
+        </section>
+
+        <section className="card space-y-3">
+          <h2 className="font-display text-lg">Subscription tiers (later)</h2>
+          <p className="text-sm text-ink-soft">
+            MVP unlocks all first-party modules. Later, plans may set a{" "}
+            <code className="text-xs">modulePoolLimit</code> on kitchen settings so only N unique
+            modules can sit in a kid&apos;s pool. No payments in this build — structure only.
+          </p>
+          <p className="text-xs text-ink-soft">
+            Current pool limit:{" "}
+            <strong className="text-ink">
+              {store?.settings.modulePoolLimit == null
+                ? "unlocked (all first-party)"
+                : store.settings.modulePoolLimit}
+            </strong>
+          </p>
         </section>
 
         <section className="card space-y-4">

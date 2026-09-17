@@ -2,6 +2,7 @@
 
 import { useMemo, useRef, useState } from "react";
 import type { PrintJob, StripSection } from "@/lib/types";
+import { LETTER_WIDTH_PX, STRIP_WIDTH_PX } from "@/lib/types";
 import { mazeToSvg } from "@/lib/puzzles/maze";
 import { sudokuToSvg } from "@/lib/puzzles/sudoku";
 
@@ -80,10 +81,22 @@ export function StripPreview({
   const [showKeys, setShowKeys] = useState(false);
   const [busy, setBusy] = useState(false);
 
+  const isLetter = job?.paperSize === "letter";
+  const previewWidth = isLetter
+    ? LETTER_WIDTH_PX
+    : Math.min(job?.widthPx ?? STRIP_WIDTH_PX, STRIP_WIDTH_PX);
+
   const hasPuzzle = useMemo(
     () => !!job?.sections.some((s) => s.kind === "maze" || s.kind === "sudoku"),
     [job],
   );
+
+  const bodySections = useMemo(
+    () => job?.sections.filter((s) => s.kind !== "header" && s.kind !== "footer") ?? [],
+    [job],
+  );
+  const header = job?.sections.find((s) => s.kind === "header");
+  const footer = job?.sections.find((s) => s.kind === "footer");
 
   async function downloadPng() {
     if (!ref.current || !job) return;
@@ -109,22 +122,40 @@ export function StripPreview({
 
   return (
     <div className="w-full">
-      <div className="relative mx-auto flex w-full max-w-[384px] justify-center">
+      <div
+        className={`relative mx-auto flex w-full justify-center ${
+          isLetter ? "max-w-[612px]" : "max-w-[384px]"
+        }`}
+      >
         <div
           ref={ref}
-          className="strip-shell paper-grain w-full px-3.5 py-3.5"
-          style={{ width: job?.widthPx ? Math.min(job.widthPx, 384) : 384 }}
+          className={`strip-shell paper-grain w-full px-3.5 py-3.5 ${
+            isLetter ? "letter-shell min-h-[792px]" : ""
+          }`}
+          style={{ width: previewWidth }}
         >
           <div className="strip-curl" aria-hidden />
           {job ? (
-            job.sections.map((s, i) => (
-              <SectionBlock key={`${s.id}-${i}`} section={s} showKeys={showKeys} />
-            ))
+            isLetter ? (
+              <>
+                {header ? <SectionBlock section={header} showKeys={showKeys} /> : null}
+                <div className="grid grid-cols-1 gap-x-4 gap-y-1 sm:grid-cols-2">
+                  {bodySections.map((s, i) => (
+                    <SectionBlock key={`${s.id}-${i}`} section={s} showKeys={showKeys} />
+                  ))}
+                </div>
+                {footer ? <SectionBlock section={footer} showKeys={showKeys} /> : null}
+              </>
+            ) : (
+              job.sections.map((s, i) => (
+                <SectionBlock key={`${s.id}-${i}`} section={s} showKeys={showKeys} />
+              ))
+            )
           ) : (
             <div className="px-2 py-10 text-center">
               <div className="masthead-display text-lg">Tearaway Times</div>
               <p className="mt-3 text-sm text-ink-soft">
-                {emptyHint ?? "Hit Print now to generate today’s 58mm morning strip."}
+                {emptyHint ?? "Hit Print now to generate today’s morning strip."}
               </p>
               <div className="perf-line mx-auto mt-8 w-4/5" />
               <div className="mt-2 text-[0.65rem] font-bold tracking-[0.2em] text-stamp">
@@ -136,7 +167,11 @@ export function StripPreview({
       </div>
 
       {job ? (
-        <div className="mx-auto mt-4 flex max-w-[384px] flex-wrap items-center justify-center gap-2">
+        <div
+          className={`mx-auto mt-4 flex flex-wrap items-center justify-center gap-2 ${
+            isLetter ? "max-w-[612px]" : "max-w-[384px]"
+          }`}
+        >
           <button type="button" onClick={downloadPng} disabled={busy} className="btn-secondary text-sm">
             {busy ? "Saving…" : "Download PNG"}
           </button>
@@ -154,7 +189,11 @@ export function StripPreview({
         </div>
       ) : null}
       {showKeys ? (
-        <p className="mx-auto mt-2 max-w-[384px] text-center text-xs text-ink-soft">
+        <p
+          className={`mx-auto mt-2 text-center text-xs text-ink-soft ${
+            isLetter ? "max-w-[612px]" : "max-w-[384px]"
+          }`}
+        >
           Parent key is on-screen only. It is not part of the printed strip.
         </p>
       ) : null}
