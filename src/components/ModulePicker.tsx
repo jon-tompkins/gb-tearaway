@@ -1,9 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import type { ModuleId, ModuleSlot, PaperSize, SlotMode } from "@/lib/types";
+import type { ModuleId, ModuleSlot, PaperSize } from "@/lib/types";
 import { PAPER_SIZE_META, PAPER_SLOT_COUNTS } from "@/lib/types";
 import { MARKETPLACE_PACKS, moduleById, modulesByCategory } from "@/lib/modules";
+
+/** Hard cap of modules per slot → a tidy 2×2 grid. */
+const MAX_PER_SLOT = 4;
 
 export function PaperSizeToggle({
   value,
@@ -37,18 +40,14 @@ export function PaperSizeToggle({
   );
 }
 
-function modeLabel(mode: SlotMode, count: number): string {
-  if (count <= 1) return "single";
-  if (mode === "random") return "random";
-  return "in order";
-}
-
 type DragItem = { moduleId: ModuleId; fromSlotId?: string; fromIndex?: number };
 
 /**
- * Two-pane slot editor. Drag modules from the library into slots; drag chips to
- * reorder within a slot or move them between slots. Click-to-add (select a slot,
- * click a module) stays as the mobile / keyboard fallback.
+ * Slot editor as a page mock. The left pane draws the actual paper with its
+ * slots in order; each slot holds up to 4 modules in a 2×2 grid. A slot with 2+
+ * modules gets a Spotify-style shuffle toggle (on = random each print, off = in
+ * order). Add modules by dragging a library card into a slot, or by selecting a
+ * slot and clicking a card (mobile / keyboard).
  */
 export function SlotEditor({
   paperSize,
@@ -71,9 +70,12 @@ export function SlotEditor({
   const [overSlot, setOverSlot] = useState<string | null>(null);
 
   const count = PAPER_SLOT_COUNTS[paperSize];
+  const isStrip = paperSize !== "letter";
   const poolUsed = new Set(slots.flatMap((s) => s.moduleIds));
   const limit = modulePoolLimit ?? null;
   const atPoolCap = limit != null && poolUsed.size >= limit;
+  const selectedSlot = slots.find((s) => s.id === selectedSlotId) ?? null;
+  const selectedFull = !!selectedSlot && selectedSlot.moduleIds.length >= MAX_PER_SLOT;
 
   function normalizeMode(s: ModuleSlot): ModuleSlot {
     if (s.moduleIds.length <= 1) return { ...s, mode: "single", cursor: 0 };
@@ -87,6 +89,7 @@ export function SlotEditor({
   function addToSlot(slotId: string, moduleId: ModuleId, index: number | null) {
     const slot = slots.find((s) => s.id === slotId);
     if (!slot || slot.moduleIds.includes(moduleId)) return;
+    if (slot.moduleIds.length >= MAX_PER_SLOT) return; // 4-per-slot cap
     if (atPoolCap && !poolUsed.has(moduleId)) return; // pool cap blocks new unique modules only
     writeSlot(slotId, (s) => {
       const ids = [...s.moduleIds];
@@ -102,20 +105,8 @@ export function SlotEditor({
       cursor: 0,
     }));
   }
-  function clearSlot(slotId: string) {
-    writeSlot(slotId, (s) => ({ ...s, moduleIds: [], mode: "single", cursor: 0 }));
-  }
-  function setMode(slotId: string, mode: SlotMode) {
-    writeSlot(slotId, (s) => ({ ...s, mode, cursor: 0 }));
-  }
-  function swapChip(slotId: string, i: number, dir: -1 | 1) {
-    writeSlot(slotId, (s) => {
-      const ids = [...s.moduleIds];
-      const j = i + dir;
-      if (j < 0 || j >= ids.length) return s;
-      [ids[i], ids[j]] = [ids[j], ids[i]];
-      return { ...s, moduleIds: ids, cursor: 0 };
-    });
+  function setShuffle(slotId: string, on: boolean) {
+    writeSlot(slotId, (s) => ({ ...s, mode: on ? "random" : "in_order", cursor: 0 }));
   }
   function reorder(slotId: string, from: number, to: number | null) {
     writeSlot(slotId, (s) => {
@@ -135,6 +126,7 @@ export function SlotEditor({
   ) {
     const target = slots.find((s) => s.id === toSlotId);
     if (!target || target.moduleIds.includes(moduleId)) return;
+    if (target.moduleIds.length >= MAX_PER_SLOT) return;
     onChangeSlots(
       slots.map((s) => {
         if (s.id === fromSlotId)
@@ -171,248 +163,224 @@ export function SlotEditor({
   const groups = modulesByCategory();
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[minmax(300px,360px)_1fr] lg:items-start">
-      {/* LEFT: paper size + slots (sticky) */}
+    <div className="grid gap-6 lg:grid-cols-[minmax(320px,400px)_1fr] lg:items-start">
+      {/* LEFT: paper size + the page with its slots */}
       <div className="space-y-5 lg:sticky lg:top-4">
         <div>
           <h2 className="font-display text-xl text-ink">Paper size</h2>
           <p className="mb-3 text-sm text-ink-soft">
-            Slot count is fixed by paper: {count} slots for this size.
+            {count} slots on this paper — fixed by size.
           </p>
           <PaperSizeToggle value={paperSize} onChange={onChangePaperSize} />
         </div>
 
         <div>
-          <h2 className="font-display text-xl text-ink">Slots</h2>
+          <h2 className="font-display text-xl text-ink">Your page</h2>
           <p className="mb-3 text-sm text-ink-soft">
-            Drag modules from the library into a slot. A slot with 2+ modules can run{" "}
-            <strong>in order</strong> or <strong>random</strong> each generate.
+            Up to {MAX_PER_SLOT} modules per slot. When a slot has more than one, use the{" "}
+            <span aria-hidden>🔀</span> shuffle toggle — on = random each print, off = in order.
           </p>
-          <ol className="space-y-3">
-            {slots.map((slot, i) => {
-              const selected = selectedSlotId === slot.id;
-              const empty = slot.moduleIds.length === 0;
-              const isOver = overSlot === slot.id;
-              const multi = slot.moduleIds.length >= 2;
-              return (
-                <li key={slot.id}>
-                  <div
-                    role="button"
-                    tabIndex={0}
-                    onClick={() => onSelectSlot(slot.id)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === " ") {
+
+          {/* paper mock */}
+          <div
+            className={`mx-auto rounded-2xl border border-rule bg-paper p-3 shadow-sm ${
+              isStrip ? "max-w-[320px]" : ""
+            }`}
+          >
+            <div className="mb-2 border-b border-dashed border-rule pb-2 text-center">
+              <div className="font-display text-base text-ink">Tearaway</div>
+              <div className="text-[0.6rem] uppercase tracking-widest text-ink-soft">
+                {isStrip ? "58mm strip" : "US Letter"} · {count} slots
+              </div>
+            </div>
+
+            <ol className="space-y-2.5">
+              {slots.map((slot, i) => {
+                const selected = selectedSlotId === slot.id;
+                const isOver = overSlot === slot.id;
+                const n = slot.moduleIds.length;
+                const multi = n >= 2;
+                const full = n >= MAX_PER_SLOT;
+                const shuffleOn = slot.mode === "random";
+                return (
+                  <li key={slot.id}>
+                    <div
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => onSelectSlot(slot.id)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          onSelectSlot(slot.id);
+                        }
+                      }}
+                      onDragOver={(e) => {
                         e.preventDefault();
-                        onSelectSlot(slot.id);
-                      }
-                    }}
-                    onDragOver={(e) => {
-                      e.preventDefault();
-                      if (overSlot !== slot.id) setOverSlot(slot.id);
-                    }}
-                    onDragLeave={(e) => {
-                      if (e.currentTarget === e.target && overSlot === slot.id) setOverSlot(null);
-                    }}
-                    onDrop={(e) => {
-                      e.preventDefault();
-                      handleDrop(slot.id, null);
-                    }}
-                    className={`cursor-pointer rounded-2xl border px-3 py-3 text-left transition ${
-                      isOver
-                        ? "border-stamp bg-stamp/10 ring-2 ring-stamp/40"
-                        : selected
-                          ? "border-ink bg-ink text-cream ring-2 ring-ink/20"
-                          : empty
-                            ? "border-dashed border-rule bg-paper/50 hover:border-ink/30"
-                            : "border-rule bg-paper hover:border-ink/30"
-                    }`}
-                  >
-                    <div className="mb-2 flex items-center justify-between gap-2">
-                      <span
-                        className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold ${
-                          selected && !isOver ? "bg-cream text-ink" : "bg-ink text-cream"
-                        }`}
-                      >
-                        {i + 1}
-                      </span>
-                      <span
-                        className={`rounded-full px-2 py-0.5 text-[0.65rem] font-bold uppercase tracking-wider ${
-                          selected && !isOver ? "bg-cream/20 text-cream" : "bg-cream text-ink-soft"
-                        }`}
-                      >
-                        {empty ? "empty" : modeLabel(slot.mode, slot.moduleIds.length)}
-                      </span>
-                    </div>
-
-                    {empty ? (
-                      <p
-                        className={`text-sm ${
-                          isOver ? "text-stamp" : selected ? "text-cream/70" : "text-ink-soft"
-                        }`}
-                      >
-                        {isOver ? "Drop to add" : "Drag a module here, or tap then pick one →"}
-                      </p>
-                    ) : (
-                      <ul className="space-y-1.5">
-                        {slot.moduleIds.map((id, idx) => (
-                          <li
-                            key={id}
-                            draggable
-                            onClick={(e) => e.stopPropagation()}
-                            onDragStart={(e) => {
+                        if (overSlot !== slot.id) setOverSlot(slot.id);
+                      }}
+                      onDragLeave={(e) => {
+                        if (e.currentTarget === e.target && overSlot === slot.id) setOverSlot(null);
+                      }}
+                      onDrop={(e) => {
+                        e.preventDefault();
+                        handleDrop(slot.id, null);
+                      }}
+                      className={`cursor-pointer rounded-xl border px-2.5 py-2 transition ${
+                        isOver
+                          ? "border-stamp bg-stamp/10 ring-2 ring-stamp/40"
+                          : selected
+                            ? "border-ink bg-cream/60 ring-2 ring-ink/20"
+                            : "border-rule bg-cream/40 hover:border-ink/30"
+                      }`}
+                    >
+                      <div className="mb-1.5 flex items-center justify-between gap-2">
+                        <span className="flex items-center gap-1.5">
+                          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-ink text-[0.65rem] font-bold text-cream">
+                            {i + 1}
+                          </span>
+                          <span className="text-[0.6rem] font-semibold uppercase tracking-wider text-ink-soft">
+                            Slot {i + 1}
+                          </span>
+                        </span>
+                        {multi ? (
+                          <button
+                            type="button"
+                            aria-pressed={shuffleOn}
+                            onClick={(e) => {
                               e.stopPropagation();
-                              e.dataTransfer.effectAllowed = "move";
-                              e.dataTransfer.setData("text/plain", id);
-                              setDrag({ moduleId: id, fromSlotId: slot.id, fromIndex: idx });
+                              setShuffle(slot.id, !shuffleOn);
                             }}
-                            onDragOver={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              if (overSlot !== slot.id) setOverSlot(slot.id);
-                            }}
-                            onDrop={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              handleDrop(slot.id, idx);
-                            }}
-                            className={`flex items-center gap-1.5 rounded-xl border px-2 py-1.5 ${
-                              selected && !isOver
-                                ? "border-cream/25 bg-cream/10"
-                                : "border-rule bg-cream/60"
+                            title={
+                              shuffleOn
+                                ? "Shuffle on — random each print"
+                                : "Shuffle off — plays in order"
+                            }
+                            className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-[0.65rem] font-bold uppercase tracking-wider transition ${
+                              shuffleOn
+                                ? "bg-stamp text-cream"
+                                : "border border-rule bg-paper text-ink-soft"
                             }`}
                           >
-                            <span
-                              className={`cursor-grab select-none text-xs ${
-                                selected && !isOver ? "text-cream/50" : "text-ink-soft"
-                              }`}
-                              aria-hidden
-                            >
-                              ⠿
-                            </span>
-                            <span
-                              className={`flex-1 truncate text-sm font-semibold ${
-                                selected && !isOver ? "text-cream" : "text-ink"
-                              }`}
-                            >
-                              {moduleById(id).name}
-                            </span>
-                            {multi ? (
-                              <>
-                                <button
-                                  type="button"
-                                  aria-label="Move up"
-                                  disabled={idx === 0}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    swapChip(slot.id, idx, -1);
-                                  }}
-                                  className="rounded px-1 text-xs disabled:opacity-30"
-                                >
-                                  ↑
-                                </button>
-                                <button
-                                  type="button"
-                                  aria-label="Move down"
-                                  disabled={idx === slot.moduleIds.length - 1}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    swapChip(slot.id, idx, 1);
-                                  }}
-                                  className="rounded px-1 text-xs disabled:opacity-30"
-                                >
-                                  ↓
-                                </button>
-                              </>
-                            ) : null}
-                            <button
-                              type="button"
-                              aria-label={`Remove ${moduleById(id).name}`}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                removeChip(slot.id, id);
-                              }}
-                              className={`rounded px-1 text-sm font-bold ${
-                                selected && !isOver ? "text-cream/70 hover:text-cream" : "text-stamp"
-                              }`}
-                            >
-                              ×
-                            </button>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-
-                    {multi ? (
-                      <div
-                        className="mt-2.5 flex flex-wrap items-center gap-1.5"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <button
-                          type="button"
-                          onClick={() => setMode(slot.id, "in_order")}
-                          className={`rounded-full px-2.5 py-1 text-xs font-semibold transition ${
-                            slot.mode === "in_order"
-                              ? "bg-stamp text-cream"
-                              : selected && !isOver
-                                ? "border border-cream/30 text-cream/80"
-                                : "border border-rule bg-paper text-ink-soft"
-                          }`}
-                        >
-                          In order
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setMode(slot.id, "random")}
-                          className={`rounded-full px-2.5 py-1 text-xs font-semibold transition ${
-                            slot.mode === "random"
-                              ? "bg-stamp text-cream"
-                              : selected && !isOver
-                                ? "border border-cream/30 text-cream/80"
-                                : "border border-rule bg-paper text-ink-soft"
-                          }`}
-                        >
-                          Random
-                        </button>
-                        {slot.mode === "in_order" ? (
-                          <span
-                            className={`text-xs ${
-                              selected && !isOver ? "text-cream/60" : "text-ink-soft"
-                            }`}
-                          >
-                            next:{" "}
-                            {moduleById(
-                              slot.moduleIds[(slot.cursor ?? 0) % slot.moduleIds.length],
-                            ).name}
+                            <span aria-hidden>🔀</span>
+                            {shuffleOn ? "Shuffle" : "In order"}
+                          </button>
+                        ) : n === 1 ? (
+                          <span className="rounded-full bg-cream px-2 py-0.5 text-[0.6rem] font-bold uppercase tracking-wider text-ink-soft">
+                            single
                           </span>
                         ) : null}
-                        <button
-                          type="button"
-                          onClick={() => clearSlot(slot.id)}
-                          className={`ml-auto text-xs font-semibold ${
-                            selected && !isOver ? "text-cream/60 hover:text-cream" : "text-ink-soft hover:text-stamp"
-                          }`}
-                        >
-                          Clear
-                        </button>
                       </div>
-                    ) : null}
-                  </div>
-                </li>
-              );
-            })}
-          </ol>
+
+                      <div className="grid grid-cols-2 gap-1.5">
+                        {Array.from({ length: MAX_PER_SLOT }).map((_, idx) => {
+                          const id = slot.moduleIds[idx];
+                          if (id) {
+                            return (
+                              <div
+                                key={id}
+                                draggable
+                                onClick={(e) => e.stopPropagation()}
+                                onDragStart={(e) => {
+                                  e.stopPropagation();
+                                  e.dataTransfer.effectAllowed = "move";
+                                  e.dataTransfer.setData("text/plain", id);
+                                  setDrag({ moduleId: id, fromSlotId: slot.id, fromIndex: idx });
+                                }}
+                                onDragOver={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  if (overSlot !== slot.id) setOverSlot(slot.id);
+                                }}
+                                onDrop={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  handleDrop(slot.id, idx);
+                                }}
+                                title={moduleById(id).name}
+                                className="group relative flex min-h-[46px] cursor-grab items-center rounded-lg border border-rule bg-paper px-2 py-1.5 active:cursor-grabbing"
+                              >
+                                {multi && !shuffleOn ? (
+                                  <span className="mr-1 text-[0.6rem] font-bold text-ink-soft">
+                                    {idx + 1}.
+                                  </span>
+                                ) : null}
+                                <span className="flex-1 truncate text-xs font-semibold text-ink">
+                                  {moduleById(id).name}
+                                </span>
+                                <button
+                                  type="button"
+                                  aria-label={`Remove ${moduleById(id).name}`}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    removeChip(slot.id, id);
+                                  }}
+                                  className="ml-1 shrink-0 rounded px-1 text-sm font-bold text-ink-soft hover:text-stamp"
+                                >
+                                  ×
+                                </button>
+                              </div>
+                            );
+                          }
+                          const firstEmpty = idx === n; // the next slot to fill
+                          return (
+                            <button
+                              key={`empty-${idx}`}
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onSelectSlot(slot.id);
+                              }}
+                              onDragOver={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                if (overSlot !== slot.id) setOverSlot(slot.id);
+                              }}
+                              onDrop={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                handleDrop(slot.id, idx);
+                              }}
+                              className={`flex min-h-[46px] items-center justify-center rounded-lg border border-dashed text-lg transition ${
+                                selected && firstEmpty
+                                  ? "border-ink/50 bg-paper/60 text-ink"
+                                  : "border-rule bg-paper/30 text-ink-soft hover:border-ink/30"
+                              }`}
+                            >
+                              +
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      {full ? (
+                        <div className="mt-1.5 text-center text-[0.6rem] text-ink-soft">
+                          slot full (max {MAX_PER_SLOT})
+                        </div>
+                      ) : null}
+                    </div>
+                  </li>
+                );
+              })}
+            </ol>
+
+            <div className="mt-2 border-t border-dashed border-rule pt-1.5 text-center text-[0.55rem] uppercase tracking-[0.3em] text-ink-soft">
+              — tear here —
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* RIGHT: library */}
+      {/* RIGHT: module library */}
       <div className="space-y-8">
         <div className="flex items-end justify-between gap-3">
           <div>
             <h2 className="font-display text-xl text-ink">Module library</h2>
             <p className="text-sm text-ink-soft">
-              {selectedSlotId
-                ? "Drag a card into a slot, or click to add it to the selected slot."
-                : "Drag a card into a slot, or select a slot first to click-add."}
+              {!selectedSlotId
+                ? "Drag a card into a slot, or select a slot first to click-add."
+                : selectedFull
+                  ? `Slot ${slots.findIndex((s) => s.id === selectedSlotId) + 1} is full — remove one or pick another slot.`
+                  : `Adding to slot ${slots.findIndex((s) => s.id === selectedSlotId) + 1}. Drag a card in, or click it.`}
             </p>
           </div>
           <div className="shrink-0 rounded-full bg-paper px-3 py-1 text-sm tabular-nums text-ink-soft">
@@ -427,11 +395,9 @@ export function SlotEditor({
             <p className="mb-3 text-sm text-ink-soft">{category.blurb}</p>
             <ul className="grid gap-3 sm:grid-cols-2">
               {modules.map((mod) => {
-                const inSelected =
-                  !!selectedSlotId &&
-                  (slots.find((s) => s.id === selectedSlotId)?.moduleIds.includes(mod.id) ?? false);
+                const inSelected = !!selectedSlot && selectedSlot.moduleIds.includes(mod.id);
                 const blockedNew = atPoolCap && !poolUsed.has(mod.id);
-                const clickable = !!selectedSlotId && !inSelected && !blockedNew;
+                const clickable = !!selectedSlotId && !inSelected && !blockedNew && !selectedFull;
                 return (
                   <li key={mod.id}>
                     <button
@@ -453,13 +419,15 @@ export function SlotEditor({
                           ? "Pool limit reached — remove a module or upgrade the tier"
                           : inSelected
                             ? "Already in the selected slot"
-                            : "Drag into a slot, or click to add"
+                            : selectedFull
+                              ? "Selected slot is full (max 4)"
+                              : "Drag into a slot, or click to add"
                       }
                       className={`flex w-full items-start gap-3 rounded-2xl border px-4 py-3 text-left transition ${
                         inSelected
                           ? "border-ink bg-ink text-cream"
                           : "border-rule bg-paper hover:border-ink/30"
-                      } ${blockedNew && !inSelected ? "opacity-50" : ""} ${
+                      } ${(blockedNew || selectedFull) && !inSelected ? "opacity-50" : ""} ${
                         !blockedNew ? "cursor-grab active:cursor-grabbing" : ""
                       }`}
                     >
