@@ -1,4 +1,5 @@
 import { promises as fs } from "fs";
+import os from "os";
 import path from "path";
 import type { AppSettings, AppState, KidProfile, PrintJob } from "./types";
 import {
@@ -22,7 +23,10 @@ import {
 } from "./slots";
 
 const DATA_DIR = path.join(process.cwd(), "data");
-const STORE_PATH = path.join(DATA_DIR, "store.json");
+// Serverless runtimes (Vercel) ship a read-only app filesystem; only the temp dir
+// is writable. Persist there when deployed, and to ./data locally.
+const RUNTIME_DIR = process.env.VERCEL ? path.join(os.tmpdir(), "tearaway-data") : DATA_DIR;
+const STORE_PATH = path.join(RUNTIME_DIR, "store.json");
 const SAMPLE_PATH = path.join(DATA_DIR, "store.sample.json");
 
 function migratePaperSize(settings: Partial<AppSettings> | undefined, kid?: Partial<KidProfile>): PaperSize {
@@ -126,34 +130,46 @@ function normalize(raw: Partial<AppState> | null | undefined): AppState {
   };
 }
 
-async function ensureStore(): Promise<void> {
-  await fs.mkdir(DATA_DIR, { recursive: true });
-  try {
-    await fs.access(STORE_PATH);
-  } catch {
-    try {
-      const sample = await fs.readFile(SAMPLE_PATH, "utf8");
-      await fs.writeFile(STORE_PATH, sample, "utf8");
-    } catch {
-      await fs.writeFile(STORE_PATH, JSON.stringify(emptyState(), null, 2), "utf8");
-    }
-  }
-}
+// In-memory copy is the source of truth within a running instance, so the app
+// works even when the disk is read-only (serverless). Disk is best-effort for
+// warm-instance / local durability. NOTE: serverless instances are ephemeral and
+// not shared, so cross-instance durability needs a real KV store (e.g. Vercel KV).
+let mem: AppState | null = null;
 
-export async function readStore(): Promise<AppState> {
-  await ensureStore();
+async function seedState(): Promise<AppState> {
   try {
-    const raw = await fs.readFile(STORE_PATH, "utf8");
-    return normalize(JSON.parse(raw) as AppState);
+    const sample = await fs.readFile(SAMPLE_PATH, "utf8");
+    return normalize(JSON.parse(sample) as AppState);
   } catch {
     return emptyState();
   }
 }
 
+async function persist(state: AppState): Promise<void> {
+  try {
+    await fs.mkdir(RUNTIME_DIR, { recursive: true });
+    await fs.writeFile(STORE_PATH, JSON.stringify(state, null, 2), "utf8");
+  } catch {
+    // read-only fs (serverless) — the in-memory copy carries the state
+  }
+}
+
+export async function readStore(): Promise<AppState> {
+  if (mem) return mem;
+  try {
+    const raw = await fs.readFile(STORE_PATH, "utf8");
+    mem = normalize(JSON.parse(raw) as AppState);
+  } catch {
+    mem = await seedState();
+    void persist(mem);
+  }
+  return mem;
+}
+
 export async function writeStore(state: AppState): Promise<AppState> {
-  await fs.mkdir(DATA_DIR, { recursive: true });
   const next = normalize(state);
-  await fs.writeFile(STORE_PATH, JSON.stringify(next, null, 2), "utf8");
+  mem = next;
+  await persist(next);
   return next;
 }
 
