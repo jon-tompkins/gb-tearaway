@@ -4,6 +4,7 @@ import { ImageResponse } from "next/og";
 import { NextResponse } from "next/server";
 import { StripOg } from "@/components/StripOg";
 import { buildJobForKid, estimateJobHeight } from "@/lib/serverStrip";
+import { buildPrintHtml } from "@/lib/printHtml";
 import { readStore } from "@/lib/store";
 
 export const dynamic = "force-dynamic";
@@ -28,7 +29,8 @@ export async function GET(req: Request) {
           query: {
             kid: "kid profile id (required), e.g. demo-sam",
             date: "YYYY-MM-DD (optional; defaults to today in the kid timezone)",
-            format: "html | png | json (default html)",
+            format: "html | print | png | json (default html)",
+            auto: "1 to auto-open the print dialog (print format only)",
           },
           related: {
             latest: "GET /api/print-jobs/latest — last queued job for the active kid",
@@ -57,6 +59,18 @@ export async function GET(req: Request) {
     // Drop bulky HTML for JSON consumers; keep sections + meta
     const { previewHtml: _html, ...rest } = job;
     return NextResponse.json(rest);
+  }
+
+  if (format === "print" || format === "pdf") {
+    const autoPrint = url.searchParams.get("auto") === "1";
+    const html = buildPrintHtml(job, { autoPrint });
+    return new NextResponse(html, {
+      status: 200,
+      headers: {
+        "Content-Type": "text/html; charset=utf-8",
+        "Cache-Control": "no-store",
+      },
+    });
   }
 
   if (format === "png") {

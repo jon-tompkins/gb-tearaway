@@ -228,6 +228,15 @@ export default function DashboardPage() {
             >
               {loadingPreview ? "Refreshing…" : "Refresh preview"}
             </button>
+            <a
+              className="btn-secondary"
+              href={`/api/render?kid=${activeKid.id}&format=print&auto=1`}
+              target="_blank"
+              rel="noreferrer"
+              title={`Opens a ${activeKid.paperSize === "letter" ? "US Letter" : "58mm"}-sized page and the print dialog — choose “Save as PDF”.`}
+            >
+              Save as PDF
+            </a>
             {msg ? <span className="text-sm text-ink-soft">{msg}</span> : null}
           </div>
 
@@ -308,6 +317,15 @@ export default function DashboardPage() {
                   rel="noreferrer"
                 >
                   PNG
+                </a>
+                <span className="text-ink-soft"> · </span>
+                <a
+                  className="font-semibold text-ink underline decoration-rule underline-offset-2 hover:text-stamp"
+                  href={`/api/render?kid=${activeKid.id}&format=print`}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  PDF
                 </a>
                 <span className="text-ink-soft"> · </span>
                 <a

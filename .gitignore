@@ -49,3 +49,7 @@ next-env.d.ts
 # ensure local/runtime junk stays out
 .env.local
 tsconfig.tsbuildinfo
+
+# local render samples
+sample-*.pdf
+sample-*.png

@@ -12,7 +12,7 @@ function esc(s: string): string {
     .replace(/"/g, "&quot;");
 }
 
-function sectionHtml(section: StripSection): string {
+export function sectionHtml(section: StripSection): string {
   if (section.kind === "header") {
     return `<header class="hdr">
       <div class="mast">${esc(section.lines[0] ?? "Tearaway Times")}</div>
