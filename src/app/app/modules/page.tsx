@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AppShell } from "@/components/AppNav";
-import { ModuleLibrary, SlotStripEditor } from "@/components/ModulePicker";
+import { SlotEditor } from "@/components/ModulePicker";
 import { useAppStore } from "@/lib/clientStore";
 import type { ModuleSlot, PaperSize } from "@/lib/types";
 import { flattenSlotModules, resizeSlotsForPaper } from "@/lib/slots";
@@ -82,21 +82,13 @@ export default function ModulesPage() {
       title="Modules"
       subtitle={`Paper size → fixed slots for ${activeKid.name}. Multi-module slots rotate in order or at random each generate.`}
     >
-      <div className="mb-10">
-        <SlotStripEditor
-          paperSize={paperSize}
-          slots={slots}
-          selectedSlotId={selectedSlotId}
-          onSelectSlot={setSelectedSlotId}
-          onChangeSlots={setSlots}
-          onChangePaperSize={onPaperSize}
-        />
-      </div>
-
-      <ModuleLibrary
+      <SlotEditor
+        paperSize={paperSize}
         slots={slots}
         selectedSlotId={selectedSlotId}
+        onSelectSlot={setSelectedSlotId}
         onChangeSlots={setSlots}
+        onChangePaperSize={onPaperSize}
         modulePoolLimit={store?.settings.modulePoolLimit ?? null}
       />
 

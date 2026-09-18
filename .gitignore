@@ -53,3 +53,4 @@ tsconfig.tsbuildinfo
 # local render samples
 sample-*.pdf
 sample-*.png
+shots/
