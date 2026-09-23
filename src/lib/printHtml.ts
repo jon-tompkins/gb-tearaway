@@ -32,15 +32,15 @@ export function buildPrintHtml(
     // one-line minimal header (title · kid · date)
     const dateLine = header?.lines?.[2] ?? "";
     const hdr1 = `<div class="hdr1"><b>Tearaway</b> · ${esc(job.kidName)} · ${esc(dateLine)}</div>`;
-    // card size in half-units: half=1, full=2, double=4. A column holds 4 units.
+    // card size in half-units: half=1, full=2 (a ~square), double=4 (two squares).
+    // A column is 3 squares tall = 6 units → 3 fulls, or 6 halves, or a double+full…
     const units = (s: (typeof body)[number]): number =>
       s.size === "double" ? 4 : s.size === "half" ? 1 : 2;
-    // fill column A to capacity (4) in order, the rest flow to column B.
     const colA: typeof body = [];
     const colB: typeof body = [];
     let uA = 0;
     for (const s of body) {
-      if (uA + units(s) <= 4) {
+      if (uA + units(s) <= 6) {
         colA.push(s);
         uA += units(s);
       } else {

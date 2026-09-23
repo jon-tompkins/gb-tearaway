@@ -39,6 +39,10 @@ export function PaperSizeToggle({
   );
 }
 
+function sizeLabel(sz: "half" | "full" | "double" | undefined): string {
+  return sz === "half" ? "½" : sz === "double" ? "2×" : "Full";
+}
+
 function StepBadge({ n }: { n: number }) {
   return (
     <span className="mr-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-ink text-xs font-bold text-cream">
@@ -96,11 +100,12 @@ export function SlotEditor({
   function setShuffle(slotId: string, on: boolean) {
     writeSlot(slotId, (s) => ({ ...s, mode: on ? "random" : "in_order", cursor: 0 }));
   }
-  function setSize(slotId: string, size: "half" | "full" | "double") {
-    onChangeSlots(slots.map((s) => (s.id === slotId ? { ...s, size } : s)));
-  }
   function removeFromCard(slotId: string, id: ModuleId) {
-    writeSlot(slotId, (s) => ({ ...s, moduleIds: s.moduleIds.filter((m) => m !== id), cursor: 0 }));
+    writeSlot(slotId, (s) => {
+      const nextIds = s.moduleIds.filter((m) => m !== id);
+      // card size follows its (first) module
+      return { ...s, moduleIds: nextIds, cursor: 0, size: nextIds.length ? moduleSize(nextIds[0]) : s.size };
+    });
   }
   function toggleInCard(slotId: string, id: ModuleId) {
     const s = slots.find((x) => x.id === slotId);
@@ -110,12 +115,10 @@ export function SlotEditor({
       return;
     }
     if (s.moduleIds.length >= MAX_PER_SLOT) return;
-    writeSlot(slotId, (x) => ({
-      ...x,
-      moduleIds: [...x.moduleIds, id],
-      // an empty card adopts the module's natural size
-      size: x.moduleIds.length === 0 ? moduleSize(id) : x.size,
-    }));
+    writeSlot(slotId, (x) => {
+      const nextIds = [...x.moduleIds, id];
+      return { ...x, moduleIds: nextIds, size: moduleSize(nextIds[0]) };
+    });
   }
   function toggleAccess(id: ModuleId) {
     if (accessSet.has(id)) {
@@ -186,6 +189,14 @@ export function SlotEditor({
                     >
                       <span className="mr-1 text-xs">{on ? "✓" : "+"}</span>
                       {mod.name}
+                      <span
+                        className={`ml-1.5 rounded px-1 py-px text-[0.6rem] font-bold ${
+                          on ? "bg-cream/25 text-cream" : "bg-cream text-ink-soft"
+                        }`}
+                        title={`This module is a ${moduleSize(mod.id)} card`}
+                      >
+                        {sizeLabel(moduleSize(mod.id))}
+                      </span>
                     </button>
                   );
                 })}
@@ -248,24 +259,13 @@ export function SlotEditor({
                     <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-ink text-[0.65rem] font-bold text-cream">
                       {i + 1}
                     </span>
-                    <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
-                      {(["half", "full", "double"] as const).map((sz) => (
-                        <button
-                          key={sz}
-                          type="button"
-                          title={sz === "half" ? "Half card" : sz === "full" ? "Full card" : "Double (tall)"}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSize(slot.id, sz);
-                          }}
-                          className={`rounded px-2 py-0.5 text-[0.55rem] font-bold uppercase tracking-wide transition ${
-                            size === sz ? "bg-ink text-cream" : "border border-rule bg-paper text-ink-soft"
-                          }`}
-                        >
-                          {sz === "half" ? "½" : sz === "full" ? "Full" : "2×"}
-                        </button>
-                      ))}
-                    </div>
+                    {n > 0 ? (
+                      <span className="rounded-full border border-rule bg-paper px-2 py-0.5 text-[0.55rem] font-bold uppercase tracking-wide text-ink-soft">
+                        {sizeLabel(size)}
+                      </span>
+                    ) : (
+                      <span className="text-[0.6rem] text-ink-soft">empty</span>
+                    )}
                     {multi ? (
                       <button
                         type="button"

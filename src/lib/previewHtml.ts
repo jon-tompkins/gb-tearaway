@@ -113,9 +113,9 @@ export function sectionHtml(section: StripSection): string {
     const items = section.news
       .map(
         (i) =>
-          `<div><div style="font-weight:700;font-size:9pt;line-height:1.15">${esc(
+          `<div><div style="font-weight:700;font-size:8pt;line-height:1.12">${esc(
             i.headline,
-          )}</div><div style="font-size:8pt;line-height:1.2">${esc(i.blurb)}</div></div>`,
+          )}</div><div style="font-size:7pt;line-height:1.2">${esc(i.blurb)}</div></div>`,
       )
       .join("");
     return `<section class="sec${sizeClass}">

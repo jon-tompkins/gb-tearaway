@@ -128,10 +128,7 @@ export function generateStrip(
         moduleId,
         title: meta.name,
         kind: "maze",
-        lines: [
-          "Start at the filled dot. Finish at the open circle.",
-          `${maze.cols}×${maze.rows} · age ${kid.ageBand}`,
-        ],
+        lines: [],
         maze,
         svg,
       });
@@ -328,7 +325,7 @@ export function generateStrip(
         title: meta.name,
         kind: "text",
         lines: [],
-        news: items.map((i) => ({ headline: i.headline, blurb: i.blurb })),
+        news: items.map((i) => ({ headline: i.headline, blurb: `${i.blurb} ${i.wonder}` })),
       });
       continue;
     }
