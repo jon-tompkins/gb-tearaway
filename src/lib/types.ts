@@ -66,7 +66,7 @@ export const PAPER_SIZE_META: {
   {
     id: "strip58",
     label: "58mm strip",
-    blurb: "Kitchen thermal strip · stacked column",
+    blurb: "58mm thermal strip · stacked column",
     slots: 8,
   },
   {

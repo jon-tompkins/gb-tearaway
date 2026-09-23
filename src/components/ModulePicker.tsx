@@ -110,20 +110,8 @@ export function SlotEditor({
     writeSlot(slotId, (s) => ({ ...s, mode: on ? "random" : "in_order", cursor: 0 }));
   }
   function setSize(slotId: string, size: SlotSize) {
-    // Card size is manual. Modules are size-locked, so changing a card's size
-    // drops any modules that no longer fit (the palette below re-filters to match).
-    onChangeSlots(
-      slots.map((s) =>
-        s.id === slotId
-          ? normalizeMode({
-              ...s,
-              size,
-              moduleIds: s.moduleIds.filter((m) => moduleSize(m) === size),
-              cursor: 0,
-            })
-          : s,
-      ),
-    );
+    // Card size is manual and independent of which modules are in the card.
+    onChangeSlots(slots.map((s) => (s.id === slotId ? { ...s, size } : s)));
   }
   function removeFromCard(slotId: string, id: ModuleId) {
     writeSlot(slotId, (s) => ({ ...s, moduleIds: s.moduleIds.filter((m) => m !== id), cursor: 0 }));
@@ -135,8 +123,6 @@ export function SlotEditor({
       removeFromCard(slotId, id);
       return;
     }
-    // only modules matching this card's size can go in it
-    if (moduleSize(id) !== (s.size ?? "full")) return;
     if (s.moduleIds.length >= MAX_PER_SLOT) return;
     writeSlot(slotId, (x) => ({ ...x, moduleIds: [...x.moduleIds, id] }));
   }
@@ -435,9 +421,7 @@ export function SlotEditor({
                 What goes in Card {selectedIndex + 1}?
               </h2>
               <p className="mt-1 text-sm text-ink-soft">
-                This is a{" "}
-                <span className="font-semibold text-ink">{sizeLabel(selectedSlot.size)}</span> card, so
-                only {sizeLabel(selectedSlot.size)} modules fit.{" "}
+                Tap modules from your palette to add or remove them.{" "}
                 <span className="font-semibold text-ink">
                   {selectedSlot.moduleIds.length}/{MAX_PER_SLOT}
                 </span>{" "}
@@ -445,18 +429,13 @@ export function SlotEditor({
               </p>
             </div>
 
-            {(() => {
-              const sizeAccess = access.filter(
-                (id) => moduleSize(id) === (selectedSlot.size ?? "full"),
-              );
-              return sizeAccess.length === 0 ? (
+            {access.length === 0 ? (
               <p className="rounded-xl border border-dashed border-rule bg-paper/50 px-4 py-3 text-sm text-ink-soft">
-                No {sizeLabel(selectedSlot.size)} modules in your palette — add some{" "}
-                {sizeLabel(selectedSlot.size)} modules in step 1, or change this card&apos;s size.
+                No modules in your palette yet — pick some in step 1 first.
               </p>
             ) : (
               <div className="grid gap-2 sm:grid-cols-2">
-                {sizeAccess.map((id) => {
+                {access.map((id) => {
                   const inCard = selectedSlot.moduleIds.includes(id);
                   const full = selectedSlot.moduleIds.length >= MAX_PER_SLOT;
                   const meta = moduleById(id);
@@ -483,8 +462,7 @@ export function SlotEditor({
                   );
                 })}
               </div>
-            );
-            })()}
+            )}
           </>
         )}
       </section>

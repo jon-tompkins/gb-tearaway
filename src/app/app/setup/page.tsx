@@ -68,7 +68,7 @@ export default function SetupPage() {
 
   if (!hydrated) {
     return (
-      <AppShell title="Set up this kitchen">
+      <AppShell title="Set up your dispatch">
         <p className="text-ink-soft">Loading…</p>
       </AppShell>
     );
@@ -76,7 +76,7 @@ export default function SetupPage() {
 
   return (
     <AppShell
-      title="Set up this kitchen"
+      title="Set up your dispatch"
       subtitle="Kids are profiles, not users. Pick a paper size, a name, and a few starter modules — refine slots later."
     >
       <form onSubmit={onSubmit} className="mx-auto max-w-2xl space-y-8">

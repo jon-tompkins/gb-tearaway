@@ -153,11 +153,8 @@ export default function SettingsPage() {
             </div>
           </div>
           <p className="text-xs text-ink-soft">
-            Paper size and slots live on the{" "}
-            <a href="/app/modules" className="font-semibold text-ink underline">
-              Modules
-            </a>{" "}
-            page (per kid). Kitchen schedule here is shared defaults.
+            Paper size and modules are chosen per kid when you add them. Dispatch schedule here is
+            shared defaults.
           </p>
         </section>
 
@@ -165,7 +162,7 @@ export default function SettingsPage() {
           <h2 className="font-display text-lg">Subscription tiers (later)</h2>
           <p className="text-sm text-ink-soft">
             MVP unlocks all first-party modules. Later, plans may set a{" "}
-            <code className="text-xs">modulePoolLimit</code> on kitchen settings so only N unique
+            <code className="text-xs">modulePoolLimit</code> on dispatch settings so only N unique
             modules can sit in a kid&apos;s pool. No payments in this build — structure only.
           </p>
           <p className="text-xs text-ink-soft">

@@ -2,10 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { AuthButton } from "./AuthButton";
 
 const LINKS = [
   { href: "/app", label: "Today", exact: true },
-  { href: "/app/modules", label: "Modules" },
   { href: "/app/settings", label: "Settings" },
   { href: "/app/setup", label: "Add kid" },
 ];
@@ -43,6 +43,8 @@ export function AppNav() {
               </Link>
             );
           })}
+          <span className="mx-1 h-5 w-px bg-rule/70" aria-hidden />
+          <AuthButton compact />
         </nav>
       </div>
     </header>
@@ -73,7 +75,7 @@ export function AppShell({
         {children}
       </main>
       <footer className="border-t border-rule/60 px-4 py-4 text-center text-xs text-ink-soft">
-        Local demo · no accounts · kids get paper only
+        Sign-in optional · kids get paper only
       </footer>
     </div>
   );

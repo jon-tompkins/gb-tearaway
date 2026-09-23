@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AuthButton } from "@/components/AuthButton";
 
 const PILLARS = [
   {
@@ -25,9 +26,12 @@ export default function HomePage() {
           </span>
           <span className="masthead-display text-xl">Tearaway</span>
         </div>
-        <Link href="/app" className="text-sm font-semibold text-ink-soft hover:text-ink">
-          Open kitchen →
-        </Link>
+        <div className="flex items-center gap-3">
+          <AuthButton compact />
+          <Link href="/app" className="text-sm font-semibold text-ink-soft hover:text-ink">
+            Open dispatch →
+          </Link>
+        </div>
       </header>
 
       <section className="hero-grid border-y border-rule/50">
@@ -46,10 +50,10 @@ export default function HomePage() {
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link href="/app/setup" className="btn-primary">
-                Set up this kitchen
+                Set up your dispatch
               </Link>
               <Link href="/app" className="btn-secondary">
-                Peek at today’s strip
+                Peek at today’s dispatch
               </Link>
             </div>
             <p className="mt-4 text-sm text-ink-soft">
@@ -120,7 +124,7 @@ export default function HomePage() {
             </p>
           </div>
           <Link href="/app/setup" className="btn-primary shrink-0">
-            Set up this kitchen
+            Set up your dispatch
           </Link>
         </div>
       </section>

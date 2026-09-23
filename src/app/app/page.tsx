@@ -85,7 +85,7 @@ export default function DashboardPage() {
         return [job, ...h.filter((j) => j.id !== job.id)].slice(0, HISTORY_MAX);
       });
       setJob(next);
-      setMsg(`New strip · seed ${next.nonce}`);
+      setMsg(`New dispatch · seed ${next.nonce}`);
       await reload();
     } catch (e) {
       setMsg(e instanceof Error ? e.message : "Generate failed");
@@ -123,14 +123,14 @@ export default function DashboardPage() {
   if (!hydrated) {
     return (
       <AppShell>
-        <p className="text-ink-soft">Loading kitchen…</p>
+        <p className="text-ink-soft">Loading dispatch…</p>
       </AppShell>
     );
   }
 
   if (storeError || !store || !activeKid) {
     return (
-      <AppShell title="Kitchen unavailable">
+      <AppShell title="Dispatch unavailable">
         <div className="card space-y-3">
           <p className="text-ink-soft">
             {storeError || "Could not load the local store. Is the demo data seeded?"}
@@ -162,9 +162,6 @@ export default function DashboardPage() {
           onSelect={(id) => void setActiveKid(id)}
         />
         <div className="flex flex-wrap gap-2">
-          <Link href="/app/modules" className="btn-secondary text-sm">
-            Modules
-          </Link>
           <Link href="/app/settings" className="btn-secondary text-sm">
             Settings
           </Link>
@@ -210,7 +207,7 @@ export default function DashboardPage() {
               disabled={generating || loadingPreview}
               onClick={() => void onGenerateNew()}
             >
-              {generating ? "Generating…" : "Generate new strip"}
+              {generating ? "Generating…" : "Generate new dispatch"}
             </button>
             <button
               type="button"
@@ -241,7 +238,7 @@ export default function DashboardPage() {
           </div>
 
           <p className="text-xs text-ink-soft">
-            <strong className="font-semibold text-ink">Generate new strip</strong> bumps an
+            <strong className="font-semibold text-ink">Generate new dispatch</strong> bumps an
             explicit seed so the same kid and day reshuffles. Print now saves the current seed to{" "}
             <code className="text-[0.7rem]">GET /api/print-jobs/latest</code>.
           </p>
@@ -250,7 +247,7 @@ export default function DashboardPage() {
             <div className="card space-y-3">
               <div className="mono-meta text-stamp">Recent previews</div>
               <p className="text-xs text-ink-soft">
-                Last {history.length} generated strip{history.length === 1 ? "" : "s"} — tap to
+                Last {history.length} generated dispatch{history.length === 1 ? "" : "es"} — tap to
                 compare.
               </p>
               <ul className="space-y-2">
@@ -297,7 +294,7 @@ export default function DashboardPage() {
           <div className="card space-y-2">
             <div className="mono-meta text-stamp">Firmware bridge</div>
             <p className="text-sm text-ink-soft">
-              ESP32 can fetch today&apos;s strip without this UI. Open any of these in a tab:
+              ESP32 can fetch today&apos;s dispatch without this UI. Open any of these in a tab:
             </p>
             <ul className="space-y-1.5 text-sm">
               <li>
@@ -356,7 +353,7 @@ export default function DashboardPage() {
               ? `Letter preview · ~612px · seed ${currentNonce}`
               : `58mm preview · ~384px · seed ${currentNonce}`}
           </div>
-          <StripPreview job={job} emptyHint="Loading today’s strip…" />
+          <StripPreview job={job} emptyHint="Loading today’s dispatch…" />
         </div>
       </div>
     </AppShell>
