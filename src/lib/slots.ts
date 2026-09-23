@@ -183,7 +183,15 @@ export function ensureKidSlots(kid: KidProfile): KidProfile {
   const legacy = sanitizeModuleIds(kid.modules);
   const slots = sanitizeSlots(kid.slots, paperSize, legacy);
   const modules = flattenSlotModules(slots);
-  return { ...kid, paperSize, slots, modules: modules.length ? modules : legacy };
+  // Palette must always include everything currently placed in a card.
+  const access = Array.from(new Set([...sanitizeModuleIds(kid.accessModules), ...modules]));
+  return {
+    ...kid,
+    paperSize,
+    slots,
+    modules: modules.length ? modules : legacy,
+    accessModules: access.length ? access : legacy,
+  };
 }
 
 /** Default demo slots: mix of single, in_order, and random for the sample kid. */

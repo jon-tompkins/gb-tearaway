@@ -5,14 +5,15 @@ import { useRouter } from "next/navigation";
 import { AppShell } from "@/components/AppNav";
 import { SlotEditor } from "@/components/ModulePicker";
 import { useAppStore } from "@/lib/clientStore";
-import type { ModuleSlot, PaperSize } from "@/lib/types";
-import { flattenSlotModules, resizeSlotsForPaper } from "@/lib/slots";
+import type { ModuleId, ModuleSlot, PaperSize } from "@/lib/types";
+import { flattenSlotModules, resizeSlotsForPaper, sanitizeModuleIds } from "@/lib/slots";
 
 export default function ModulesPage() {
   const router = useRouter();
   const { store, hydrated, activeKid, save } = useAppStore();
   const [paperSize, setPaperSize] = useState<PaperSize>("strip58");
   const [slots, setSlots] = useState<ModuleSlot[]>([]);
+  const [access, setAccess] = useState<ModuleId[]>([]);
   const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -28,6 +29,11 @@ export default function ModulesPage() {
       const nextSlots = resizeSlotsForPaper(activeKid.slots || [], size);
       setPaperSize(size);
       setSlots(nextSlots);
+      const placed = flattenSlotModules(nextSlots);
+      const pal = Array.from(
+        new Set([...sanitizeModuleIds(activeKid.accessModules), ...placed]),
+      );
+      setAccess(pal);
       setSelectedSlotId(nextSlots[0]?.id ?? null);
     }
   }, [hydrated, store, activeKid, router]);
@@ -59,6 +65,7 @@ export default function ModulesPage() {
           paperSize,
           slots,
           modules: flattenSlotModules(slots),
+          accessModules: Array.from(new Set([...access, ...flattenSlotModules(slots)])),
         },
       });
       setStatus("Saved.");
@@ -86,9 +93,11 @@ export default function ModulesPage() {
         paperSize={paperSize}
         slots={slots}
         selectedSlotId={selectedSlotId}
+        access={access}
         onSelectSlot={setSelectedSlotId}
         onChangeSlots={setSlots}
         onChangePaperSize={onPaperSize}
+        onChangeAccess={setAccess}
         modulePoolLimit={store?.settings.modulePoolLimit ?? null}
       />
 

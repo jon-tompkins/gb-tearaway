@@ -64,6 +64,11 @@ export function seedKid(overrides: Partial<KidProfile> = {}): KidProfile {
     paperSize,
     slots,
     modules: modules.length ? modules : [...DEFAULT_MODULES],
+    accessModules: (() => {
+      const a = sanitizeModuleIds(overrides.accessModules);
+      const base = modules.length ? modules : [...DEFAULT_MODULES];
+      return Array.from(new Set([...a, ...base]));
+    })(),
     watchlist: overrides.watchlist ? [...overrides.watchlist] : [...DEFAULT_WATCHLIST],
     events: overrides.events ?? defaultDemoEvents(timezone, name),
     createdAt: overrides.createdAt || new Date().toISOString(),

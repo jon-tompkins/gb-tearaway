@@ -100,6 +100,8 @@ export interface KidProfile {
    * Prefer `slots` + resolveActiveModules for generate/print.
    */
   modules: ModuleId[];
+  /** The palette the user has chosen to have available. Cards can only pull from this. */
+  accessModules: ModuleId[];
   watchlist: string[];
   events: CalendarEvent[];
   createdAt: string;
