@@ -60,8 +60,9 @@ export function buildPrintHtml(
 
   const letterCss = `
   html,body{background:#fff;color:#000}
-  .sheet{width:100%;box-sizing:border-box}
-  .cols{display:grid;grid-template-columns:1fr 1fr;gap:4mm}
+  /* fill the whole printable page: fixed-height flex column, grid grows to fit */
+  .sheet{width:100%;height:252mm;box-sizing:border-box;display:flex;flex-direction:column;overflow:hidden}
+  .cols{flex:1;min-height:0;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:repeat(3,1fr);gap:4mm}
   /* minimal header: one compact line of title + name + date */
   .mast{font-family:Georgia,'Times New Roman',serif;font-weight:700;font-size:14pt;line-height:1;text-align:center;letter-spacing:-.01em}
   .for{text-align:center;font-size:8pt;font-weight:700;letter-spacing:.12em;margin-top:.6mm}
@@ -69,8 +70,8 @@ export function buildPrintHtml(
   .hdr .dim{display:none}
   .hdr{border-bottom:1.5px solid #000;padding-bottom:1.5mm;margin-bottom:3mm}
   /* 6 cards → a 2×3 grid of bordered panels that fill one page */
-  .sec{border:1.5px solid #000;border-radius:2mm;padding:3.5mm;break-inside:avoid;min-height:64mm;overflow:hidden;display:flex;flex-direction:column}
-  .sec .fig svg{max-height:44mm;width:auto}
+  .sec{border:1.5px solid #000;border-radius:2mm;padding:4mm;break-inside:avoid;min-height:0;overflow:hidden;display:flex;flex-direction:column}
+  .sec .fig svg{max-height:45mm;width:auto}
   .sec h3{margin:0 0 1.5mm;font-size:8pt;letter-spacing:.14em;text-transform:uppercase}
   .sec p{margin:0 0 1.2mm;font-size:9.5pt;line-height:1.32}
   .fig{margin-top:1.5mm;text-align:center}
