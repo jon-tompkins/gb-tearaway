@@ -58,6 +58,17 @@ function SectionBlock({
           {line}
         </p>
       ))}
+      {section.answer ? (
+        showKeys ? (
+          <p className="mt-1 text-[0.84rem] font-semibold leading-snug text-stamp">
+            Answer: {section.answer}
+          </p>
+        ) : (
+          <p className="mt-1 text-[0.72rem] italic leading-snug text-ink-soft/70">
+            Answer hidden — flip on Parent key to reveal.
+          </p>
+        )
+      ) : null}
       {svg ? (
         <div
           className="mt-2 flex justify-center [&_svg]:max-w-full"
@@ -86,8 +97,11 @@ export function StripPreview({
     ? LETTER_WIDTH_PX
     : Math.min(job?.widthPx ?? STRIP_WIDTH_PX, STRIP_WIDTH_PX);
 
-  const hasPuzzle = useMemo(
-    () => !!job?.sections.some((s) => s.kind === "maze" || s.kind === "sudoku"),
+  const hasKeys = useMemo(
+    () =>
+      !!job?.sections.some(
+        (s) => s.kind === "maze" || s.kind === "sudoku" || !!s.answer,
+      ),
     [job],
   );
 
@@ -175,7 +189,7 @@ export function StripPreview({
           <button type="button" onClick={downloadPng} disabled={busy} className="btn-secondary text-sm">
             {busy ? "Saving…" : "Download PNG"}
           </button>
-          {showParentKeyToggle && hasPuzzle ? (
+          {showParentKeyToggle && hasKeys ? (
             <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-rule bg-paper/80 px-3 py-2 text-sm text-ink-soft">
               <input
                 type="checkbox"

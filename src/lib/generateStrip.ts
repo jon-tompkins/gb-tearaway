@@ -14,6 +14,7 @@ import { pickHistory } from "./content/history";
 import { pickJoke } from "./content/jokes";
 import { pickDoodle } from "./content/doodles";
 import { pickRiddle } from "./content/riddles";
+import { pickScramble, scrambleWord } from "./content/scramble";
 import { pickSpanish } from "./content/spanish";
 import { pickWyr } from "./content/wyr";
 import { pickPoem } from "./content/poems";
@@ -243,11 +244,27 @@ export function generateStrip(
         moduleId,
         title: meta.name,
         kind: "text",
+        lines: [riddle.question, "Think… then check the app."],
+        // Answer shows only in the app (Parent key) — never printed.
+        answer: riddle.answer,
+      });
+      continue;
+    }
+    if (moduleId === "scramble") {
+      const item = pickScramble(kid.ageBand, rng);
+      const scrambled = scrambleWord(item.word, rng);
+      sections.push({
+        id: `scramble-${hashish(item.word)}`,
+        moduleId,
+        title: meta.name,
+        kind: "text",
         lines: [
-          riddle.question,
-          "Think… then peek:",
-          `Answer: ${riddle.answer}`,
+          `Unscramble:  ${scrambled}`,
+          `${item.word.length} letters`,
+          `Hint: ${item.hint}`,
         ],
+        // Answer lives only in the app (Parent key) — never in the printed lines.
+        answer: item.word.toUpperCase(),
       });
       continue;
     }

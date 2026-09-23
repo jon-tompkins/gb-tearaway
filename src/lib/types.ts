@@ -12,6 +12,7 @@ export type ModuleId =
   | "joke"
   | "doodle"
   | "riddle"
+  | "scramble"
   | "spanish"
   | "wyr"
   | "poem"
@@ -262,6 +263,8 @@ export interface StripSection {
   column?: number;
   /** For news modules: a short column of headlines. */
   news?: { headline: string; blurb: string }[];
+  /** Solution shown in the app under the Parent key toggle — never printed. */
+  answer?: string;
 }
 
 /** Firmware-ready job. Today: preview payload. Later: ESC/POS or a raster. */
