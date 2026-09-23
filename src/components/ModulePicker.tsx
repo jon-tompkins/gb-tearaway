@@ -164,7 +164,10 @@ export function SlotEditor({
     const multi = n >= 2;
     const shuffleOn = slot.mode === "random";
     const size = slot.size ?? "full";
-    const minH = size === "double" ? 232 : size === "half" ? 76 : 148;
+    // proportional row-spans so 4×½ = 2×full = 1×double, aligned on a shared grid
+    const spanClass = size === "double" ? "row-span-4" : size === "half" ? "row-span-1" : "row-span-2";
+    // short ½ card → one row of 4 tiles; taller cards → 2×2
+    const tileGridClass = size === "half" ? "grid-cols-4 grid-rows-1" : "grid-cols-2 grid-rows-2";
     return (
       <div
         key={slot.id}
@@ -177,8 +180,7 @@ export function SlotEditor({
             onSelectSlot(slot.id);
           }
         }}
-        style={{ minHeight: minH }}
-        className={`flex cursor-pointer flex-col overflow-hidden rounded-xl border bg-cream/50 px-2.5 py-2 transition ${
+        className={`flex h-full cursor-pointer flex-col overflow-hidden rounded-xl border bg-cream/50 px-2.5 py-2 transition ${spanClass} ${
           selected ? "border-ink ring-2 ring-ink/20" : "border-rule hover:border-ink/30"
         }`}
       >
@@ -236,7 +238,7 @@ export function SlotEditor({
           </span>
         </div>
 
-        <div className="grid flex-1 grid-cols-2 grid-rows-2 gap-1.5">
+        <div className={`grid flex-1 min-h-0 gap-1.5 ${tileGridClass}`}>
           {Array.from({ length: MAX_PER_SLOT }).map((_, idx) => {
             const id = slot.moduleIds[idx];
             if (id) {
@@ -244,7 +246,7 @@ export function SlotEditor({
                 <div
                   key={id}
                   title={moduleById(id).name}
-                  className="flex h-full min-h-[28px] items-center rounded-lg border border-rule bg-paper px-2 py-1"
+                  className="flex h-full min-h-0 items-center rounded-lg border border-rule bg-paper px-2 py-1"
                 >
                   {multi && !shuffleOn ? (
                     <span className="mr-1 text-[0.6rem] font-bold text-ink-soft">{idx + 1}.</span>
@@ -269,7 +271,7 @@ export function SlotEditor({
             return (
               <div
                 key={`empty-${idx}`}
-                className={`flex h-full min-h-[28px] items-center justify-center rounded-lg border border-dashed text-lg ${
+                className={`flex h-full min-h-0 items-center justify-center rounded-lg border border-dashed text-lg ${
                   selected ? "border-ink/40 bg-paper/50 text-ink/60" : "border-rule bg-paper/30 text-ink-soft"
                 }`}
               >
@@ -286,7 +288,7 @@ export function SlotEditor({
     <button
       type="button"
       onClick={() => addCard(col)}
-      className="rounded-xl border-2 border-dashed border-rule py-2 text-sm font-semibold text-ink-soft transition hover:border-ink/40 hover:text-ink"
+      className="h-full w-full rounded-xl border-2 border-dashed border-rule py-2 text-sm font-semibold text-ink-soft transition hover:border-ink/40 hover:text-ink"
     >
       {label}
     </button>
@@ -386,19 +388,21 @@ export function SlotEditor({
           </div>
 
           {isStrip ? (
-            <div className="flex flex-col gap-3">
+            <div className="grid grid-cols-1 gap-3 [grid-auto-rows:52px]">
               {slots.filter((s) => (s.column ?? 0) === 0).map((slot) => renderCard(slot))}
-              {addCardBtn(0, "+ Add card")}
+              <div className="row-span-1">{addCardBtn(0, "+ Add card")}</div>
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-x-6 gap-y-3">
               {[0, 1].map((col) => (
-                <div key={col} className="flex flex-col gap-3">
-                  <div className="text-center text-[0.55rem] font-bold uppercase tracking-widest text-ink-soft">
+                <div key={col} className="flex flex-col">
+                  <div className="mb-2 text-center text-[0.55rem] font-bold uppercase tracking-widest text-ink-soft">
                     Column {col + 1}
                   </div>
-                  {slots.filter((s) => (s.column ?? 0) === col).map((slot) => renderCard(slot))}
-                  {addCardBtn(col, "+ Add card")}
+                  <div className="grid grid-cols-1 gap-3 [grid-auto-rows:52px]">
+                    {slots.filter((s) => (s.column ?? 0) === col).map((slot) => renderCard(slot))}
+                    <div className="row-span-1">{addCardBtn(col, "+ Add card")}</div>
+                  </div>
                 </div>
               ))}
             </div>
