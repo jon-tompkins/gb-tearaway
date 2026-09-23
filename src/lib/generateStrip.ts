@@ -317,7 +317,7 @@ export function generateStrip(
       continue;
     }
     if (isNewsModule(moduleId)) {
-      const count = cardSize === "double" ? 8 : cardSize === "half" ? 2 : 4;
+      const count = cardSize === "double" ? 5 : cardSize === "half" ? 2 : 3;
       const items = pickNewsList(moduleId, kid.ageBand, rng, count);
       sections.push({
         id: `${moduleId}-${hashish(items[0]?.headline ?? moduleId)}`,

@@ -32,22 +32,23 @@ export function buildPrintHtml(
     // one-line minimal header (title · kid · date)
     const dateLine = header?.lines?.[2] ?? "";
     const hdr1 = `<div class="hdr1"><b>Tearaway</b> · ${esc(job.kidName)} · ${esc(dateLine)}</div>`;
-    // card size in half-units: half=1, full=2 (a ~square), double=4 (two squares).
-    // A column is 3 squares tall = 6 units → 3 fulls, or 6 halves, or a double+full…
+    // 12 total slots per sheet: full=1 slot, half=½, double=2 (in ½-slot units:
+    // half=1, full=2, double=4). Two columns of 6 slots each. Greedily balance.
     const units = (s: (typeof body)[number]): number =>
       s.size === "double" ? 4 : s.size === "half" ? 1 : 2;
     const colA: typeof body = [];
     const colB: typeof body = [];
     let uA = 0;
+    let uB = 0;
     for (const s of body) {
-      if (uA + units(s) <= 6) {
+      if (uA <= uB) {
         colA.push(s);
         uA += units(s);
       } else {
         colB.push(s);
+        uB += units(s);
       }
     }
-    if (colB.length === 0 && colA.length > 1) colB.push(colA.pop()!);
     const col = (arr: typeof body) => `<div class="col">${arr.map(sectionHtml).join("\n")}</div>`;
     const bodyHtml = `<div class="cols">${col(colA)}${col(colB)}</div>`;
     const ftr1 = `<div class="ftr1">— tear here —</div>`;

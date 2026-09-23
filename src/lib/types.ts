@@ -51,8 +51,8 @@ export interface ModuleSlot {
 }
 
 export const PAPER_SLOT_COUNTS: Record<PaperSize, number> = {
-  strip58: 4,
-  letter: 6,
+  strip58: 8,
+  letter: 8,
 };
 
 export const PAPER_SIZE_META: {
@@ -64,14 +64,14 @@ export const PAPER_SIZE_META: {
   {
     id: "strip58",
     label: "58mm strip",
-    blurb: "Kitchen thermal strip · 4 slots",
-    slots: 4,
+    blurb: "Kitchen thermal strip · stacked column",
+    slots: 8,
   },
   {
     id: "letter",
     label: "US Letter (8.5×11)",
-    blurb: "Home printer page · 6 cards",
-    slots: 6,
+    blurb: "Home printer page · 12 slots",
+    slots: 8,
   },
 ];
 

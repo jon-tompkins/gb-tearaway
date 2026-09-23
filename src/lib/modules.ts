@@ -28,11 +28,11 @@ export const MODULE_CATEGORIES: ModuleCategoryMeta[] = [
 
 export const MODULE_CATALOG: ModuleMeta[] = [
   // Play / puzzles
-  { id: "maze", name: "Maze", blurb: "A fresh, solvable maze. Harder as they grow.", category: "play", defaultOn: true, size: "full" },
-  { id: "wordfind", name: "Word Find", blurb: "Tiny word-search that fits the 58mm strip.", category: "play", defaultOn: false, size: "full" },
-  { id: "dots", name: "Connect the Dots", blurb: "Funny numbered dots + a silly caption.", category: "play", defaultOn: false, size: "full" },
+  { id: "maze", name: "Maze", blurb: "A fresh, solvable maze. Harder as they grow.", category: "play", defaultOn: true, size: "double" },
+  { id: "wordfind", name: "Word Find", blurb: "Tiny word-search that fits the 58mm strip.", category: "play", defaultOn: false, size: "double" },
+  { id: "dots", name: "Connect the Dots", blurb: "Funny numbered dots + a silly caption.", category: "play", defaultOn: false, size: "double" },
   { id: "riddle", name: "Riddle", blurb: "Think first — answer printed below for parents.", category: "play", defaultOn: false, size: "half" },
-  { id: "sudoku", name: "Number Puzzle", blurb: "4×4 for little kids, 6×6, then easy 9×9. Parent key stays off the paper.", category: "play", defaultOn: false, size: "full" },
+  { id: "sudoku", name: "Number Puzzle", blurb: "4×4 for little kids, 6×6, then easy 9×9. Parent key stays off the paper.", category: "play", defaultOn: false, size: "double" },
   // Words & language
   { id: "word", name: "Word of the Day", blurb: "A real word, said out loud, used in a sentence — age-banded.", category: "words", defaultOn: true, size: "half" },
   { id: "poem", name: "Poem of the Day", blurb: "A short printable poem — soft, silly, or thoughtful.", category: "words", defaultOn: false, size: "full" },
@@ -48,8 +48,8 @@ export const MODULE_CATALOG: ModuleMeta[] = [
   { id: "news_tech", name: "Tech News", blurb: "Robots, code, and gadgets — curiosity, not hype.", category: "news", defaultOn: false, size: "double" },
   { id: "news_gamer", name: "Gamer News", blurb: "Games, makers, and fair play — age-banded.", category: "news", defaultOn: false, size: "double" },
   // Today’s world
-  { id: "weather", name: "Weather", blurb: "Today’s sky via Open-Meteo (no API key) plus a jacket tip.", category: "today", defaultOn: true, size: "full" },
-  { id: "stocks", name: "Stock Watchlist", blurb: "Parent-picked tickers, simple up or down. Demo prices.", category: "today", defaultOn: false, size: "full" },
+  { id: "weather", name: "Weather", blurb: "Today’s sky via Open-Meteo (no API key) plus a jacket tip.", category: "today", defaultOn: true, size: "double" },
+  { id: "stocks", name: "Stock Watchlist", blurb: "Parent-picked tickers, simple up or down. Demo prices.", category: "today", defaultOn: false, size: "double" },
   { id: "calendar", name: "Calendar", blurb: "A short list of today’s events. Stub list you can edit.", category: "today", defaultOn: false, size: "half" },
   // Create
   { id: "doodle", name: "Tiny Doodle", blurb: "A 30-second drawing prompt that fits the strip.", category: "create", defaultOn: false, size: "half" },
@@ -127,7 +127,7 @@ export function templateToSlots(t: Template): ModuleSlot[] {
     moduleIds: [...s.moduleIds],
     mode: "single" as const,
     cursor: 0,
-    size: s.size,
+    size: moduleSize(s.moduleIds[0]),
   }));
 }
 
