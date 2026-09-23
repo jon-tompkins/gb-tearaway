@@ -36,6 +36,9 @@ export type PaperWidth = "58mm" | "80mm";
 
 export type SlotMode = "single" | "in_order" | "random";
 
+/** Relative footprint of a card on the page: half a cell, one cell, or two. */
+export type SlotSize = "half" | "full" | "double";
+
 /** One fixed strip position. May hold multiple modules with a pick mode. */
 export interface ModuleSlot {
   id: string;
@@ -43,6 +46,8 @@ export interface ModuleSlot {
   mode: SlotMode;
   /** Index into moduleIds for in_order; advanced after generate/print. */
   cursor?: number;
+  /** Card footprint. Defaults to "full". */
+  size?: SlotSize;
 }
 
 export const PAPER_SLOT_COUNTS: Record<PaperSize, number> = {
@@ -232,6 +237,8 @@ export interface StripSection {
   events?: CalendarEvent[];
   /** Optional pre-rendered SVG for maze/sudoku/wordfind/dots (paper has no parent key). */
   svg?: string;
+  /** Card footprint carried from the owning slot (half/full/double). */
+  size?: SlotSize;
 }
 
 /** Firmware-ready job. Today: preview payload. Later: ESC/POS or a raster. */

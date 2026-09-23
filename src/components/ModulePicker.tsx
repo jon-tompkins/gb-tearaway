@@ -96,6 +96,9 @@ export function SlotEditor({
   function setShuffle(slotId: string, on: boolean) {
     writeSlot(slotId, (s) => ({ ...s, mode: on ? "random" : "in_order", cursor: 0 }));
   }
+  function setSize(slotId: string, size: "half" | "full" | "double") {
+    onChangeSlots(slots.map((s) => (s.id === slotId ? { ...s, size } : s)));
+  }
   function removeFromCard(slotId: string, id: ModuleId) {
     writeSlot(slotId, (s) => ({ ...s, moduleIds: s.moduleIds.filter((m) => m !== id), cursor: 0 }));
   }
@@ -207,12 +210,19 @@ export function SlotEditor({
             </div>
           </div>
 
-          <div className={`grid ${gridCols} gap-3`}>
+          <div className={`grid ${gridCols} grid-flow-row-dense gap-3 [grid-auto-rows:84px]`}>
             {slots.map((slot, i) => {
               const selected = selectedSlotId === slot.id;
               const n = slot.moduleIds.length;
               const multi = n >= 2;
               const shuffleOn = slot.mode === "random";
+              const size = slot.size ?? "full";
+              const spanClass =
+                size === "double"
+                  ? "col-span-2 row-span-2"
+                  : size === "half"
+                    ? "row-span-1"
+                    : "row-span-2";
               return (
                 <div
                   key={slot.id}
@@ -225,7 +235,7 @@ export function SlotEditor({
                       onSelectSlot(slot.id);
                     }
                   }}
-                  className={`cursor-pointer rounded-xl border bg-cream/50 px-2.5 py-2 transition ${
+                  className={`flex cursor-pointer flex-col overflow-hidden rounded-xl border bg-cream/50 px-2.5 py-2 transition ${spanClass} ${
                     selected ? "border-ink ring-2 ring-ink/20" : "border-rule hover:border-ink/30"
                   }`}
                 >
@@ -259,6 +269,28 @@ export function SlotEditor({
                         single
                       </span>
                     ) : null}
+                  </div>
+
+                  <div
+                    className="mb-1 flex gap-1"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {(["half", "full", "double"] as const).map((sz) => (
+                      <button
+                        key={sz}
+                        type="button"
+                        title={sz === "half" ? "Half card" : sz === "full" ? "Full card" : "Double (wide)"}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSize(slot.id, sz);
+                        }}
+                        className={`flex-1 rounded px-1 py-0.5 text-[0.55rem] font-bold uppercase tracking-wide transition ${
+                          size === sz ? "bg-ink text-cream" : "border border-rule bg-paper text-ink-soft"
+                        }`}
+                      >
+                        {sz === "half" ? "½" : sz === "full" ? "Full" : "2×"}
+                      </button>
+                    ))}
                   </div>
 
                   <div className="grid grid-cols-2 gap-1.5">

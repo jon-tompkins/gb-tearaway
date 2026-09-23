@@ -12,26 +12,80 @@ import { sectionHtml } from "./previewHtml";
  * app), so it stays portable to serverless. `autoPrint` opens the print dialog
  * on load for a one-click Save-as-PDF.
  */
+/** Simulate CSS 2-column dense grid placement to get the true row count. */
+function packedRows(sizes: ("half" | "full" | "double")[]): number {
+  const COLS = 2;
+  const occ: boolean[][] = [];
+  const ensure = (r: number) => {
+    while (occ.length <= r) occ.push([false, false]);
+  };
+  const fits = (r: number, c: number, w: number, h: number): boolean => {
+    if (c + w > COLS) return false;
+    for (let i = 0; i < h; i++) {
+      ensure(r + i);
+      for (let j = 0; j < w; j++) if (occ[r + i][c + j]) return false;
+    }
+    return true;
+  };
+  const place = (r: number, c: number, w: number, h: number) => {
+    for (let i = 0; i < h; i++) {
+      ensure(r + i);
+      for (let j = 0; j < w; j++) occ[r + i][c + j] = true;
+    }
+  };
+  let maxRow = 0;
+  for (const s of sizes) {
+    const w = s === "double" ? 2 : 1;
+    const h = s === "half" ? 1 : 2;
+    let placed = false;
+    for (let r = 0; !placed && r < 400; r++) {
+      for (let c = 0; c < COLS && !placed; c++) {
+        if (fits(r, c, w, h)) {
+          place(r, c, w, h);
+          maxRow = Math.max(maxRow, r + h);
+          placed = true;
+        }
+      }
+    }
+  }
+  return Math.max(1, maxRow);
+}
+
 export function buildPrintHtml(
   job: PrintJob,
   opts: { autoPrint?: boolean } = {},
 ): string {
   const isLetter = job.paperSize === "letter";
   const header = job.sections.find((s) => s.kind === "header");
-  const footer = job.sections.find((s) => s.kind === "footer");
   const body = job.sections.filter(
     (s) => s.kind !== "header" && s.kind !== "footer",
   );
+  const esc = (s: string) =>
+    String(s ?? "").replace(
+      /[&<>"]/g,
+      (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c] as string,
+    );
 
-  const bodyHtml = isLetter
-    ? `<div class="cols">${body.map(sectionHtml).join("\n")}</div>`
-    : body.map(sectionHtml).join("\n");
+  // Exact row count for the 2-column dense grid (half=1×1, full=1×2, double=2×2),
+  // so grid-template-rows: repeat(rows,1fr) always fills one page, any size mix.
+  const gridRows = packedRows(body.map((s) => s.size ?? "full"));
 
-  const inner = [
-    header ? sectionHtml(header) : "",
-    bodyHtml,
-    footer ? sectionHtml(footer) : "",
-  ].join("\n");
+  let inner: string;
+  if (isLetter) {
+    // one-line minimal header (title · kid · date)
+    const dateLine = header?.lines?.[2] ?? "";
+    const hdr1 = `<div class="hdr1"><b>Tearaway</b> · ${esc(job.kidName)} · ${esc(dateLine)}</div>`;
+    const bodyHtml = `<div class="cols">${body.map(sectionHtml).join("\n")}</div>`;
+    const ftr1 = `<div class="ftr1">— tear here —</div>`;
+    inner = [hdr1, bodyHtml, ftr1].join("\n");
+  } else {
+    const footer = job.sections.find((s) => s.kind === "footer");
+    inner = [
+      header ? sectionHtml(header) : "",
+      body.map(sectionHtml).join("\n"),
+      footer ? sectionHtml(footer) : "",
+    ].join("\n");
+  }
 
   // Letter is a valid named size. The 58mm strip is a continuous roll, so we
   // measure the rendered height on load and inject an exact `@page{size:58mm Hmm}`
@@ -62,24 +116,20 @@ export function buildPrintHtml(
   html,body{background:#fff;color:#000}
   /* fill the whole printable page: fixed-height flex column, grid grows to fit */
   .sheet{width:100%;height:252mm;box-sizing:border-box;display:flex;flex-direction:column;overflow:hidden}
-  .cols{flex:1;min-height:0;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:repeat(3,1fr);gap:4mm}
-  /* minimal header: one compact line of title + name + date */
-  .mast{font-family:Georgia,'Times New Roman',serif;font-weight:700;font-size:14pt;line-height:1;text-align:center;letter-spacing:-.01em}
-  .for{text-align:center;font-size:8pt;font-weight:700;letter-spacing:.12em;margin-top:.6mm}
-  .meta{text-align:center;font-size:7pt;letter-spacing:.04em;text-transform:uppercase;margin-top:.3mm}
-  .hdr .dim{display:none}
-  .hdr{border-bottom:1.5px solid #000;padding-bottom:1.5mm;margin-bottom:3mm}
-  /* 6 cards → a 2×3 grid of bordered panels that fill one page */
-  .sec{border:1.5px solid #000;border-radius:2mm;padding:4mm;break-inside:avoid;min-height:0;overflow:hidden;display:flex;flex-direction:column}
-  .sec .fig svg{max-height:45mm;width:auto}
-  .sec h3{margin:0 0 1.5mm;font-size:8pt;letter-spacing:.14em;text-transform:uppercase}
-  .sec p{margin:0 0 1.2mm;font-size:9.5pt;line-height:1.32}
-  .fig{margin-top:1.5mm;text-align:center}
-  /* minimal footer: a thin tear line only */
-  .ftr{text-align:center;padding-top:1.5mm;grid-column:1/-1}
-  .perf{border-top:1.5px dashed #000;margin:0 35% 1mm}
-  .tear{font-size:6.5pt;font-weight:700;letter-spacing:.22em}
-  .closer,.brand{display:none}`;
+  /* minimal one-line header + footer */
+  .hdr1{font-family:Georgia,'Times New Roman',serif;font-size:11pt;text-align:center;padding-bottom:1.2mm;margin-bottom:2.5mm;border-bottom:1px solid #000}
+  .ftr1{text-align:center;font-size:6pt;font-weight:700;letter-spacing:.24em;text-transform:uppercase;color:#000;padding-top:1mm;margin-top:1mm}
+  /* size-driven grid: cards fill the page, no outlines, tight padding */
+  .cols{flex:1;min-height:0;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:repeat(${gridRows},1fr);grid-auto-flow:row dense;gap:3mm 4mm}
+  .sec{padding:0 1mm;overflow:hidden;display:flex;flex-direction:column;min-height:0}
+  .sec.size-half{grid-column:span 1;grid-row:span 1}
+  .sec.size-full{grid-column:span 1;grid-row:span 2}
+  .sec.size-double{grid-column:span 2;grid-row:span 2}
+  .sec h3{margin:0 0 1mm;font-size:8pt;letter-spacing:.14em;text-transform:uppercase}
+  .sec p{margin:0 0 1mm;font-size:9.5pt;line-height:1.3}
+  /* puzzles fill the whole card */
+  .fig{flex:1;min-height:0;margin-top:1mm;display:flex;align-items:center;justify-content:center}
+  .fig svg{max-width:100%;max-height:100%;height:auto;width:auto}`;
 
   // For the strip, size the print page to the actual content height so the PDF
   // is one continuous 58mm-wide page (no half-empty trailing page).

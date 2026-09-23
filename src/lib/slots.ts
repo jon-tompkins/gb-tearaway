@@ -70,11 +70,14 @@ export function sanitizeSlots(
       typeof obj.cursor === "number" && Number.isFinite(obj.cursor)
         ? Math.max(0, Math.floor(obj.cursor))
         : 0;
+    const size =
+      obj.size === "half" || obj.size === "double" || obj.size === "full" ? obj.size : "full";
     return {
       id: typeof obj.id === "string" && obj.id ? obj.id : `slot-${i}`,
       moduleIds,
       mode: moduleIds.length <= 1 ? "single" : mode === "single" ? "in_order" : mode,
       cursor,
+      size,
     };
   });
 

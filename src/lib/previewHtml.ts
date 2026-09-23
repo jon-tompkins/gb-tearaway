@@ -43,7 +43,8 @@ export function sectionHtml(section: StripSection): string {
             : "");
 
   const lines = section.lines.map((l) => `<p>${esc(l)}</p>`).join("");
-  return `<section class="sec">
+  const sizeClass = section.size ? ` size-${section.size}` : "";
+  return `<section class="sec${sizeClass}">
     <h3>${esc(section.title)}</h3>
     ${lines}
     ${svg ? `<div class="fig">${svg}</div>` : ""}
