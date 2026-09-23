@@ -83,7 +83,7 @@ export function SlotEditor({
   const selectedSlot = slots.find((s) => s.id === selectedSlotId) ?? null;
   const selectedIndex = slots.findIndex((s) => s.id === selectedSlotId);
   const groups = modulesByCategory();
-  const gridCols = paperSize === "letter" ? "grid-cols-2 sm:grid-cols-3" : "grid-cols-2";
+  const gridCols = "grid-cols-2";
 
   function normalizeMode(s: ModuleSlot): ModuleSlot {
     if (s.moduleIds.length <= 1) return { ...s, mode: "single" as SlotMode, cursor: 0 };

@@ -61,13 +61,15 @@ export function buildPrintHtml(
   const letterCss = `
   html,body{background:#fff;color:#000}
   .sheet{width:100%;box-sizing:border-box}
-  .cols{display:grid;grid-template-columns:1fr 1fr;gap:2mm 8mm}
-  .mast{font-family:Georgia,'Times New Roman',serif;font-weight:700;font-size:30pt;line-height:1;text-align:center;letter-spacing:-.02em}
-  .for{text-align:center;font-size:11pt;font-weight:700;letter-spacing:.14em;margin-top:2mm}
-  .meta{text-align:center;font-size:9pt;letter-spacing:.04em;text-transform:uppercase;margin-top:1mm}
-  .hdr{border-bottom:3px double #000;padding-bottom:3mm;margin-bottom:4mm}
-  .sec{border-bottom:1px dashed #000;padding:3mm 0;break-inside:avoid}
-  .sec h3{margin:0 0 1.5mm;font-size:9pt;letter-spacing:.16em;text-transform:uppercase}
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:5mm}
+  .mast{font-family:Georgia,'Times New Roman',serif;font-weight:700;font-size:23pt;line-height:1;text-align:center;letter-spacing:-.02em}
+  .for{text-align:center;font-size:10pt;font-weight:700;letter-spacing:.14em;margin-top:1.5mm}
+  .meta{text-align:center;font-size:8.5pt;letter-spacing:.04em;text-transform:uppercase;margin-top:.8mm}
+  .hdr{border-bottom:3px double #000;padding-bottom:2.5mm;margin-bottom:4mm}
+  /* 4 cards → a 2×2 grid of bordered panels that fill one page */
+  .sec{border:1.5px solid #000;border-radius:2mm;padding:4.5mm;break-inside:avoid;min-height:80mm;overflow:hidden;display:flex;flex-direction:column}
+  .sec .fig svg{max-height:66mm;width:auto}
+  .sec h3{margin:0 0 2mm;font-size:9pt;letter-spacing:.16em;text-transform:uppercase}
   .sec p{margin:0 0 1.5mm;font-size:11pt;line-height:1.4}
   .fig{margin-top:2mm;text-align:center}
   .ftr{text-align:center;padding-top:3mm;grid-column:1/-1}
