@@ -207,7 +207,7 @@ export function demoSlotsStrip58(): ModuleSlot[] {
 export function defaultSlotsForNewKid(paperSize: PaperSize = "strip58"): ModuleSlot[] {
   const defaults: ModuleId[] =
     paperSize === "letter"
-      ? ["word", "joke", "maze", "weather"]
+      ? ["word", "joke", "maze", "weather", "fact", "doodle"]
       : ["word", "joke", "doodle", "maze"];
   return migrateModulesToSlots(defaults, paperSize);
 }
