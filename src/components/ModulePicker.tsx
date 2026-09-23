@@ -244,15 +244,28 @@ export function SlotEditor({
                     selected ? "border-ink ring-2 ring-ink/20" : "border-rule hover:border-ink/30"
                   }`}
                 >
-                  <div className="mb-1.5 flex items-center justify-between gap-2">
-                    <span className="flex items-center gap-1.5">
-                      <span className="flex h-5 w-5 items-center justify-center rounded-full bg-ink text-[0.65rem] font-bold text-cream">
-                        {i + 1}
-                      </span>
-                      <span className="text-[0.6rem] font-semibold uppercase tracking-wider text-ink-soft">
-                        Card {i + 1}
-                      </span>
+                  <div className="mb-1.5 flex items-center gap-1.5">
+                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-ink text-[0.65rem] font-bold text-cream">
+                      {i + 1}
                     </span>
+                    <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
+                      {(["half", "full", "double"] as const).map((sz) => (
+                        <button
+                          key={sz}
+                          type="button"
+                          title={sz === "half" ? "Half card" : sz === "full" ? "Full card" : "Double (tall)"}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSize(slot.id, sz);
+                          }}
+                          className={`rounded px-2 py-0.5 text-[0.55rem] font-bold uppercase tracking-wide transition ${
+                            size === sz ? "bg-ink text-cream" : "border border-rule bg-paper text-ink-soft"
+                          }`}
+                        >
+                          {sz === "half" ? "½" : sz === "full" ? "Full" : "2×"}
+                        </button>
+                      ))}
+                    </div>
                     {multi ? (
                       <button
                         type="button"
@@ -262,40 +275,14 @@ export function SlotEditor({
                           setShuffle(slot.id, !shuffleOn);
                         }}
                         title={shuffleOn ? "Shuffle on — random each print" : "Shuffle off — in order"}
-                        className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-[0.6rem] font-bold uppercase tracking-wider transition ${
+                        className={`ml-auto flex items-center gap-1 rounded-full px-2 py-0.5 text-[0.6rem] font-bold uppercase tracking-wider transition ${
                           shuffleOn ? "bg-stamp text-cream" : "border border-rule bg-paper text-ink-soft"
                         }`}
                       >
                         <span aria-hidden>🔀</span>
                         {shuffleOn ? "Shuffle" : "In order"}
                       </button>
-                    ) : n === 1 ? (
-                      <span className="rounded-full bg-cream px-2 py-0.5 text-[0.6rem] font-bold uppercase tracking-wider text-ink-soft">
-                        single
-                      </span>
                     ) : null}
-                  </div>
-
-                  <div
-                    className="mb-1 flex gap-1"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    {(["half", "full", "double"] as const).map((sz) => (
-                      <button
-                        key={sz}
-                        type="button"
-                        title={sz === "half" ? "Half card" : sz === "full" ? "Full card" : "Double (wide)"}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSize(slot.id, sz);
-                        }}
-                        className={`flex-1 rounded px-1 py-0.5 text-[0.55rem] font-bold uppercase tracking-wide transition ${
-                          size === sz ? "bg-ink text-cream" : "border border-rule bg-paper text-ink-soft"
-                        }`}
-                      >
-                        {sz === "half" ? "½" : sz === "full" ? "Full" : "2×"}
-                      </button>
-                    ))}
                   </div>
 
                   <div className="grid grid-cols-2 gap-1.5">
