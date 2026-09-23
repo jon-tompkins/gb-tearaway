@@ -7,6 +7,7 @@ import { SlotEditor } from "@/components/ModulePicker";
 import { useAppStore } from "@/lib/clientStore";
 import type { ModuleId, ModuleSlot, PaperSize } from "@/lib/types";
 import { flattenSlotModules, resizeSlotsForPaper, sanitizeModuleIds } from "@/lib/slots";
+import { TEMPLATES, templateToSlots, type Template } from "@/lib/modules";
 
 export default function ModulesPage() {
   const router = useRouter();
@@ -37,6 +38,15 @@ export default function ModulesPage() {
       setSelectedSlotId(nextSlots[0]?.id ?? null);
     }
   }, [hydrated, store, activeKid, router]);
+
+  function applyTemplate(t: Template) {
+    const next = resizeSlotsForPaper(templateToSlots(t), paperSize);
+    setSlots(next);
+    const pal = Array.from(new Set(next.flatMap((s) => s.moduleIds)));
+    setAccess(pal);
+    setSelectedSlotId(next[0]?.id ?? null);
+    setStatus(`Applied “${t.name}” — review and Save.`);
+  }
 
   function onPaperSize(size: PaperSize) {
     setPaperSize(size);
@@ -89,6 +99,26 @@ export default function ModulesPage() {
       title="Modules"
       subtitle={`Paper size → fixed slots for ${activeKid.name}. Multi-module slots rotate in order or at random each generate.`}
     >
+      <section className="mb-7">
+        <h2 className="font-display text-xl text-ink">Start from a template</h2>
+        <p className="mb-3 text-sm text-ink-soft">
+          A ready-made layout that fills the page — tweak it after.
+        </p>
+        <div className="flex flex-wrap gap-2">
+          {TEMPLATES.map((t) => (
+            <button
+              key={t.id}
+              type="button"
+              onClick={() => applyTemplate(t)}
+              className="rounded-2xl border border-rule bg-paper px-4 py-2.5 text-left transition hover:border-ink/30"
+            >
+              <span className="block text-sm font-semibold text-ink">{t.name}</span>
+              <span className="mt-0.5 block text-xs text-ink-soft">{t.blurb}</span>
+            </button>
+          ))}
+        </div>
+      </section>
+
       <SlotEditor
         paperSize={paperSize}
         slots={slots}

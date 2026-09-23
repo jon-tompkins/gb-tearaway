@@ -2,7 +2,7 @@
 
 import type { ModuleId, ModuleSlot, PaperSize, SlotMode } from "@/lib/types";
 import { PAPER_SIZE_META, PAPER_SLOT_COUNTS } from "@/lib/types";
-import { moduleById, modulesByCategory } from "@/lib/modules";
+import { moduleById, moduleSize, modulesByCategory } from "@/lib/modules";
 
 /** Hard cap of modules per card → a tidy 2×2 grid. */
 const MAX_PER_SLOT = 4;
@@ -110,7 +110,12 @@ export function SlotEditor({
       return;
     }
     if (s.moduleIds.length >= MAX_PER_SLOT) return;
-    writeSlot(slotId, (x) => ({ ...x, moduleIds: [...x.moduleIds, id] }));
+    writeSlot(slotId, (x) => ({
+      ...x,
+      moduleIds: [...x.moduleIds, id],
+      // an empty card adopts the module's natural size
+      size: x.moduleIds.length === 0 ? moduleSize(id) : x.size,
+    }));
   }
   function toggleAccess(id: ModuleId) {
     if (accessSet.has(id)) {

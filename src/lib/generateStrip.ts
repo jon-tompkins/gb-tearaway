@@ -82,7 +82,9 @@ export function generateStrip(
     ],
   });
 
-  for (const moduleId of activeModules) {
+  for (let bodyIdx = 0; bodyIdx < activeModules.length; bodyIdx++) {
+    const moduleId = activeModules[bodyIdx];
+    const cardSize = bodySizes[bodyIdx] ?? "full";
     const meta = moduleById(moduleId);
     if (moduleId === "word") {
       const word = pickWord(kid.ageBand, rng);
@@ -318,7 +320,8 @@ export function generateStrip(
       continue;
     }
     if (isNewsModule(moduleId)) {
-      const items = pickNewsList(moduleId, kid.ageBand, rng, 4);
+      const count = cardSize === "double" ? 8 : cardSize === "half" ? 2 : 4;
+      const items = pickNewsList(moduleId, kid.ageBand, rng, count);
       sections.push({
         id: `${moduleId}-${hashish(items[0]?.headline ?? moduleId)}`,
         moduleId,

@@ -32,27 +32,22 @@ export function buildPrintHtml(
     // one-line minimal header (title · kid · date)
     const dateLine = header?.lines?.[2] ?? "";
     const hdr1 = `<div class="hdr1"><b>Tearaway</b> · ${esc(job.kidName)} · ${esc(dateLine)}</div>`;
-    // greedily balance cards across two newspaper columns by rough content weight
-    const weight = (s: (typeof body)[number]): number => {
-      if (s.kind === "maze" || s.kind === "sudoku" || s.kind === "wordfind" || s.kind === "dots")
-        return 6;
-      if (s.kind === "weather") return 5;
-      if (s.news?.length) return 1 + s.news.length;
-      return 2;
-    };
+    // card size in half-units: half=1, full=2, double=4. A column holds 4 units.
+    const units = (s: (typeof body)[number]): number =>
+      s.size === "double" ? 4 : s.size === "half" ? 1 : 2;
+    // fill column A to capacity (4) in order, the rest flow to column B.
     const colA: typeof body = [];
     const colB: typeof body = [];
-    let wA = 0;
-    let wB = 0;
+    let uA = 0;
     for (const s of body) {
-      if (wA <= wB) {
+      if (uA + units(s) <= 4) {
         colA.push(s);
-        wA += weight(s);
+        uA += units(s);
       } else {
         colB.push(s);
-        wB += weight(s);
       }
     }
+    if (colB.length === 0 && colA.length > 1) colB.push(colA.pop()!);
     const col = (arr: typeof body) => `<div class="col">${arr.map(sectionHtml).join("\n")}</div>`;
     const bodyHtml = `<div class="cols">${col(colA)}${col(colB)}</div>`;
     const ftr1 = `<div class="ftr1">— tear here —</div>`;
@@ -98,12 +93,16 @@ export function buildPrintHtml(
   .hdr1{font-family:Georgia,'Times New Roman',serif;font-size:11pt;text-align:center;padding-bottom:1.2mm;margin-bottom:2.5mm;border-bottom:1.2px solid #000}
   .ftr1{text-align:center;font-size:6pt;font-weight:700;letter-spacing:.24em;text-transform:uppercase;color:#000;border-top:1px solid #000;padding-top:1mm;margin-top:1.5mm}
   .cols{flex:1;min-height:0;display:flex;gap:6mm}
-  .col{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:space-between}
-  .sec{break-inside:avoid;padding-bottom:2.5mm;border-bottom:0.5pt solid #000}
-  .sec h3{margin:0 0 1.2mm;font-size:8pt;letter-spacing:.14em;text-transform:uppercase}
-  .sec p{margin:0 0 1mm;font-size:9.5pt;line-height:1.3}
-  .fig{margin-top:1.2mm;text-align:center}
-  .fig svg{max-width:100%;max-height:82mm;height:auto;width:auto}`;
+  .col{flex:1;min-width:0;display:flex;flex-direction:column}
+  /* each card fills its share of the column: half=1, full=2, double=4 units */
+  .sec{min-height:0;overflow:hidden;display:flex;flex-direction:column;padding-bottom:2mm;border-bottom:0.5pt solid #000}
+  .sec.size-half{flex:1}
+  .sec.size-full{flex:2}
+  .sec.size-double{flex:4}
+  .sec h3{margin:0 0 1.2mm;font-size:8pt;letter-spacing:.14em;text-transform:uppercase;flex:0 0 auto}
+  .sec p{margin:0 0 1mm;font-size:9.5pt;line-height:1.3;flex:0 0 auto}
+  .fig{flex:1;min-height:0;margin-top:1.2mm;display:flex;align-items:center;justify-content:center}
+  .fig svg{max-width:100%;max-height:100%;height:auto;width:auto}`;
 
   // For the strip, size the print page to the actual content height so the PDF
   // is one continuous 58mm-wide page (no half-empty trailing page).
