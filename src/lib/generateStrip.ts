@@ -17,7 +17,7 @@ import { pickRiddle } from "./content/riddles";
 import { pickSpanish } from "./content/spanish";
 import { pickWyr } from "./content/wyr";
 import { pickPoem } from "./content/poems";
-import { isNewsModule, pickNews } from "./content/news";
+import { isNewsModule, pickNewsList } from "./content/news";
 import { eventsForToday, formatEventLine } from "./content/stubs";
 import { mockStocks } from "./stocks";
 import { mockWeather } from "./weather";
@@ -318,13 +318,14 @@ export function generateStrip(
       continue;
     }
     if (isNewsModule(moduleId)) {
-      const news = pickNews(moduleId, kid.ageBand, rng);
+      const items = pickNewsList(moduleId, kid.ageBand, rng, 4);
       sections.push({
-        id: `${moduleId}-${hashish(news.headline)}`,
+        id: `${moduleId}-${hashish(items[0]?.headline ?? moduleId)}`,
         moduleId,
         title: meta.name,
         kind: "text",
-        lines: [news.headline, news.blurb, news.wonder],
+        lines: [],
+        news: items.map((i) => ({ headline: i.headline, blurb: i.blurb })),
       });
       continue;
     }

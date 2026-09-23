@@ -1,5 +1,5 @@
 import type { AgeBand, ModuleId } from "../types";
-import { pick } from "../rng";
+import { pick, shuffle } from "../rng";
 
 export type NewsModuleId =
   | "news_world"
@@ -100,4 +100,19 @@ export function pickNews(moduleId: NewsModuleId, band: AgeBand, rng: () => numbe
   const pool = bank.filter((n) => n.bands.includes(band));
   const n = pick(rng, pool.length ? pool : bank);
   return { headline: n.headline, blurb: n.blurb, wonder: n.wonder };
+}
+
+/** A short column of distinct age-appropriate headlines. */
+export function pickNewsList(
+  moduleId: NewsModuleId,
+  band: AgeBand,
+  rng: () => number,
+  count: number,
+): NewsItem[] {
+  const bank = BANKS[moduleId];
+  const pool = bank.filter((n) => n.bands.includes(band));
+  const src = pool.length >= count ? pool : bank;
+  return shuffle(rng, src)
+    .slice(0, Math.min(count, src.length))
+    .map((n) => ({ headline: n.headline, blurb: n.blurb, wonder: n.wonder }));
 }

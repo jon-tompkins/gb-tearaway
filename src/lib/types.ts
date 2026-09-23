@@ -256,6 +256,8 @@ export interface StripSection {
   svg?: string;
   /** Card footprint carried from the owning slot (half/full/double). */
   size?: SlotSize;
+  /** For news modules: a short column of headlines. */
+  news?: { headline: string; blurb: string }[];
 }
 
 /** Firmware-ready job. Today: preview payload. Later: ESC/POS or a raster. */

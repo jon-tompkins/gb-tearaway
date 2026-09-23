@@ -108,6 +108,22 @@ export function sectionHtml(section: StripSection): string {
     </footer>`;
   }
 
+  if (section.news?.length) {
+    const sizeClass = section.size ? ` size-${section.size}` : "";
+    const items = section.news
+      .map(
+        (i) =>
+          `<div style="margin-bottom:1.6mm"><div style="font-weight:700;font-size:9pt;line-height:1.15">${esc(
+            i.headline,
+          )}</div><div style="font-size:8pt;line-height:1.2">${esc(i.blurb)}</div></div>`,
+      )
+      .join("");
+    return `<section class="sec${sizeClass}">
+    <h3>${esc(section.title)}</h3>
+    ${items}
+  </section>`;
+  }
+
   if (section.kind === "weather" && section.weather?.periods) {
     const sizeClass = section.size ? ` size-${section.size}` : "";
     return `<section class="sec${sizeClass}">

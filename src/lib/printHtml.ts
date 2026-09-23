@@ -12,45 +12,6 @@ import { sectionHtml } from "./previewHtml";
  * app), so it stays portable to serverless. `autoPrint` opens the print dialog
  * on load for a one-click Save-as-PDF.
  */
-/** Simulate CSS 2-column dense grid placement to get the true row count. */
-function packedRows(sizes: ("half" | "full" | "double")[]): number {
-  const COLS = 2;
-  const occ: boolean[][] = [];
-  const ensure = (r: number) => {
-    while (occ.length <= r) occ.push([false, false]);
-  };
-  const fits = (r: number, c: number, w: number, h: number): boolean => {
-    if (c + w > COLS) return false;
-    for (let i = 0; i < h; i++) {
-      ensure(r + i);
-      for (let j = 0; j < w; j++) if (occ[r + i][c + j]) return false;
-    }
-    return true;
-  };
-  const place = (r: number, c: number, w: number, h: number) => {
-    for (let i = 0; i < h; i++) {
-      ensure(r + i);
-      for (let j = 0; j < w; j++) occ[r + i][c + j] = true;
-    }
-  };
-  let maxRow = 0;
-  for (const s of sizes) {
-    const w = 1; // all cards stay one column wide (works on the 58mm receipt printer too)
-    const h = s === "half" ? 1 : s === "double" ? 4 : 2;
-    let placed = false;
-    for (let r = 0; !placed && r < 400; r++) {
-      for (let c = 0; c < COLS && !placed; c++) {
-        if (fits(r, c, w, h)) {
-          place(r, c, w, h);
-          maxRow = Math.max(maxRow, r + h);
-          placed = true;
-        }
-      }
-    }
-  }
-  return Math.max(1, maxRow);
-}
-
 export function buildPrintHtml(
   job: PrintJob,
   opts: { autoPrint?: boolean } = {},
@@ -66,16 +27,34 @@ export function buildPrintHtml(
       (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c] as string,
     );
 
-  // Exact row count for the 2-column dense grid (half=1×1, full=1×2, double=2×2),
-  // so grid-template-rows: repeat(rows,1fr) always fills one page, any size mix.
-  const gridRows = packedRows(body.map((s) => s.size ?? "full"));
-
   let inner: string;
   if (isLetter) {
     // one-line minimal header (title · kid · date)
     const dateLine = header?.lines?.[2] ?? "";
     const hdr1 = `<div class="hdr1"><b>Tearaway</b> · ${esc(job.kidName)} · ${esc(dateLine)}</div>`;
-    const bodyHtml = `<div class="cols">${body.map(sectionHtml).join("\n")}</div>`;
+    // greedily balance cards across two newspaper columns by rough content weight
+    const weight = (s: (typeof body)[number]): number => {
+      if (s.kind === "maze" || s.kind === "sudoku" || s.kind === "wordfind" || s.kind === "dots")
+        return 6;
+      if (s.kind === "weather") return 5;
+      if (s.news?.length) return 1 + s.news.length;
+      return 2;
+    };
+    const colA: typeof body = [];
+    const colB: typeof body = [];
+    let wA = 0;
+    let wB = 0;
+    for (const s of body) {
+      if (wA <= wB) {
+        colA.push(s);
+        wA += weight(s);
+      } else {
+        colB.push(s);
+        wB += weight(s);
+      }
+    }
+    const col = (arr: typeof body) => `<div class="col">${arr.map(sectionHtml).join("\n")}</div>`;
+    const bodyHtml = `<div class="cols">${col(colA)}${col(colB)}</div>`;
     const ftr1 = `<div class="ftr1">— tear here —</div>`;
     inner = [hdr1, bodyHtml, ftr1].join("\n");
   } else {
@@ -114,22 +93,17 @@ export function buildPrintHtml(
 
   const letterCss = `
   html,body{background:#fff;color:#000}
-  /* fill the whole printable page: fixed-height flex column, grid grows to fit */
+  /* newspaper: two balanced columns that fill the page, a light rule under each card */
   .sheet{width:100%;height:252mm;box-sizing:border-box;display:flex;flex-direction:column;overflow:hidden}
-  /* minimal one-line header + footer */
-  .hdr1{font-family:Georgia,'Times New Roman',serif;font-size:11pt;text-align:center;padding-bottom:1.2mm;margin-bottom:2.5mm;border-bottom:1px solid #000}
-  .ftr1{text-align:center;font-size:6pt;font-weight:700;letter-spacing:.24em;text-transform:uppercase;color:#000;padding-top:1mm;margin-top:1mm}
-  /* size-driven grid: cards fill the page, no outlines, tight padding */
-  .cols{flex:1;min-height:0;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:repeat(${gridRows},1fr);grid-auto-flow:row dense;gap:3mm 4mm}
-  .sec{padding:0 1mm;overflow:hidden;display:flex;flex-direction:column;min-height:0}
-  .sec.size-half{grid-column:span 1;grid-row:span 1}
-  .sec.size-full{grid-column:span 1;grid-row:span 2}
-  .sec.size-double{grid-column:span 1;grid-row:span 4}
-  .sec h3{margin:0 0 1mm;font-size:8pt;letter-spacing:.14em;text-transform:uppercase}
+  .hdr1{font-family:Georgia,'Times New Roman',serif;font-size:11pt;text-align:center;padding-bottom:1.2mm;margin-bottom:2.5mm;border-bottom:1.2px solid #000}
+  .ftr1{text-align:center;font-size:6pt;font-weight:700;letter-spacing:.24em;text-transform:uppercase;color:#000;border-top:1px solid #000;padding-top:1mm;margin-top:1.5mm}
+  .cols{flex:1;min-height:0;display:flex;gap:6mm}
+  .col{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:space-between}
+  .sec{break-inside:avoid;padding-bottom:2.5mm;border-bottom:0.5pt solid #000}
+  .sec h3{margin:0 0 1.2mm;font-size:8pt;letter-spacing:.14em;text-transform:uppercase}
   .sec p{margin:0 0 1mm;font-size:9.5pt;line-height:1.3}
-  /* puzzles fill the whole card */
-  .fig{flex:1;min-height:0;margin-top:1mm;display:flex;align-items:center;justify-content:center}
-  .fig svg{max-width:100%;max-height:100%;height:auto;width:auto}`;
+  .fig{margin-top:1.2mm;text-align:center}
+  .fig svg{max-width:100%;max-height:82mm;height:auto;width:auto}`;
 
   // For the strip, size the print page to the actual content height so the PDF
   // is one continuous 58mm-wide page (no half-empty trailing page).
