@@ -49,20 +49,62 @@ function fillGrid(
   return true;
 }
 
+/**
+ * Count solutions of a puzzle, stopping early once `cap` is reached. Used to
+ * keep the dug puzzle uniquely solvable (a real sudoku, not a guessing game).
+ */
+function countSolutions(
+  grid: number[][], size: number, boxRows: number, boxCols: number, cap: number,
+): number {
+  let count = 0;
+  const solve = (): void => {
+    if (count >= cap) return;
+    for (let r = 0; r < size; r++) {
+      for (let c = 0; c < size; c++) {
+        if (grid[r][c] !== 0) continue;
+        for (let n = 1; n <= size; n++) {
+          if (!isValid(grid, r, c, n, size, boxRows, boxCols)) continue;
+          grid[r][c] = n;
+          solve();
+          grid[r][c] = 0;
+          if (count >= cap) return;
+        }
+        return; // no valid number here → dead end for this branch
+      }
+    }
+    count++; // no empty cell left → a full solution
+  };
+  solve();
+  return count;
+}
+
 export function generateSudoku(seed: number, band: AgeBand): SudokuData {
   const { size, boxRows, boxCols, blanks, label } = configForBand(band);
   const rand = mulberry32(seed);
   const solution = Array.from({ length: size }, () => Array.from({ length: size }, () => 0));
   fillGrid(solution, size, boxRows, boxCols, rand);
   const puzzle = solution.map((row) => [...row]);
+
+  // Dig cells in random order, but only remove one if the puzzle stays uniquely
+  // solvable. `blanks` is the target difficulty (a maximum), not a guarantee.
   const positions = Array.from({ length: size * size }, (_, i) => i);
   for (let i = positions.length - 1; i > 0; i--) {
     const j = Math.floor(rand() * (i + 1));
     [positions[i], positions[j]] = [positions[j], positions[i]];
   }
-  for (let i = 0; i < blanks && i < positions.length; i++) {
-    const p = positions[i];
-    puzzle[Math.floor(p / size)][p % size] = 0;
+  let removed = 0;
+  for (const p of positions) {
+    if (removed >= blanks) break;
+    const r = Math.floor(p / size);
+    const c = p % size;
+    const saved = puzzle[r][c];
+    if (saved === 0) continue;
+    puzzle[r][c] = 0;
+    if (countSolutions(puzzle, size, boxRows, boxCols, 2) === 1) {
+      removed++;
+    } else {
+      puzzle[r][c] = saved; // removing it made the puzzle ambiguous — put it back
+    }
   }
   return { size, boxRows, boxCols, puzzle, solution, label };
 }
