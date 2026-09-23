@@ -54,15 +54,14 @@ export function sanitizeSlots(
   paperSize: PaperSize,
   legacyModules?: ModuleId[],
 ): ModuleSlot[] {
-  const target = PAPER_SLOT_COUNTS[paperSize];
   if (!Array.isArray(raw) || raw.length === 0) {
     if (legacyModules && legacyModules.length > 0) {
       return migrateModulesToSlots(legacyModules, paperSize);
     }
-    return emptySlots(paperSize);
+    return []; // blank layout is allowed (manual/custom start)
   }
 
-  const parsed: ModuleSlot[] = raw.slice(0, target).map((s, i) => {
+  const parsed: ModuleSlot[] = raw.slice(0, MAX_SLOTS).map((s, i) => {
     const obj = s && typeof s === "object" ? (s as Record<string, unknown>) : {};
     const moduleIds = sanitizeModuleIds(obj.moduleIds);
     const mode = sanitizeMode(obj.mode, moduleIds.length);
@@ -81,37 +80,14 @@ export function sanitizeSlots(
     };
   });
 
-  while (parsed.length < target) {
-    parsed.push({
-      id: `slot-${parsed.length}`,
-      moduleIds: [],
-      mode: "single",
-      cursor: 0,
-    });
-  }
   return parsed;
 }
 
 /** Resize slots when paper size changes; preserve existing slot contents. */
-export function resizeSlotsForPaper(
-  slots: ModuleSlot[],
-  paperSize: PaperSize,
-): ModuleSlot[] {
-  const target = PAPER_SLOT_COUNTS[paperSize];
-  if (slots.length === target) return slots.map((s, i) => ({ ...s, id: s.id || `slot-${i}` }));
-  if (slots.length > target) {
-    return slots.slice(0, target).map((s, i) => ({ ...s, id: s.id || `slot-${i}` }));
-  }
-  const next = slots.map((s, i) => ({ ...s, id: s.id || `slot-${i}` }));
-  while (next.length < target) {
-    next.push({
-      id: `slot-${next.length}`,
-      moduleIds: [],
-      mode: "single",
-      cursor: 0,
-    });
-  }
-  return next;
+/** Cards are variable now; just keep valid ids and a sane maximum. */
+export const MAX_SLOTS = 16;
+export function resizeSlotsForPaper(slots: ModuleSlot[], _paperSize: PaperSize): ModuleSlot[] {
+  return slots.slice(0, MAX_SLOTS).map((s, i) => ({ ...s, id: s.id || `slot-${i}` }));
 }
 
 export function isPaperSize(v: unknown): v is PaperSize {

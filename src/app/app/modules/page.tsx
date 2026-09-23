@@ -39,6 +39,12 @@ export default function ModulesPage() {
     }
   }, [hydrated, store, activeKid, router]);
 
+  function applyBlank() {
+    setSlots([]);
+    setSelectedSlotId(null);
+    setStatus("Blank sheet — add cards below.");
+  }
+
   function applyTemplate(t: Template) {
     const next = resizeSlotsForPaper(templateToSlots(t), paperSize);
     setSlots(next);
@@ -102,9 +108,17 @@ export default function ModulesPage() {
       <section className="mb-7">
         <h2 className="font-display text-xl text-ink">Start from a template</h2>
         <p className="mb-3 text-sm text-ink-soft">
-          A ready-made layout that fills the page — tweak it after.
+          A ready-made layout — or start blank and build your own.
         </p>
         <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={applyBlank}
+            className="rounded-2xl border-2 border-dashed border-rule bg-paper px-4 py-2.5 text-left transition hover:border-ink/40"
+          >
+            <span className="block text-sm font-semibold text-ink">Blank</span>
+            <span className="mt-0.5 block text-xs text-ink-soft">Build your own — add cards</span>
+          </button>
           {TEMPLATES.map((t) => (
             <button
               key={t.id}

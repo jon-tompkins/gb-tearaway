@@ -1,7 +1,7 @@
 "use client";
 
 import type { ModuleId, ModuleSlot, PaperSize, SlotMode } from "@/lib/types";
-import { PAPER_SIZE_META, PAPER_SLOT_COUNTS } from "@/lib/types";
+import { PAPER_SIZE_META } from "@/lib/types";
 import { moduleById, moduleSize, modulesByCategory } from "@/lib/modules";
 
 /** Hard cap of modules per card → a tidy 2×2 grid. */
@@ -79,7 +79,6 @@ export function SlotEditor({
   onChangeAccess: (next: ModuleId[]) => void;
   modulePoolLimit?: number | null;
 }) {
-  const count = PAPER_SLOT_COUNTS[paperSize];
   const isStrip = paperSize !== "letter";
   const limit = modulePoolLimit ?? null;
   const atAccessCap = limit != null && access.length >= limit;
@@ -88,6 +87,17 @@ export function SlotEditor({
   const selectedIndex = slots.findIndex((s) => s.id === selectedSlotId);
   const groups = modulesByCategory();
   const gridCols = "grid-cols-2";
+
+  function addCard() {
+    const id = `slot-${Date.now().toString(36)}${Math.floor(Math.random() * 1000)}`;
+    onChangeSlots([...slots, { id, moduleIds: [], mode: "single", cursor: 0, size: "full" }]);
+    onSelectSlot(id);
+  }
+  function removeCard(slotId: string) {
+    const next = slots.filter((s) => s.id !== slotId);
+    onChangeSlots(next);
+    if (selectedSlotId === slotId) onSelectSlot(next[next.length - 1]?.id ?? "");
+  }
 
   function normalizeMode(s: ModuleSlot): ModuleSlot {
     if (s.moduleIds.length <= 1) return { ...s, mode: "single" as SlotMode, cursor: 0 };
@@ -142,7 +152,9 @@ export function SlotEditor({
       {/* PAPER SIZE */}
       <section>
         <h2 className="font-display text-xl text-ink">Paper size</h2>
-        <p className="mb-3 text-sm text-ink-soft">{count} cards on this paper — fixed by size.</p>
+        <p className="mb-3 text-sm text-ink-soft">
+          Letter prints in two columns; the strip is one stacked column.
+        </p>
         <PaperSizeToggle value={paperSize} onChange={onChangePaperSize} />
       </section>
 
@@ -222,7 +234,7 @@ export function SlotEditor({
           <div className="mb-2 border-b border-dashed border-rule pb-2 text-center">
             <div className="font-display text-base text-ink">Tearaway</div>
             <div className="text-[0.6rem] uppercase tracking-widest text-ink-soft">
-              {isStrip ? "58mm strip" : "US Letter"} · {count} cards
+              {isStrip ? "58mm strip" : "US Letter"} · {slots.length} card{slots.length === 1 ? "" : "s"}
             </div>
           </div>
 
@@ -266,23 +278,36 @@ export function SlotEditor({
                     ) : (
                       <span className="text-[0.6rem] text-ink-soft">empty</span>
                     )}
-                    {multi ? (
+                    <span className="ml-auto flex items-center gap-1">
+                      {multi ? (
+                        <button
+                          type="button"
+                          aria-pressed={shuffleOn}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setShuffle(slot.id, !shuffleOn);
+                          }}
+                          title={shuffleOn ? "Shuffle on — random each print" : "Shuffle off — in order"}
+                          className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-[0.6rem] font-bold uppercase tracking-wider transition ${
+                            shuffleOn ? "bg-stamp text-cream" : "border border-rule bg-paper text-ink-soft"
+                          }`}
+                        >
+                          <span aria-hidden>🔀</span>
+                          {shuffleOn ? "Shuffle" : "In order"}
+                        </button>
+                      ) : null}
                       <button
                         type="button"
-                        aria-pressed={shuffleOn}
+                        title="Delete this card"
                         onClick={(e) => {
                           e.stopPropagation();
-                          setShuffle(slot.id, !shuffleOn);
+                          removeCard(slot.id);
                         }}
-                        title={shuffleOn ? "Shuffle on — random each print" : "Shuffle off — in order"}
-                        className={`ml-auto flex items-center gap-1 rounded-full px-2 py-0.5 text-[0.6rem] font-bold uppercase tracking-wider transition ${
-                          shuffleOn ? "bg-stamp text-cream" : "border border-rule bg-paper text-ink-soft"
-                        }`}
+                        className="rounded px-1 text-sm font-bold text-ink-soft hover:text-stamp"
                       >
-                        <span aria-hidden>🔀</span>
-                        {shuffleOn ? "Shuffle" : "In order"}
+                        ×
                       </button>
-                    ) : null}
+                    </span>
                   </div>
 
                   <div className="grid grid-cols-2 gap-1.5">
@@ -331,6 +356,20 @@ export function SlotEditor({
               );
             })}
           </div>
+
+          {slots.length === 0 ? (
+            <p className="py-6 text-center text-sm text-ink-soft">
+              No cards yet — add one below to start building your sheet.
+            </p>
+          ) : null}
+
+          <button
+            type="button"
+            onClick={addCard}
+            className="mt-3 w-full rounded-xl border-2 border-dashed border-rule py-2 text-sm font-semibold text-ink-soft transition hover:border-ink/40 hover:text-ink"
+          >
+            + Add card
+          </button>
 
           <div className="mt-2 border-t border-dashed border-rule pt-1.5 text-center text-[0.55rem] uppercase tracking-[0.3em] text-ink-soft">
             — tear here —
