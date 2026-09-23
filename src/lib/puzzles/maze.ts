@@ -2,9 +2,9 @@ import type { AgeBand, MazeCell, MazeData } from "../types";
 import { mulberry32 } from "../rng";
 
 function sizeForBand(band: AgeBand): { cols: number; rows: number } {
-  if (band === "4-6") return { cols: 6, rows: 8 };
-  if (band === "7-9") return { cols: 8, rows: 10 };
-  return { cols: 10, rows: 12 };
+  if (band === "4-6") return { cols: 8, rows: 10 };
+  if (band === "7-9") return { cols: 15, rows: 19 };
+  return { cols: 20, rows: 26 };
 }
 
 /** Recursive-backtracker perfect maze — always solvable. */

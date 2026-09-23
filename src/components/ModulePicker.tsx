@@ -219,7 +219,7 @@ export function SlotEditor({
               const size = slot.size ?? "full";
               const spanClass =
                 size === "double"
-                  ? "col-span-2 row-span-2"
+                  ? "row-span-4"
                   : size === "half"
                     ? "row-span-1"
                     : "row-span-2";

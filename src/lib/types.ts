@@ -194,6 +194,17 @@ export interface FactItem {
 }
 
 /** Live Open-Meteo or offline mock forecast. */
+export interface WeatherPeriod {
+  label: string; // Morning / Afternoon / Evening
+  code: number; // WMO weather code
+  tempF: number | null;
+}
+export interface WeatherDay {
+  day: string; // Mon, Tue…
+  code: number;
+  hi: number | null;
+  lo: number | null;
+}
 export interface WeatherSnapshot {
   label: string;
   summary: string;
@@ -202,6 +213,12 @@ export interface WeatherSnapshot {
   lowF: number | null;
   tip: string;
   source: "open-meteo" | "mock";
+  /** WMO code for the current conditions (drives the icon). */
+  code?: number;
+  /** Morning / afternoon / evening outlook for today. */
+  periods?: WeatherPeriod[];
+  /** 7-day forecast. */
+  daily?: WeatherDay[];
 }
 
 export interface StockQuote {

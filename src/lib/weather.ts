@@ -1,4 +1,4 @@
-import type { AgeBand, WeatherSnapshot } from "./types";
+import type { AgeBand, WeatherDay, WeatherPeriod, WeatherSnapshot } from "./types";
 
 const WMO: Record<number, string> = {
   0: "clear skies",
@@ -60,6 +60,67 @@ function hashPlace(s: string): number {
   return h >>> 0;
 }
 
+const PERIOD_HOURS: [string, string][] = [
+  ["Morning", "09:00"],
+  ["Afternoon", "14:00"],
+  ["Evening", "18:00"],
+];
+
+function weekdayShort(dateStr: string): string {
+  const d = new Date(`${dateStr}T12:00:00`);
+  return Number.isNaN(d.getTime()) ? "" : d.toLocaleDateString("en-US", { weekday: "short" });
+}
+
+function buildPeriods(
+  hourly: { time?: string[]; temperature_2m?: number[]; weather_code?: number[] } | undefined,
+  today: string | undefined,
+): WeatherPeriod[] | undefined {
+  if (!hourly?.time || !today) return undefined;
+  const out: WeatherPeriod[] = [];
+  for (const [label, hh] of PERIOD_HOURS) {
+    const i = hourly.time.indexOf(`${today}T${hh}`);
+    if (i < 0) continue;
+    const t = hourly.temperature_2m?.[i];
+    out.push({ label, code: hourly.weather_code?.[i] ?? 1, tempF: t != null ? Math.round(t) : null });
+  }
+  return out.length ? out : undefined;
+}
+
+function buildDaily(daily: {
+  time?: string[];
+  weather_code?: number[];
+  temperature_2m_max?: number[];
+  temperature_2m_min?: number[];
+}): WeatherDay[] | undefined {
+  if (!daily?.time) return undefined;
+  const out = daily.time.slice(0, 7).map((d, i) => ({
+    day: weekdayShort(d),
+    code: daily.weather_code?.[i] ?? 1,
+    hi: daily.temperature_2m_max?.[i] != null ? Math.round(daily.temperature_2m_max![i]) : null,
+    lo: daily.temperature_2m_min?.[i] != null ? Math.round(daily.temperature_2m_min![i]) : null,
+  }));
+  return out.length ? out : undefined;
+}
+
+function mockPeriods(base: number, code: number): WeatherPeriod[] {
+  return [
+    { label: "Morning", code, tempF: base - 5 },
+    { label: "Afternoon", code, tempF: base + 4 },
+    { label: "Evening", code, tempF: base - 2 },
+  ];
+}
+function mockDaily(h: number, base: number): WeatherDay[] {
+  const names = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const codes = [0, 1, 2, 3, 61, 80, 2];
+  const start = new Date().getDay();
+  return Array.from({ length: 7 }, (_, i) => ({
+    day: names[(start + i) % 7],
+    code: codes[(h + i) % codes.length],
+    hi: base + 4 + ((h >> i) % 6),
+    lo: base - 6 - ((h >> (i + 1)) % 4),
+  }));
+}
+
 /**
  * Offline / rate-limit fallback. Still returns plausible temps so the strip
  * looks like a real morning paper in demos.
@@ -92,6 +153,9 @@ export function mockWeather(age: AgeBand, place: string): WeatherSnapshot {
     lowF,
     tip: `${tip} (demo forecast)`,
     source: "mock",
+    code: sky.code,
+    periods: mockPeriods(tempF, sky.code),
+    daily: mockDaily(h, base),
   };
 }
 
@@ -172,10 +236,11 @@ export async function fetchWeather(opts: {
       latitude: String(geo.latitude),
       longitude: String(geo.longitude),
       current: "temperature_2m,weather_code",
+      hourly: "temperature_2m,weather_code",
       daily: "weather_code,temperature_2m_max,temperature_2m_min",
       temperature_unit: "fahrenheit",
       timezone: opts.timezone || "America/New_York",
-      forecast_days: "1",
+      forecast_days: "7",
     });
     // Cache ~30m so parent preview refreshes don't burn Open-Meteo quota.
     const res = await fetch(`https://api.open-meteo.com/v1/forecast?${params}`, {
@@ -184,7 +249,9 @@ export async function fetchWeather(opts: {
     if (!res.ok) return mockWeather(age, geo.name);
     const json = (await res.json()) as {
       current?: { temperature_2m?: number; weather_code?: number };
+      hourly?: { time?: string[]; temperature_2m?: number[]; weather_code?: number[] };
       daily?: {
+        time?: string[];
         weather_code?: number[];
         temperature_2m_max?: number[];
         temperature_2m_min?: number[];
@@ -192,6 +259,8 @@ export async function fetchWeather(opts: {
       error?: boolean;
     };
     if (json.error) return mockWeather(age, geo.name);
+    const periods = buildPeriods(json.hourly, json.daily?.time?.[0]);
+    const daily = buildDaily(json.daily ?? {});
 
     const code = json.current?.weather_code ?? json.daily?.weather_code?.[0] ?? 1;
     const now = json.current?.temperature_2m ?? null;
@@ -216,6 +285,9 @@ export async function fetchWeather(opts: {
       lowF: low != null ? Math.round(low) : null,
       tip: tipFor(code, high, age),
       source: "open-meteo",
+      code,
+      periods,
+      daily,
     };
   } catch {
     return mockWeather(age, placeGuess);

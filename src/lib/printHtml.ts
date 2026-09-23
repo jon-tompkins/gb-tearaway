@@ -35,8 +35,8 @@ function packedRows(sizes: ("half" | "full" | "double")[]): number {
   };
   let maxRow = 0;
   for (const s of sizes) {
-    const w = s === "double" ? 2 : 1;
-    const h = s === "half" ? 1 : 2;
+    const w = 1; // all cards stay one column wide (works on the 58mm receipt printer too)
+    const h = s === "half" ? 1 : s === "double" ? 4 : 2;
     let placed = false;
     for (let r = 0; !placed && r < 400; r++) {
       for (let c = 0; c < COLS && !placed; c++) {
@@ -124,7 +124,7 @@ export function buildPrintHtml(
   .sec{padding:0 1mm;overflow:hidden;display:flex;flex-direction:column;min-height:0}
   .sec.size-half{grid-column:span 1;grid-row:span 1}
   .sec.size-full{grid-column:span 1;grid-row:span 2}
-  .sec.size-double{grid-column:span 2;grid-row:span 2}
+  .sec.size-double{grid-column:span 1;grid-row:span 4}
   .sec h3{margin:0 0 1mm;font-size:8pt;letter-spacing:.14em;text-transform:uppercase}
   .sec p{margin:0 0 1mm;font-size:9.5pt;line-height:1.3}
   /* puzzles fill the whole card */

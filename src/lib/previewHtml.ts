@@ -1,4 +1,4 @@
-import type { PrintJob, StripSection } from "./types";
+import type { PrintJob, StripSection, WeatherSnapshot } from "./types";
 import { mazeToSvg } from "./puzzles/maze";
 import { sudokuToSvg } from "./puzzles/sudoku";
 import { wordFindToSvg } from "./puzzles/wordfind";
@@ -10,6 +10,84 @@ function esc(s: string): string {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
+}
+
+type IconType = "sun" | "partly" | "cloud" | "rain" | "snow" | "thunder" | "fog";
+function wxIconType(code: number): IconType {
+  if (code === 0 || code === 1) return "sun";
+  if (code === 2) return "partly";
+  if (code === 45 || code === 48) return "fog";
+  if ((code >= 51 && code <= 67) || (code >= 80 && code <= 82)) return "rain";
+  if ((code >= 71 && code <= 77) || code === 85 || code === 86) return "snow";
+  if (code >= 95) return "thunder";
+  return "cloud";
+}
+function condName(code: number): string {
+  return {
+    sun: "Clear",
+    partly: "Partly cloudy",
+    cloud: "Cloudy",
+    rain: "Rain",
+    snow: "Snow",
+    thunder: "Storms",
+    fog: "Fog",
+  }[wxIconType(code)];
+}
+/** Monochrome inline SVG weather glyph (thermal-friendly, black on white). */
+function weatherIcon(code: number, px: number): string {
+  const t = wxIconType(code);
+  const open = `<svg xmlns="http://www.w3.org/2000/svg" width="${px}" height="${px}" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle">`;
+  const rays =
+    '<line x1="12" y1="1.5" x2="12" y2="3.6"/><line x1="12" y1="20.4" x2="12" y2="22.5"/><line x1="1.5" y1="12" x2="3.6" y2="12"/><line x1="20.4" y1="12" x2="22.5" y2="12"/><line x1="4.6" y1="4.6" x2="6.1" y2="6.1"/><line x1="17.9" y1="17.9" x2="19.4" y2="19.4"/><line x1="4.6" y1="19.4" x2="6.1" y2="17.9"/><line x1="17.9" y1="6.1" x2="19.4" y2="4.6"/>';
+  const cloud = (dy = 0) =>
+    `<path d="M6 ${17 + dy} h10 a3.1 3.1 0 0 0 .3 -6.2 A4.6 4.6 0 0 0 7.2 ${9.6 + dy} A3.4 3.4 0 0 0 6 ${17 + dy} z"/>`;
+  if (t === "sun") return `${open}<circle cx="12" cy="12" r="4"/>${rays}</svg>`;
+  if (t === "partly")
+    return `${open}<circle cx="8" cy="8" r="2.8"/><line x1="8" y1="2.8" x2="8" y2="4.1"/><line x1="2.8" y1="8" x2="4.1" y2="8"/><line x1="12" y1="4" x2="11" y2="5"/>${cloud(1)}</svg>`;
+  if (t === "cloud") return `${open}${cloud()}</svg>`;
+  if (t === "rain")
+    return `${open}${cloud(-1.5)}<line x1="8.5" y1="18" x2="7.5" y2="21"/><line x1="12" y1="18" x2="11" y2="21"/><line x1="15.5" y1="18" x2="14.5" y2="21"/></svg>`;
+  if (t === "snow")
+    return `${open}${cloud(-1.5)}<circle cx="8.5" cy="20" r=".7" fill="#000"/><circle cx="12" cy="20.6" r=".7" fill="#000"/><circle cx="15.5" cy="20" r=".7" fill="#000"/></svg>`;
+  if (t === "thunder")
+    return `${open}${cloud(-1.5)}<polyline points="12,17.5 10,20.5 12.4,20.5 10.6,23.5"/></svg>`;
+  return `${open}${cloud(-2)}<line x1="6" y1="19" x2="16" y2="19"/><line x1="7.5" y1="21.5" x2="14.5" y2="21.5"/></svg>`;
+}
+/** Rich weather block: current + morning/afternoon/evening + 7-day, all mono. */
+function weatherHtml(w: WeatherSnapshot): string {
+  const code = w.code ?? 1;
+  const now = w.tempF != null ? `${w.tempF}°` : "—";
+  let h = `<div style="width:100%;font-family:ui-monospace,'SFMono-Regular',Menlo,monospace;color:#000">`;
+  h += `<div style="display:flex;align-items:center;gap:7px;margin-bottom:2mm">
+    ${weatherIcon(code, 34)}
+    <span style="font-size:19pt;font-weight:700;line-height:1">${now}</span>
+    <span style="font-size:8.5pt;line-height:1.15">${esc(w.label)}<br>${esc(condName(code))}</span>
+  </div>`;
+  if (w.periods?.length) {
+    h += `<div style="display:flex;gap:4px;margin-bottom:2mm">${w.periods
+      .map(
+        (p) => `<div style="flex:1;text-align:center">
+        <div style="font-size:6.5pt;font-weight:700;letter-spacing:.04em;text-transform:uppercase">${esc(p.label)}</div>
+        <div style="line-height:0;margin:1px 0">${weatherIcon(p.code, 18)}</div>
+        <div style="font-size:9pt;font-weight:700">${p.tempF != null ? `${p.tempF}°` : "—"}</div>
+      </div>`,
+      )
+      .join("")}</div>`;
+  }
+  if (w.daily?.length) {
+    h += `<div style="display:flex;gap:2px;border-top:1px solid #000;padding-top:1.5mm">${w.daily
+      .map(
+        (d) => `<div style="flex:1;text-align:center">
+        <div style="font-size:6pt;font-weight:700;text-transform:uppercase">${esc(d.day)}</div>
+        <div style="line-height:0;margin:1px 0">${weatherIcon(d.code, 13)}</div>
+        <div style="font-size:6.5pt;font-weight:700">${d.hi != null ? d.hi : "—"}°</div>
+        <div style="font-size:6pt">${d.lo != null ? d.lo : "—"}°</div>
+      </div>`,
+      )
+      .join("")}</div>`;
+  }
+  h += `</div>`;
+  return h;
 }
 
 export function sectionHtml(section: StripSection): string {
@@ -28,6 +106,14 @@ export function sectionHtml(section: StripSection): string {
       <p class="closer">${esc(section.lines[1] ?? "")}</p>
       <p class="brand">${esc(section.lines[2] ?? "")}</p>
     </footer>`;
+  }
+
+  if (section.kind === "weather" && section.weather?.periods) {
+    const sizeClass = section.size ? ` size-${section.size}` : "";
+    return `<section class="sec${sizeClass}">
+    <h3>${esc(section.title)}</h3>
+    ${weatherHtml(section.weather)}
+  </section>`;
   }
 
   const svg =
