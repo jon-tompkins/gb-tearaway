@@ -71,12 +71,14 @@ export function sanitizeSlots(
         : 0;
     const size =
       obj.size === "half" || obj.size === "double" || obj.size === "full" ? obj.size : "full";
+    const column = obj.column === 1 ? 1 : 0;
     return {
       id: typeof obj.id === "string" && obj.id ? obj.id : `slot-${i}`,
       moduleIds,
       mode: moduleIds.length <= 1 ? "single" : mode === "single" ? "in_order" : mode,
       cursor,
       size,
+      column,
     };
   });
 

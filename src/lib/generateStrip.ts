@@ -63,6 +63,9 @@ export function generateStrip(
   // card footprint (half/full/double) per resolved body section, in order
   const slotSizeById = new Map(kidNorm.slots.map((s) => [s.id, s.size ?? "full"]));
   const bodySizes = resolved.map((r) => slotSizeById.get(r.slotId) ?? "full");
+  // print column (Letter = 0|1) per resolved body section, in order
+  const slotColById = new Map(kidNorm.slots.map((s) => [s.id, s.column === 1 ? 1 : 0]));
+  const bodyCols = resolved.map((r) => slotColById.get(r.slotId) ?? 0);
 
   const paperWidthMm = paperSize === "letter" ? 216 : 58;
   const widthPx = paperSize === "letter" ? LETTER_WIDTH_PX : STRIP_WIDTH_PX;
@@ -346,10 +349,14 @@ export function generateStrip(
     lines: ["— tear here —", closer, "tearaway · demo strip"],
   });
 
-  // stamp each body section with its card footprint (header/footer stay unsized)
+  // stamp each body section with its card footprint + print column (header/footer stay unsized)
   let bi = 0;
   for (const sec of sections) {
-    if (sec.kind !== "header" && sec.kind !== "footer") sec.size = bodySizes[bi++] ?? "full";
+    if (sec.kind !== "header" && sec.kind !== "footer") {
+      sec.size = bodySizes[bi] ?? "full";
+      sec.column = bodyCols[bi] ?? 0;
+      bi++;
+    }
   }
 
   const job: PrintJob = {

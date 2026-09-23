@@ -1,6 +1,6 @@
 "use client";
 
-import type { ModuleId, ModuleSlot, PaperSize, SlotMode } from "@/lib/types";
+import type { ModuleId, ModuleSlot, PaperSize, SlotMode, SlotSize } from "@/lib/types";
 import { PAPER_SIZE_META } from "@/lib/types";
 import { moduleById, moduleSize, modulesByCategory } from "@/lib/modules";
 
@@ -40,7 +40,7 @@ export function PaperSizeToggle({
 }
 
 function sizeLabel(sz: "half" | "full" | "double" | undefined): string {
-  return sz === "half" ? "½" : sz === "double" ? "2×" : "Full";
+  return sz === "half" ? "½" : sz === "double" ? "2×" : "1×";
 }
 
 function StepBadge({ n }: { n: number }) {
@@ -86,11 +86,10 @@ export function SlotEditor({
   const selectedSlot = slots.find((s) => s.id === selectedSlotId) ?? null;
   const selectedIndex = slots.findIndex((s) => s.id === selectedSlotId);
   const groups = modulesByCategory();
-  const gridCols = "grid-cols-2";
 
-  function addCard() {
+  function addCard(column: number) {
     const id = `slot-${Date.now().toString(36)}${Math.floor(Math.random() * 1000)}`;
-    onChangeSlots([...slots, { id, moduleIds: [], mode: "single", cursor: 0, size: "full" }]);
+    onChangeSlots([...slots, { id, moduleIds: [], mode: "single", cursor: 0, size: "full", column }]);
     onSelectSlot(id);
   }
   function removeCard(slotId: string) {
@@ -110,12 +109,12 @@ export function SlotEditor({
   function setShuffle(slotId: string, on: boolean) {
     writeSlot(slotId, (s) => ({ ...s, mode: on ? "random" : "in_order", cursor: 0 }));
   }
+  function setSize(slotId: string, size: SlotSize) {
+    onChangeSlots(slots.map((s) => (s.id === slotId ? { ...s, size } : s)));
+  }
+  // card size is manual and does NOT change when modules are added/removed
   function removeFromCard(slotId: string, id: ModuleId) {
-    writeSlot(slotId, (s) => {
-      const nextIds = s.moduleIds.filter((m) => m !== id);
-      // card size follows its (first) module
-      return { ...s, moduleIds: nextIds, cursor: 0, size: nextIds.length ? moduleSize(nextIds[0]) : s.size };
-    });
+    writeSlot(slotId, (s) => ({ ...s, moduleIds: s.moduleIds.filter((m) => m !== id), cursor: 0 }));
   }
   function toggleInCard(slotId: string, id: ModuleId) {
     const s = slots.find((x) => x.id === slotId);
@@ -125,10 +124,7 @@ export function SlotEditor({
       return;
     }
     if (s.moduleIds.length >= MAX_PER_SLOT) return;
-    writeSlot(slotId, (x) => {
-      const nextIds = [...x.moduleIds, id];
-      return { ...x, moduleIds: nextIds, size: moduleSize(nextIds[0]) };
-    });
+    writeSlot(slotId, (x) => ({ ...x, moduleIds: [...x.moduleIds, id] }));
   }
   function toggleAccess(id: ModuleId) {
     if (accessSet.has(id)) {
@@ -146,6 +142,141 @@ export function SlotEditor({
       onChangeAccess([...access, id]);
     }
   }
+
+  const renderCard = (slot: ModuleSlot) => {
+    const i = slots.indexOf(slot);
+    const selected = selectedSlotId === slot.id;
+    const n = slot.moduleIds.length;
+    const multi = n >= 2;
+    const shuffleOn = slot.mode === "random";
+    const size = slot.size ?? "full";
+    const minH = size === "double" ? 168 : size === "half" ? 60 : 108;
+    return (
+      <div
+        key={slot.id}
+        role="button"
+        tabIndex={0}
+        onClick={() => onSelectSlot(slot.id)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            onSelectSlot(slot.id);
+          }
+        }}
+        style={{ minHeight: minH }}
+        className={`flex cursor-pointer flex-col overflow-hidden rounded-xl border bg-cream/50 px-2.5 py-2 transition ${
+          selected ? "border-ink ring-2 ring-ink/20" : "border-rule hover:border-ink/30"
+        }`}
+      >
+        <div className="mb-1.5 flex items-center gap-1.5">
+          <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-ink text-[0.65rem] font-bold text-cream">
+            {i + 1}
+          </span>
+          <div className="flex gap-0.5" onClick={(e) => e.stopPropagation()}>
+            {(["half", "full", "double"] as const).map((sz) => (
+              <button
+                key={sz}
+                type="button"
+                title={sz === "half" ? "Half card" : sz === "full" ? "One card" : "Double (tall)"}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSize(slot.id, sz);
+                }}
+                className={`rounded px-1.5 py-0.5 text-[0.55rem] font-bold uppercase transition ${
+                  size === sz ? "bg-ink text-cream" : "border border-rule bg-paper text-ink-soft"
+                }`}
+              >
+                {sizeLabel(sz)}
+              </button>
+            ))}
+          </div>
+          <span className="ml-auto flex items-center gap-1">
+            {multi ? (
+              <button
+                type="button"
+                aria-pressed={shuffleOn}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShuffle(slot.id, !shuffleOn);
+                }}
+                title={shuffleOn ? "Shuffle on — random each print" : "Shuffle off — in order"}
+                className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-[0.6rem] font-bold uppercase tracking-wider transition ${
+                  shuffleOn ? "bg-stamp text-cream" : "border border-rule bg-paper text-ink-soft"
+                }`}
+              >
+                <span aria-hidden>🔀</span>
+                {shuffleOn ? "Shuffle" : "In order"}
+              </button>
+            ) : null}
+            <button
+              type="button"
+              title="Delete this card"
+              onClick={(e) => {
+                e.stopPropagation();
+                removeCard(slot.id);
+              }}
+              className="rounded px-1 text-sm font-bold text-ink-soft hover:text-stamp"
+            >
+              ×
+            </button>
+          </span>
+        </div>
+
+        <div className="grid flex-1 grid-cols-2 gap-1.5">
+          {Array.from({ length: MAX_PER_SLOT }).map((_, idx) => {
+            const id = slot.moduleIds[idx];
+            if (id) {
+              return (
+                <div
+                  key={id}
+                  title={moduleById(id).name}
+                  className="flex min-h-[40px] items-center rounded-lg border border-rule bg-paper px-2 py-1.5"
+                >
+                  {multi && !shuffleOn ? (
+                    <span className="mr-1 text-[0.6rem] font-bold text-ink-soft">{idx + 1}.</span>
+                  ) : null}
+                  <span className="flex-1 truncate text-xs font-semibold text-ink">
+                    {moduleById(id).name}
+                  </span>
+                  <button
+                    type="button"
+                    aria-label={`Remove ${moduleById(id).name}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      removeFromCard(slot.id, id);
+                    }}
+                    className="ml-1 shrink-0 rounded px-1 text-sm font-bold text-ink-soft hover:text-stamp"
+                  >
+                    ×
+                  </button>
+                </div>
+              );
+            }
+            return (
+              <div
+                key={`empty-${idx}`}
+                className={`flex min-h-[40px] items-center justify-center rounded-lg border border-dashed text-lg ${
+                  selected ? "border-ink/40 bg-paper/50 text-ink/60" : "border-rule bg-paper/30 text-ink-soft"
+                }`}
+              >
+                +
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
+  const addCardBtn = (col: number, label: string) => (
+    <button
+      type="button"
+      onClick={() => addCard(col)}
+      className="rounded-xl border-2 border-dashed border-rule py-2 text-sm font-semibold text-ink-soft transition hover:border-ink/40 hover:text-ink"
+    >
+      {label}
+    </button>
+  );
 
   return (
     <div className="space-y-9">
@@ -226,7 +357,9 @@ export function SlotEditor({
             Your paper
           </h2>
           <p className="mt-1 text-sm text-ink-soft">
-            Tap a card to fill it. Up to {MAX_PER_SLOT} modules each; 2+ can shuffle.
+            {isStrip
+              ? "One stacked column. Tap a card to fill it; set its size with ½ / 1× / 2×."
+              : "Two print columns. Add cards to either side and set each card's size with ½ / 1× / 2×."}
           </p>
         </div>
 
@@ -238,138 +371,30 @@ export function SlotEditor({
             </div>
           </div>
 
-          <div className={`grid ${gridCols} grid-flow-row-dense gap-3 [grid-auto-rows:84px]`}>
-            {slots.map((slot, i) => {
-              const selected = selectedSlotId === slot.id;
-              const n = slot.moduleIds.length;
-              const multi = n >= 2;
-              const shuffleOn = slot.mode === "random";
-              const size = slot.size ?? "full";
-              const spanClass =
-                size === "double"
-                  ? "row-span-4"
-                  : size === "half"
-                    ? "row-span-1"
-                    : "row-span-2";
-              return (
-                <div
-                  key={slot.id}
-                  role="button"
-                  tabIndex={0}
-                  onClick={() => onSelectSlot(slot.id)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault();
-                      onSelectSlot(slot.id);
-                    }
-                  }}
-                  className={`flex cursor-pointer flex-col overflow-hidden rounded-xl border bg-cream/50 px-2.5 py-2 transition ${spanClass} ${
-                    selected ? "border-ink ring-2 ring-ink/20" : "border-rule hover:border-ink/30"
-                  }`}
-                >
-                  <div className="mb-1.5 flex items-center gap-1.5">
-                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-ink text-[0.65rem] font-bold text-cream">
-                      {i + 1}
-                    </span>
-                    {n > 0 ? (
-                      <span className="rounded-full border border-rule bg-paper px-2 py-0.5 text-[0.55rem] font-bold uppercase tracking-wide text-ink-soft">
-                        {sizeLabel(size)}
-                      </span>
-                    ) : (
-                      <span className="text-[0.6rem] text-ink-soft">empty</span>
-                    )}
-                    <span className="ml-auto flex items-center gap-1">
-                      {multi ? (
-                        <button
-                          type="button"
-                          aria-pressed={shuffleOn}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setShuffle(slot.id, !shuffleOn);
-                          }}
-                          title={shuffleOn ? "Shuffle on — random each print" : "Shuffle off — in order"}
-                          className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-[0.6rem] font-bold uppercase tracking-wider transition ${
-                            shuffleOn ? "bg-stamp text-cream" : "border border-rule bg-paper text-ink-soft"
-                          }`}
-                        >
-                          <span aria-hidden>🔀</span>
-                          {shuffleOn ? "Shuffle" : "In order"}
-                        </button>
-                      ) : null}
-                      <button
-                        type="button"
-                        title="Delete this card"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          removeCard(slot.id);
-                        }}
-                        className="rounded px-1 text-sm font-bold text-ink-soft hover:text-stamp"
-                      >
-                        ×
-                      </button>
-                    </span>
+          {isStrip ? (
+            <div className="flex flex-col gap-3">
+              {slots.filter((s) => (s.column ?? 0) === 0).map((slot) => renderCard(slot))}
+              {addCardBtn(0, "+ Add card")}
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 gap-3">
+              {[0, 1].map((col) => (
+                <div key={col} className="flex flex-col gap-3">
+                  <div className="text-center text-[0.55rem] font-bold uppercase tracking-widest text-ink-soft">
+                    Column {col + 1}
                   </div>
-
-                  <div className="grid grid-cols-2 gap-1.5">
-                    {Array.from({ length: MAX_PER_SLOT }).map((_, idx) => {
-                      const id = slot.moduleIds[idx];
-                      if (id) {
-                        return (
-                          <div
-                            key={id}
-                            title={moduleById(id).name}
-                            className="flex min-h-[44px] items-center rounded-lg border border-rule bg-paper px-2 py-1.5"
-                          >
-                            {multi && !shuffleOn ? (
-                              <span className="mr-1 text-[0.6rem] font-bold text-ink-soft">{idx + 1}.</span>
-                            ) : null}
-                            <span className="flex-1 truncate text-xs font-semibold text-ink">
-                              {moduleById(id).name}
-                            </span>
-                            <button
-                              type="button"
-                              aria-label={`Remove ${moduleById(id).name}`}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                removeFromCard(slot.id, id);
-                              }}
-                              className="ml-1 shrink-0 rounded px-1 text-sm font-bold text-ink-soft hover:text-stamp"
-                            >
-                              ×
-                            </button>
-                          </div>
-                        );
-                      }
-                      return (
-                        <div
-                          key={`empty-${idx}`}
-                          className={`flex min-h-[44px] items-center justify-center rounded-lg border border-dashed text-lg ${
-                            selected ? "border-ink/40 bg-paper/50 text-ink/60" : "border-rule bg-paper/30 text-ink-soft"
-                          }`}
-                        >
-                          +
-                        </div>
-                      );
-                    })}
-                  </div>
+                  {slots.filter((s) => (s.column ?? 0) === col).map((slot) => renderCard(slot))}
+                  {addCardBtn(col, "+ Add card")}
                 </div>
-              );
-            })}
-          </div>
+              ))}
+            </div>
+          )}
 
           {slots.length === 0 ? (
-            <p className="py-6 text-center text-sm text-ink-soft">
-              No cards yet — add one below to start building your sheet.
+            <p className="py-4 text-center text-sm text-ink-soft">
+              No cards yet — use “+ Add card” to start building your sheet.
             </p>
           ) : null}
-
-          <button
-            type="button"
-            onClick={addCard}
-            className="mt-3 w-full rounded-xl border-2 border-dashed border-rule py-2 text-sm font-semibold text-ink-soft transition hover:border-ink/40 hover:text-ink"
-          >
-            + Add card
-          </button>
 
           <div className="mt-2 border-t border-dashed border-rule pt-1.5 text-center text-[0.55rem] uppercase tracking-[0.3em] text-ink-soft">
             — tear here —

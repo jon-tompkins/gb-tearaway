@@ -16,6 +16,7 @@ export default function ModulesPage() {
   const [slots, setSlots] = useState<ModuleSlot[]>([]);
   const [access, setAccess] = useState<ModuleId[]>([]);
   const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null);
+  const [selectedLayout, setSelectedLayout] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -42,6 +43,7 @@ export default function ModulesPage() {
   function applyBlank() {
     setSlots([]);
     setSelectedSlotId(null);
+    setSelectedLayout("blank");
     setStatus("Blank sheet — add cards below.");
   }
 
@@ -51,6 +53,7 @@ export default function ModulesPage() {
     const pal = Array.from(new Set(next.flatMap((s) => s.moduleIds)));
     setAccess(pal);
     setSelectedSlotId(next[0]?.id ?? null);
+    setSelectedLayout(t.id);
     setStatus(`Applied “${t.name}” — review and Save.`);
   }
 
@@ -114,22 +117,37 @@ export default function ModulesPage() {
           <button
             type="button"
             onClick={applyBlank}
-            className="rounded-2xl border-2 border-dashed border-rule bg-paper px-4 py-2.5 text-left transition hover:border-ink/40"
+            aria-pressed={selectedLayout === "blank"}
+            className={`rounded-2xl border-2 border-dashed px-4 py-2.5 text-left transition ${
+              selectedLayout === "blank"
+                ? "border-ink bg-ink text-cream ring-2 ring-ink/20"
+                : "border-rule bg-paper hover:border-ink/40"
+            }`}
           >
-            <span className="block text-sm font-semibold text-ink">Blank</span>
-            <span className="mt-0.5 block text-xs text-ink-soft">Build your own — add cards</span>
+            <span className={`block text-sm font-semibold ${selectedLayout === "blank" ? "text-cream" : "text-ink"}`}>
+              Blank
+            </span>
+            <span className={`mt-0.5 block text-xs ${selectedLayout === "blank" ? "text-cream/75" : "text-ink-soft"}`}>
+              Build your own — add cards
+            </span>
           </button>
-          {TEMPLATES.map((t) => (
-            <button
-              key={t.id}
-              type="button"
-              onClick={() => applyTemplate(t)}
-              className="rounded-2xl border border-rule bg-paper px-4 py-2.5 text-left transition hover:border-ink/30"
-            >
-              <span className="block text-sm font-semibold text-ink">{t.name}</span>
-              <span className="mt-0.5 block text-xs text-ink-soft">{t.blurb}</span>
-            </button>
-          ))}
+          {TEMPLATES.map((t) => {
+            const on = selectedLayout === t.id;
+            return (
+              <button
+                key={t.id}
+                type="button"
+                onClick={() => applyTemplate(t)}
+                aria-pressed={on}
+                className={`rounded-2xl border px-4 py-2.5 text-left transition ${
+                  on ? "border-ink bg-ink text-cream ring-2 ring-ink/20" : "border-rule bg-paper hover:border-ink/30"
+                }`}
+              >
+                <span className={`block text-sm font-semibold ${on ? "text-cream" : "text-ink"}`}>{t.name}</span>
+                <span className={`mt-0.5 block text-xs ${on ? "text-cream/75" : "text-ink-soft"}`}>{t.blurb}</span>
+              </button>
+            );
+          })}
         </div>
       </section>
 

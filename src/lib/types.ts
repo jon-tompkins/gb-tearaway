@@ -48,6 +48,8 @@ export interface ModuleSlot {
   cursor?: number;
   /** Card footprint. Defaults to "full". */
   size?: SlotSize;
+  /** Print column (Letter = 0|1; strip is always 0). Defaults to 0. */
+  column?: number;
 }
 
 export const PAPER_SLOT_COUNTS: Record<PaperSize, number> = {
@@ -256,6 +258,8 @@ export interface StripSection {
   svg?: string;
   /** Card footprint carried from the owning slot (half/full/double). */
   size?: SlotSize;
+  /** Print column carried from the owning slot (Letter = 0|1). */
+  column?: number;
   /** For news modules: a short column of headlines. */
   news?: { headline: string; blurb: string }[];
 }

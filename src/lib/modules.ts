@@ -122,13 +122,25 @@ export const TEMPLATES: Template[] = [
 
 /** Build ModuleSlots from a template (for applying in the editor). */
 export function templateToSlots(t: Template): ModuleSlot[] {
-  return t.slots.map((s, i) => ({
-    id: `slot-${i}`,
-    moduleIds: [...s.moduleIds],
-    mode: "single" as const,
-    cursor: 0,
-    size: moduleSize(s.moduleIds[0]),
-  }));
+  // Greedily balance a template's cards across the two print columns by
+  // ½-slot units (half=1, full=2, double=4) so Letter sheets fill both sides.
+  let uA = 0;
+  let uB = 0;
+  return t.slots.map((s, i) => {
+    const size = moduleSize(s.moduleIds[0]);
+    const u = size === "double" ? 4 : size === "half" ? 1 : 2;
+    const column = uA <= uB ? 0 : 1;
+    if (column === 0) uA += u;
+    else uB += u;
+    return {
+      id: `slot-${i}`,
+      moduleIds: [...s.moduleIds],
+      mode: "single" as const,
+      cursor: 0,
+      size,
+      column,
+    };
+  });
 }
 
 export interface MarketplacePack {
