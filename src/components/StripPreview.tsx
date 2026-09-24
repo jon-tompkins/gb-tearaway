@@ -6,6 +6,42 @@ import { LETTER_WIDTH_PX, STRIP_WIDTH_PX } from "@/lib/types";
 import { mazeToSvg } from "@/lib/puzzles/maze";
 import { sudokuToSvg } from "@/lib/puzzles/sudoku";
 
+/** Rough vertical weight of a card, used to balance columns when the saved
+ * layout doesn't assign columns itself (older dispatches). */
+function sectionWeight(s: StripSection): number {
+  if (s.kind === "maze" || s.kind === "sudoku" || s.kind === "wordfind" || s.kind === "dots") return 8;
+  if (s.news?.length) return 2 + s.news.length * 5; // each story is several lines tall
+  if (s.kind === "weather") return 5;
+  const lines = (s.lines?.length ?? 0) + (s.answer ? 1 : 0);
+  return Math.max(2, lines);
+}
+
+/** Split body cards into two print columns: honor each card's saved `column`
+ * when the layout uses both, otherwise greedily balance by weight. */
+function splitColumns(sections: StripSection[]): [StripSection[], StripSection[]] {
+  const usesColumns = sections.some((s) => (s.column ?? 0) === 1);
+  if (usesColumns) {
+    return [
+      sections.filter((s) => (s.column ?? 0) === 0),
+      sections.filter((s) => (s.column ?? 0) === 1),
+    ];
+  }
+  const a: StripSection[] = [];
+  const b: StripSection[] = [];
+  let wa = 0;
+  let wb = 0;
+  for (const s of sections) {
+    if (wa <= wb) {
+      a.push(s);
+      wa += sectionWeight(s);
+    } else {
+      b.push(s);
+      wb += sectionWeight(s);
+    }
+  }
+  return [a, b];
+}
+
 function SectionBlock({
   section,
   showKeys,
@@ -127,6 +163,7 @@ export function StripPreview({
   );
   const header = job?.sections.find((s) => s.kind === "header");
   const footer = job?.sections.find((s) => s.kind === "footer");
+  const [colA, colB] = useMemo(() => splitColumns(bodySections), [bodySections]);
 
   async function downloadPng() {
     if (!ref.current || !job) return;
@@ -169,9 +206,13 @@ export function StripPreview({
             isLetter ? (
               <>
                 {header ? <SectionBlock section={header} showKeys={showKeys} /> : null}
-                <div className="grid grid-cols-1 gap-x-4 gap-y-1 sm:grid-cols-2">
-                  {bodySections.map((s, i) => (
-                    <SectionBlock key={`${s.id}-${i}`} section={s} showKeys={showKeys} />
+                <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-2">
+                  {[colA, colB].map((col, ci) => (
+                    <div key={ci} className="flex flex-col">
+                      {col.map((s, i) => (
+                        <SectionBlock key={`${s.id}-${i}`} section={s} showKeys={showKeys} />
+                      ))}
+                    </div>
                   ))}
                 </div>
                 {footer ? <SectionBlock section={footer} showKeys={showKeys} /> : null}
