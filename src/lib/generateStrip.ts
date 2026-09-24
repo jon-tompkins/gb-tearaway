@@ -1,5 +1,6 @@
 import type {
   AppSettings,
+  CalendarEvent,
   KidProfile,
   PrintJob,
   StripSection,
@@ -36,6 +37,8 @@ export interface GenerateOptions {
   at?: Date;
   weather?: WeatherSnapshot;
   dateISO?: string;
+  /** Live calendar events (from the parent's selected Google calendar). */
+  events?: CalendarEvent[];
 }
 
 /**
@@ -210,7 +213,8 @@ export function generateStrip(
       continue;
     }
     if (moduleId === "calendar") {
-      const todays = eventsForToday(kid.events, date);
+      const sourceEvents = opts.events ?? kid.events;
+      const todays = eventsForToday(sourceEvents, date);
       const lines =
         todays.length > 0
           ? todays.map(formatEventLine)

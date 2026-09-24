@@ -114,6 +114,12 @@ export interface KidProfile {
   accessModules: ModuleId[];
   watchlist: string[];
   events: CalendarEvent[];
+  /**
+   * Google Calendar id the parent chose for this dispatch's calendar module.
+   * The parent signs in; the kid shares their calendar with the parent, who
+   * picks it here. Falls back to manually-entered `events` when unset.
+   */
+  calendarId?: string;
   createdAt: string;
 }
 

@@ -21,6 +21,9 @@ export default function SettingsPage() {
   const [weatherZip, setWeatherZip] = useState(DEFAULT_SETTINGS.weatherZip);
   const [watchlist, setWatchlist] = useState("AAPL, DIS, NKE");
   const [events, setEvents] = useState<CalendarEvent[]>([]);
+  const [calendarId, setCalendarId] = useState("");
+  const [calendars, setCalendars] = useState<{ id: string; summary: string; primary: boolean }[]>([]);
+  const [calConnected, setCalConnected] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [newDate, setNewDate] = useState("");
   const [newTime, setNewTime] = useState("");
@@ -41,7 +44,24 @@ export default function SettingsPage() {
     setWeatherZip(store.settings.weatherZip || "");
     setWatchlist((activeKid.watchlist || []).join(", "));
     setEvents([...(activeKid.events || [])]);
+    setCalendarId(activeKid.calendarId ?? "");
   }, [hydrated, store, activeKid, router]);
+
+  // Load the parent's Google calendars (empty when signed out).
+  useEffect(() => {
+    let alive = true;
+    fetch("/api/calendar/list")
+      .then((r) => r.json())
+      .then((d: { connected?: boolean; calendars?: typeof calendars }) => {
+        if (!alive) return;
+        setCalConnected(!!d.connected);
+        setCalendars(d.calendars ?? []);
+      })
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   async function onSave() {
     if (!activeKid) return;
@@ -66,6 +86,7 @@ export default function SettingsPage() {
           printTime,
           watchlist: list,
           events,
+          calendarId: calendarId || undefined,
         },
       });
       setStatus("Saved.");
@@ -209,7 +230,43 @@ export default function SettingsPage() {
         </section>
 
         <section className="card space-y-4">
-          <h2 className="font-display text-lg">Calendar events</h2>
+          <h2 className="font-display text-lg">Calendar sync</h2>
+          <p className="text-sm text-ink-soft">
+            Pick the Google calendar this dispatch&apos;s Calendar module pulls from. Have your kid
+            share their calendar with you, then choose it here.
+          </p>
+          {calConnected ? (
+            <div className="field">
+              <label htmlFor="calendar">Calendar</label>
+              <select
+                id="calendar"
+                value={calendarId}
+                onChange={(e) => setCalendarId(e.target.value)}
+              >
+                <option value="">Use manual events below</option>
+                {calendars.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.summary}
+                    {c.primary ? " (your calendar)" : ""}
+                  </option>
+                ))}
+              </select>
+              <p className="mt-1 text-xs text-ink-soft">
+                {calendarId
+                  ? "Live events from this calendar will appear in the dispatch."
+                  : "No calendar selected — the manual events below are used."}
+              </p>
+            </div>
+          ) : (
+            <p className="rounded-xl border border-dashed border-rule bg-paper/50 px-4 py-3 text-sm text-ink-soft">
+              Sign in with Google (top right) to connect a calendar. Until then, add events manually
+              below.
+            </p>
+          )}
+        </section>
+
+        <section className="card space-y-4">
+          <h2 className="font-display text-lg">Calendar events (manual)</h2>
           <ul className="space-y-2">
             {events.length === 0 ? (
               <li className="text-sm text-ink-soft">No events yet.</li>

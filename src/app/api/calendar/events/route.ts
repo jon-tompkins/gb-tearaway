@@ -7,16 +7,18 @@ import { fetchGoogleCalendarEvents } from "@/lib/googleCalendar";
  * Returns `{ connected: false }` when signed out or no token — callers fall
  * back to manually-entered kid events.
  */
-export async function GET() {
+export async function GET(req: Request) {
   const session = await auth();
   const accessToken = (session as { accessToken?: string } | null)?.accessToken;
   if (!accessToken) {
     return NextResponse.json({ connected: false, events: [] });
   }
+  const calendarId = new URL(req.url).searchParams.get("calendarId") || undefined;
   try {
     const events = await fetchGoogleCalendarEvents(accessToken, {
       days: 7,
       maxResults: 10,
+      calendarId,
     });
     return NextResponse.json({ connected: true, events });
   } catch (e) {

@@ -13,18 +13,44 @@ interface GoogleEvent {
   start?: { date?: string; dateTime?: string };
 }
 
+export interface GoogleCalendarInfo {
+  id: string;
+  summary: string;
+  primary: boolean;
+}
+
+/** List the calendars the signed-in parent can see (their own + shared-with-them). */
+export async function fetchCalendarList(accessToken: string): Promise<GoogleCalendarInfo[]> {
+  const res = await fetch(
+    "https://www.googleapis.com/calendar/v3/users/me/calendarList?minAccessRole=reader",
+    { headers: { Authorization: `Bearer ${accessToken}` }, cache: "no-store" },
+  );
+  if (!res.ok) throw new Error(`Google Calendar list ${res.status}`);
+  const data = (await res.json()) as {
+    items?: { id?: string; summary?: string; summaryOverride?: string; primary?: boolean }[];
+  };
+  return (data.items ?? [])
+    .filter((c) => c.id)
+    .map((c) => ({
+      id: c.id!,
+      summary: c.summaryOverride || c.summary || c.id!,
+      primary: !!c.primary,
+    }));
+}
+
 export async function fetchGoogleCalendarEvents(
   accessToken: string,
-  opts: { maxResults?: number; days?: number } = {},
+  opts: { maxResults?: number; days?: number; calendarId?: string } = {},
 ): Promise<CalendarEvent[]> {
   const maxResults = opts.maxResults ?? 10;
   const days = opts.days ?? 7;
+  const calendarId = opts.calendarId || "primary";
   const now = new Date();
   const timeMin = now.toISOString();
   const timeMax = new Date(now.getTime() + days * 86_400_000).toISOString();
 
   const url = new URL(
-    "https://www.googleapis.com/calendar/v3/calendars/primary/events",
+    `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events`,
   );
   url.searchParams.set("timeMin", timeMin);
   url.searchParams.set("timeMax", timeMax);

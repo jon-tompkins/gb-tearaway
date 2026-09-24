@@ -1,8 +1,11 @@
 import { NextResponse } from "next/server";
+import { auth } from "@/auth";
 import { generateStrip } from "@/lib/generateStrip";
 import { getActiveKid, getSettings, readStore } from "@/lib/store";
 import { fetchWeather } from "@/lib/weather";
+import { fetchGoogleCalendarEvents } from "@/lib/googleCalendar";
 import { ensureKidSlots, flattenSlotModules } from "@/lib/slots";
+import type { CalendarEvent } from "@/lib/types";
 
 export const runtime = "nodejs";
 
@@ -28,6 +31,23 @@ export async function GET() {
     });
   }
 
-  const job = generateStrip(kidNorm, settings, { nonce, weather });
+  // Pull the parent-selected Google calendar when signed in; else manual events.
+  let events: CalendarEvent[] | undefined;
+  if (pool.includes("calendar") && kidNorm.calendarId) {
+    const session = await auth();
+    const accessToken = (session as { accessToken?: string } | null)?.accessToken;
+    if (accessToken) {
+      try {
+        events = await fetchGoogleCalendarEvents(accessToken, {
+          calendarId: kidNorm.calendarId,
+          days: 2,
+        });
+      } catch {
+        // fall back to manual kid.events
+      }
+    }
+  }
+
+  const job = generateStrip(kidNorm, settings, { nonce, weather, events });
   return NextResponse.json(job);
 }
