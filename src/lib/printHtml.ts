@@ -37,7 +37,17 @@ export function buildPrintHtml(
     // its share of its column (half=1, full=2, double=4 flex units).
     const colA = body.filter((s) => (s.column ?? 0) !== 1);
     const colB = body.filter((s) => (s.column ?? 0) === 1);
-    const col = (arr: typeof body) => `<div class="col">${arr.map(sectionHtml).join("\n")}</div>`;
+    // Shared row grid: both columns use the same number of 1fr rows (the fuller
+    // column's ½-unit total), so every card boundary — and its divider — lands
+    // on the same horizontal lines across both columns.
+    const unitsOf = (s: (typeof body)[number]) =>
+      s.size === "double" ? 4 : s.size === "half" ? 1 : 2;
+    const sum = (arr: typeof body) => arr.reduce((n, s) => n + unitsOf(s), 0);
+    const rows = Math.max(1, sum(colA), sum(colB));
+    const col = (arr: typeof body) =>
+      `<div class="col" style="grid-template-rows:repeat(${rows},1fr)">${arr
+        .map(sectionHtml)
+        .join("\n")}</div>`;
     const bodyHtml = `<div class="cols">${col(colA)}${col(colB)}</div>`;
     const ftr1 = `<div class="ftr1"><div class="tear1">— tear here —</div><div class="brand1">Back of the Box</div></div>`;
     inner = [hdr1, bodyHtml, ftr1].join("\n");
@@ -89,12 +99,14 @@ export function buildPrintHtml(
   .ftr1 .tear1{font-size:6pt;font-weight:700;letter-spacing:.24em;text-transform:uppercase}
   .ftr1 .brand1{font-family:Georgia,'Times New Roman',serif;font-size:8pt;font-weight:700;margin-top:.8mm}
   .cols{flex:1;min-height:0;display:flex;gap:6mm}
-  .col{flex:1;min-width:0;display:flex;flex-direction:column}
-  /* Cards size to their content (no wasted internal stretch); the puzzle/figure
-     card in each column grows to absorb the leftover so columns fill evenly. */
-  .sec{min-height:0;overflow:hidden;display:flex;flex-direction:column;padding-bottom:2mm;margin-bottom:2.5mm;border-bottom:0.5pt solid #000;flex:0 0 auto}
-  .sec:last-child{margin-bottom:0;border-bottom:0}
-  .sec.grow{flex:1 1 0}
+  .col{flex:1;min-width:0;display:grid}
+  /* Each card spans its ½-unit footprint in the shared row grid, so dividers
+     align column-to-column. Content is clipped to its cell if it overruns. */
+  .sec{min-height:0;overflow:hidden;display:flex;flex-direction:column;padding:1.4mm 0 2mm;border-bottom:0.5pt solid #000}
+  .sec.size-half{grid-row:span 1}
+  .sec.size-full{grid-row:span 2}
+  .sec.size-double{grid-row:span 4}
+  .sec:last-child{border-bottom:0}
   .sec h3{margin:0 0 1.2mm;font-size:8pt;letter-spacing:.14em;text-transform:uppercase;flex:0 0 auto}
   .sec p{margin:0 0 1mm;font-size:9.5pt;line-height:1.3;flex:0 0 auto}
   /* This-day-in-history: tighter so more text fits in a half card */

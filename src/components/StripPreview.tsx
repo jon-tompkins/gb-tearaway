@@ -43,12 +43,19 @@ function splitColumns(sections: StripSection[]): [StripSection[], StripSection[]
   return [a, b];
 }
 
+/** ½-unit footprint of a card, for the shared column grid. */
+function sectionUnits(s: StripSection): number {
+  return s.size === "double" ? 4 : s.size === "half" ? 1 : 2;
+}
+
 function SectionBlock({
   section,
   showKeys,
+  divider = true,
 }: {
   section: StripSection;
   showKeys: boolean;
+  divider?: boolean;
 }) {
   if (section.kind === "header") {
     return (
@@ -86,7 +93,11 @@ function SectionBlock({
         : section.svg || null;
 
   return (
-    <section className="border-b border-dashed border-rule py-2.5 last:border-0">
+    <section
+      className={`flex h-full min-h-0 flex-col overflow-hidden py-2.5 ${
+        divider ? "border-b border-dashed border-rule" : ""
+      }`}
+    >
       <h3 className="mb-1 text-[0.68rem] font-bold uppercase tracking-[0.16em] text-stamp">
         {section.title}
       </h3>
@@ -216,17 +227,38 @@ export function StripPreview({
             isLetter ? (
               <>
                 {header ? <SectionBlock section={header} showKeys={showKeys} /> : null}
-                {/* Grid stretches both columns to the same height; each column
-                    spreads its cards with space-between so any slack shows as
-                    gaps BETWEEN cards, never a blank tail on the shorter one. */}
+                {/* Shared row grid: both columns use the same 1fr rows (the fuller
+                    column's ½-unit total) so card boundaries + dividers align
+                    column-to-column, matching the printed page. */}
                 <div className="grid grid-cols-1 items-stretch gap-x-4 sm:grid-cols-2">
-                  {[colA, colB].map((col, ci) => (
-                    <div key={ci} className="flex min-h-full flex-col justify-between">
-                      {col.map((s, i) => (
-                        <SectionBlock key={`${s.id}-${i}`} section={s} showKeys={showKeys} />
-                      ))}
-                    </div>
-                  ))}
+                  {[colA, colB].map((col, ci) => {
+                    const rows = Math.max(
+                      1,
+                      colA.reduce((n, s) => n + sectionUnits(s), 0),
+                      colB.reduce((n, s) => n + sectionUnits(s), 0),
+                    );
+                    return (
+                      <div
+                        key={ci}
+                        className="grid"
+                        style={{ gridTemplateRows: `repeat(${rows}, minmax(0, 1fr))` }}
+                      >
+                        {col.map((s, i) => (
+                          <div
+                            key={`${s.id}-${i}`}
+                            className="min-h-0 overflow-hidden"
+                            style={{ gridRow: `span ${sectionUnits(s)}` }}
+                          >
+                            <SectionBlock
+                              section={s}
+                              showKeys={showKeys}
+                              divider={i < col.length - 1}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  })}
                 </div>
                 {footer ? <SectionBlock section={footer} showKeys={showKeys} /> : null}
               </>
