@@ -16,6 +16,7 @@ import { pickJoke } from "./content/jokes";
 import { pickDoodle } from "./content/doodles";
 import { pickRiddle } from "./content/riddles";
 import { pickScramble, scrambleWord } from "./content/scramble";
+import { generateSequence } from "./puzzles/sequence";
 import { pickSpanish } from "./content/spanish";
 import { pickWyr } from "./content/wyr";
 import { pickPoem } from "./content/poems";
@@ -263,6 +264,19 @@ export function generateStrip(
         lines: [riddle.question, "Think… then check the app."],
         // Answer shows only in the app (Parent key) — never printed.
         answer: riddle.answer,
+      });
+      continue;
+    }
+    if (moduleId === "sequence") {
+      const puz = generateSequence(rng, difficulty);
+      sections.push({
+        id: `sequence-${puz.terms.join("-")}`,
+        moduleId,
+        title: meta.name,
+        kind: "text",
+        lines: [`${puz.terms.join(",  ")},  __`, "What number comes next?"],
+        // Answer + rule show only in the app (Parent key) — never printed.
+        answer: `${puz.answer}   ·   ${puz.ruleLabel}`,
       });
       continue;
     }

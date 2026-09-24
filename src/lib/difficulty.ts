@@ -34,6 +34,7 @@ export const DIFFICULTY_MODULES: ReadonlySet<ModuleId> = new Set<ModuleId>([
   "sudoku",
   "wordfind",
   "dots",
+  "sequence",
 ]);
 
 export function isDifficultyModule(id: ModuleId): boolean {

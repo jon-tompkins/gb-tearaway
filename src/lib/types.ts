@@ -12,6 +12,7 @@ export type ModuleId =
   | "joke"
   | "doodle"
   | "riddle"
+  | "sequence"
   | "scramble"
   | "spanish"
   | "wyr"
