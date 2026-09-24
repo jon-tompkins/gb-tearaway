@@ -20,7 +20,7 @@ import { generateSequence } from "./puzzles/sequence";
 import { pickSpanish } from "./content/spanish";
 import { pickWyr } from "./content/wyr";
 import { pickPoem } from "./content/poems";
-import { isNewsModule, pickNewsList } from "./content/news";
+import { isNewsModule, newsListFromPool, pickNewsList, type LiveNewsEntry, type NewsModuleId } from "./content/news";
 import { eventsForToday, formatEventLine } from "./content/stubs";
 import { mockStocks } from "./stocks";
 import { mockWeather } from "./weather";
@@ -40,6 +40,8 @@ export interface GenerateOptions {
   dateISO?: string;
   /** Live calendar events (from the parent's selected Google calendar). */
   events?: CalendarEvent[];
+  /** Today's real (kid-safe) news per feed; falls back to the static bank. */
+  newsByFeed?: Partial<Record<NewsModuleId, LiveNewsEntry[]>>;
 }
 
 /**
@@ -371,7 +373,12 @@ export function generateStrip(
     if (isNewsModule(moduleId)) {
       // 2x (double) = 4 stories, 1x (full) = 2, half = 1 — each a short paragraph.
       const count = cardSize === "double" ? 4 : cardSize === "half" ? 1 : 2;
-      const items = pickNewsList(moduleId, band, rng, count);
+      // Prefer today's real (kid-safe) headlines when available; else static bank.
+      const livePool = opts.newsByFeed?.[moduleId];
+      const items =
+        livePool && livePool.length
+          ? newsListFromPool(livePool, band, rng, count)
+          : pickNewsList(moduleId, band, rng, count);
       sections.push({
         id: `${moduleId}-${hashish(items[0]?.headline ?? moduleId)}`,
         moduleId,

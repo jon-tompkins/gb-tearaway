@@ -1,6 +1,7 @@
 import { generateStrip } from "./generateStrip";
 import { DEMO_KEY, getSettings, readStore, writeStore } from "./store";
 import { fetchWeather } from "./weather";
+import { gatherDailyNews } from "./news/daily";
 import type { KidProfile, PrintJob } from "./types";
 import {
   advanceInOrderCursors,
@@ -37,10 +38,13 @@ export async function buildJobForKid(
     });
   }
 
+  const newsByFeed = await gatherDailyNews(pool);
+
   const job = generateStrip(kidNorm, settings, {
     nonce,
     weather,
     dateISO: opts.dateISO,
+    newsByFeed,
   });
   if (opts.persistStatus) job.status = opts.persistStatus;
 

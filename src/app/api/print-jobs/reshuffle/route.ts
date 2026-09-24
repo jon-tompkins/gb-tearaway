@@ -3,6 +3,7 @@ import { generateStrip } from "@/lib/generateStrip";
 import { getActiveKid, getSettings, readStore, writeStore } from "@/lib/store";
 import { currentUserKey } from "@/lib/userKey";
 import { fetchWeather } from "@/lib/weather";
+import { gatherDailyNews } from "@/lib/news/daily";
 import {
   advanceInOrderCursors,
   ensureKidSlots,
@@ -40,8 +41,9 @@ export async function POST() {
     });
   }
 
+  const newsByFeed = await gatherDailyNews(pool);
   // Generate with current cursors (matches prior preview's slot picks + new nonce)
-  const job = generateStrip(kidNorm, settings, { nonce, weather });
+  const job = generateStrip(kidNorm, settings, { nonce, weather, newsByFeed });
 
   // Persist nonce + advanced in_order cursors
   const idx = store.kids.findIndex((k) => k.id === kid.id);

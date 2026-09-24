@@ -3,6 +3,7 @@ import { generateStrip } from "@/lib/generateStrip";
 import { getActiveKid, getSettings, readStore, savePrintJob, writeStore } from "@/lib/store";
 import { currentUserKey } from "@/lib/userKey";
 import { fetchWeather } from "@/lib/weather";
+import { gatherDailyNews } from "@/lib/news/daily";
 import {
   advanceInOrderCursors,
   ensureKidSlots,
@@ -34,8 +35,9 @@ export async function POST() {
     });
   }
 
+  const newsByFeed = await gatherDailyNews(pool);
   // Print uses current cursors (matches what you're looking at)
-  const job = generateStrip(kidNorm, settings, { nonce, weather });
+  const job = generateStrip(kidNorm, settings, { nonce, weather, newsByFeed });
   job.status = "queued";
   await savePrintJob(userKey, job);
 

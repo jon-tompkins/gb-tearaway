@@ -5,6 +5,7 @@ import { getActiveKid, getSettings, readStore } from "@/lib/store";
 import { currentUserKey } from "@/lib/userKey";
 import { fetchWeather } from "@/lib/weather";
 import { fetchGoogleCalendarEvents } from "@/lib/googleCalendar";
+import { gatherDailyNews } from "@/lib/news/daily";
 import { ensureKidSlots, flattenSlotModules } from "@/lib/slots";
 import type { CalendarEvent } from "@/lib/types";
 
@@ -49,6 +50,7 @@ export async function GET() {
     }
   }
 
-  const job = generateStrip(kidNorm, settings, { nonce, weather, events });
+  const newsByFeed = await gatherDailyNews(pool);
+  const job = generateStrip(kidNorm, settings, { nonce, weather, events, newsByFeed });
   return NextResponse.json(job);
 }

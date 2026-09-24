@@ -109,6 +109,23 @@ export function pickNews(moduleId: NewsModuleId, band: AgeBand, rng: () => numbe
   return toItem(pick(rng, pool.length ? pool : bank));
 }
 
+/** A live news item carrying its age bands (from the RSS→Haiku pipeline). */
+export type LiveNewsEntry = NewsItem & { bands: AgeBand[] };
+
+/** Build a story column from a provided pool (live daily news), band-filtered. */
+export function newsListFromPool(
+  pool: LiveNewsEntry[],
+  band: AgeBand,
+  rng: () => number,
+  count: number,
+): NewsItem[] {
+  const fit = pool.filter((n) => n.bands.includes(band));
+  const src = fit.length >= count ? fit : pool;
+  return shuffle(rng, src)
+    .slice(0, Math.min(count, src.length))
+    .map((n) => ({ headline: n.headline, location: n.location, blurb: n.blurb, wonder: n.wonder }));
+}
+
 /** A short column of distinct age-appropriate stories. */
 export function pickNewsList(
   moduleId: NewsModuleId,
