@@ -164,10 +164,7 @@ export function generateStrip(
         moduleId,
         title: sudoku.label,
         kind: "sudoku",
-        lines: [
-          "Fill every row, column, and box with each number once.",
-          "Parent key is on screen only — not on the paper.",
-        ],
+        lines: [],
         sudoku,
         svg,
       });

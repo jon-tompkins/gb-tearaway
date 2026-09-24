@@ -32,13 +32,13 @@ export const MODULE_CATALOG: ModuleMeta[] = [
   { id: "wordfind", name: "Word Find", blurb: "Tiny word-search that fits the 58mm strip.", category: "play", defaultOn: false, size: "double" },
   { id: "dots", name: "Connect the Dots", blurb: "Funny numbered dots + a silly caption.", category: "play", defaultOn: false, size: "double" },
   { id: "riddle", name: "Riddle", blurb: "Think first — answer shows in the app, never on paper.", category: "play", defaultOn: false, size: "half" },
-  { id: "sudoku", name: "Sudoku", blurb: "4×4 for little kids, 6×6, then easy 9×9 — always one unique solution. Answer key stays off the paper.", category: "play", defaultOn: false, size: "double" },
+  { id: "sudoku", name: "Sudoku", blurb: "4×4 for little kids, 6×6, then easy 9×9 — always one unique solution. Answer key stays off the paper.", category: "play", defaultOn: false, size: "full" },
   // Words & language
   { id: "word", name: "Word of the Day", blurb: "A real word, said out loud, used in a sentence — age-banded.", category: "words", defaultOn: true, size: "half" },
   { id: "poem", name: "Poem of the Day", blurb: "A short printable poem — soft, silly, or thoughtful.", category: "words", defaultOn: false, size: "full" },
   { id: "joke", name: "Breakfast Joke", blurb: "One groaner a day. Age-checked, no mean stuff.", category: "words", defaultOn: true, size: "half" },
   { id: "spanish", name: "Spanish Word", blurb: "A second language bite beside English Word of the Day.", category: "words", defaultOn: false, size: "half" },
-  { id: "scramble", name: "Word Scramble", blurb: "Unscramble the letters with a hint — answer shows in the app, never on paper.", category: "words", defaultOn: false, size: "half" },
+  { id: "scramble", name: "Word Scramble", blurb: "Unscramble the letters with a hint — answer shows in the app, never on paper.", category: "words", defaultOn: false, size: "full" },
   // Curious facts
   { id: "history", name: "This Day in History", blurb: "Something that really happened on this date — kid-appropriate.", category: "facts", defaultOn: true, size: "half" },
   { id: "fact", name: "Fun Fact", blurb: "One true thing worth knowing before cereal.", category: "facts", defaultOn: true, size: "half" },
