@@ -7,9 +7,8 @@ function sizeForBand(band: AgeBand): { cols: number; rows: number } {
   return { cols: 25, rows: 33 };
 }
 
-/** Recursive-backtracker perfect maze — always solvable. */
-export function generateMaze(seed: number, band: AgeBand): MazeData {
-  const { cols, rows } = sizeForBand(band);
+/** One recursive-backtracker perfect maze for a given seed — always solvable. */
+function buildPerfectMaze(seed: number, cols: number, rows: number): MazeData {
   const rng = mulberry32(seed);
 
   const cells: MazeCell[][] = Array.from({ length: rows }, () =>
@@ -32,21 +31,108 @@ export function generateMaze(seed: number, band: AgeBand): MazeData {
     return list;
   }
 
-  function carve(r: number, c: number) {
-    visited[r][c] = true;
+  // Iterative DFS (avoids deep recursion on big grids).
+  const stack: [number, number][] = [[0, 0]];
+  visited[0][0] = true;
+  while (stack.length) {
+    const [r, c] = stack[stack.length - 1];
+    let advanced = false;
     for (const [nr, nc, wallHere, wallThere] of neighbors(r, c)) {
       if (visited[nr][nc]) continue;
       cells[r][c][wallHere] = false;
       cells[nr][nc][wallThere] = false;
-      carve(nr, nc);
+      visited[nr][nc] = true;
+      stack.push([nr, nc]);
+      advanced = true;
+      break;
     }
+    if (!advanced) stack.pop();
   }
 
-  carve(0, 0);
   const start: [number, number] = [0, 0];
   const end: [number, number] = [rows - 1, cols - 1];
   const path = solvePath(cells, start, end);
   return { cols, rows, cells, start, end, path };
+}
+
+/** Open (wall-free) orthogonal neighbours of a cell. */
+function openNeighbors(cells: MazeCell[][], r: number, c: number): [number, number][] {
+  const rows = cells.length;
+  const cols = cells[0].length;
+  const cell = cells[r][c];
+  const out: [number, number][] = [];
+  if (!cell.n && r > 0) out.push([r - 1, c]);
+  if (!cell.s && r < rows - 1) out.push([r + 1, c]);
+  if (!cell.w && c > 0) out.push([r, c - 1]);
+  if (!cell.e && c < cols - 1) out.push([r, c + 1]);
+  return out;
+}
+
+/**
+ * Difficulty score: reward long, tempting dead-end branches that sprout off the
+ * solution path (that's what makes a maze feel hard — plausible wrong turns you
+ * have to walk into and back out of), plus a longer, windier solution.
+ */
+function difficultyScore(maze: MazeData): number {
+  const { cells, rows, cols, path } = maze;
+  const onPath = new Set(path.map(([r, c]) => `${r},${c}`));
+  const thresh = Math.max(4, Math.round(Math.min(rows, cols) * 0.6));
+
+  // Longest reachable depth into an off-path subtree hanging off a junction.
+  function branchDepth(sr: number, sc: number): number {
+    const seen = new Set<string>([`${sr},${sc}`]);
+    const stack: [number, number, number][] = [[sr, sc, 1]];
+    let maxD = 0;
+    while (stack.length) {
+      const [r, c, d] = stack.pop()!;
+      if (d > maxD) maxD = d;
+      for (const [nr, nc] of openNeighbors(cells, r, c)) {
+        const k = `${nr},${nc}`;
+        if (onPath.has(k) || seen.has(k)) continue;
+        seen.add(k);
+        stack.push([nr, nc, d + 1]);
+      }
+    }
+    return maxD;
+  }
+
+  let score = path.length; // a longer solution is windier
+  let longBranches = 0;
+  for (const [r, c] of path) {
+    for (const [nr, nc] of openNeighbors(cells, r, c)) {
+      if (onPath.has(`${nr},${nc}`)) continue;
+      const d = branchDepth(nr, nc);
+      score += d; // total wrong-turn territory
+      if (d >= thresh) {
+        longBranches++;
+        score += thresh; // extra weight for genuinely long false branches
+      }
+    }
+  }
+  // Strongly favour mazes that have several long false branches.
+  return score + longBranches * longBranches * 3;
+}
+
+/**
+ * Pick the hardest of several candidate mazes (deterministic per seed). Selecting
+ * for long off-path branches gives the tempting wrong turns that make a maze
+ * actually tricky instead of a single obvious corridor.
+ */
+export function generateMaze(seed: number, band: AgeBand): MazeData {
+  const { cols, rows } = sizeForBand(band);
+  // Little kids get an easy maze; bigger kids get a harder-selected one.
+  const candidates = band === "4-6" ? 6 : band === "7-9" ? 28 : 40;
+  let best = buildPerfectMaze(seed >>> 0, cols, rows);
+  let bestScore = difficultyScore(best);
+  for (let i = 1; i < candidates; i++) {
+    const m = buildPerfectMaze((seed + i * 0x9e3779b1) >>> 0, cols, rows);
+    const s = difficultyScore(m);
+    if (s > bestScore) {
+      bestScore = s;
+      best = m;
+    }
+  }
+  return best;
 }
 
 function solvePath(
