@@ -194,8 +194,8 @@ export default function SettingsPage() {
         <section className="card space-y-4">
           <h2 className="font-display text-lg">Stock watchlist</h2>
           <p className="text-sm text-ink-soft">
-            Comma-separated tickers. Prices are mocked — see{" "}
-            <code className="text-xs">src/lib/stocks.ts</code>.
+            Comma-separated tickers for the Stock Watchlist module — a simple
+            up-or-down check, kid-friendly.
           </p>
           <div className="field">
             <label htmlFor="wl">Tickers</label>

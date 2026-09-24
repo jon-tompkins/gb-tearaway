@@ -14,7 +14,7 @@ export function AppNav() {
   const pathname = usePathname();
   return (
     <header className="sticky top-0 z-40 border-b border-rule/70 bg-cream/90 backdrop-blur-md">
-      <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-3">
+      <div className="mx-auto flex max-w-5xl flex-col items-center gap-2 px-4 py-3 sm:flex-row sm:justify-between sm:gap-3">
         <Link href="/" className="group flex items-center gap-2">
           <span
             aria-hidden
@@ -26,7 +26,7 @@ export function AppNav() {
             Tearaway
           </span>
         </Link>
-        <nav aria-label="Parent app" className="flex items-center gap-1 overflow-x-auto text-sm">
+        <nav aria-label="Parent app" className="flex w-full items-center justify-center gap-1 overflow-x-auto text-sm sm:w-auto sm:justify-end">
           {LINKS.map((link) => {
             const active = link.exact
               ? pathname === link.href

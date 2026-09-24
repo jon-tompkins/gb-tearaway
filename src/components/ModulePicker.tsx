@@ -496,7 +496,7 @@ export function ModulePicker({
         <div>
           <h2 className="font-display text-xl text-ink">Starter modules</h2>
           <p className="text-sm text-ink-soft">
-            Pick a few to seed the first slots. Fine-tune on the Modules page afterward.
+            Pick a few to start — you can add or swap modules anytime.
           </p>
         </div>
         <div className="rounded-full bg-paper px-3 py-1 text-sm tabular-nums text-ink-soft">

@@ -26,10 +26,13 @@ export default function HomePage() {
           </span>
           <span className="masthead-display text-xl">Tearaway</span>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex shrink-0 items-center gap-2 sm:gap-3">
           <AuthButton compact />
-          <Link href="/app" className="text-sm font-semibold text-ink-soft hover:text-ink">
-            Open dispatch →
+          <Link
+            href="/app"
+            className="whitespace-nowrap text-sm font-semibold text-ink-soft hover:text-ink"
+          >
+            Open <span className="hidden sm:inline">dispatch </span>→
           </Link>
         </div>
       </header>

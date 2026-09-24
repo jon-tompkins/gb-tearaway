@@ -49,8 +49,8 @@ export const MODULE_CATALOG: ModuleMeta[] = [
   { id: "news_tech", name: "Tech News", blurb: "Robots, code, and gadgets — curiosity, not hype.", category: "news", defaultOn: false, size: "double" },
   { id: "news_gamer", name: "Gamer News", blurb: "Games, makers, and fair play — age-banded.", category: "news", defaultOn: false, size: "double" },
   // Today’s world
-  { id: "weather", name: "Weather", blurb: "Today’s sky via Open-Meteo (no API key) plus a jacket tip.", category: "today", defaultOn: true, size: "double" },
-  { id: "stocks", name: "Stock Watchlist", blurb: "Parent-picked tickers, simple up or down. Demo prices.", category: "today", defaultOn: false, size: "double" },
+  { id: "weather", name: "Weather", blurb: "Today’s sky and a jacket tip, plus the week ahead.", category: "today", defaultOn: true, size: "double" },
+  { id: "stocks", name: "Stock Watchlist", blurb: "Parent-picked tickers — a simple up-or-down check.", category: "today", defaultOn: false, size: "double" },
   { id: "calendar", name: "Calendar", blurb: "A short list of today’s events. Stub list you can edit.", category: "today", defaultOn: false, size: "half" },
   // Create
   { id: "doodle", name: "Tiny Doodle", blurb: "A 30-second drawing prompt that fits the strip.", category: "create", defaultOn: false, size: "half" },
