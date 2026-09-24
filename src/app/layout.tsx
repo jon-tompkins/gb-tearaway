@@ -22,7 +22,7 @@ const mono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Tearaway — morning paper for kids",
+  title: "Back of the Box — morning paper for kids",
   description:
     "Every morning, something fun and a little smart waits for your kid on paper. Parents configure modules; kids get a 58mm thermal strip — no kid accounts.",
 };

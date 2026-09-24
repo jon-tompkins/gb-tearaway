@@ -10,7 +10,7 @@ import Google from "next-auth/providers/google";
  *   AUTH_GOOGLE_SECRET  → Google OAuth client secret
  *
  * Google Cloud → Credentials → OAuth client (Web). Authorized redirect URI:
- *   https://tearaway.vercel.app/api/auth/callback/google
+ *   https://backofthebox.xyz/api/auth/callback/google
  *   http://localhost:3000/api/auth/callback/google   (for local dev)
  *
  * Sign-in is optional for now — the demo still works signed out. Accounts are

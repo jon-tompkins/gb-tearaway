@@ -39,7 +39,7 @@ export default async function StripPage({
       }}
     >
       <iframe
-        title={`Tearaway strip for ${kid.name}`}
+        title={`Back of the Box for ${kid.name}`}
         srcDoc={job.previewHtml}
         style={{
           width: 420,

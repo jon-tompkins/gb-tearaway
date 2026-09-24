@@ -86,7 +86,7 @@ export function generateStrip(
     title: "Masthead",
     kind: "header",
     lines: [
-      "Tearaway Times",
+      "Back of the Box",
       `For ${kid.name}`,
       `${weekday} · ${dateLabel}`,
       `Print window ${formatTime12(kid.printTime || settings.printTime)}`,
@@ -378,7 +378,7 @@ export function generateStrip(
     moduleId: "footer",
     title: "Tear",
     kind: "footer",
-    lines: ["— tear here —", closer, "tearaway · demo strip"],
+    lines: ["— tear here —", closer, "back of the box"],
   });
 
   // stamp each body section with its card footprint + print column (header/footer stay unsized)

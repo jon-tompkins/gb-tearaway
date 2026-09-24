@@ -135,7 +135,7 @@ function weatherHtml(w: WeatherSnapshot, opts: { compact?: boolean } = {}): stri
 export function sectionHtml(section: StripSection): string {
   if (section.kind === "header") {
     return `<header class="hdr">
-      <div class="mast">${esc(section.lines[0] ?? "Tearaway Times")}</div>
+      <div class="mast">${esc(section.lines[0] ?? "Back of the Box")}</div>
       <div class="for">${esc(section.lines[1] ?? "")}</div>
       <div class="meta">${esc(section.lines[2] ?? "")}</div>
       <div class="meta dim">${esc(section.lines[3] ?? "")}</div>

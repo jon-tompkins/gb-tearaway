@@ -410,7 +410,7 @@ export function SlotEditor({
 
         <div className={`mx-auto rounded-2xl border border-rule bg-paper p-3 shadow-sm ${isStrip ? "max-w-[560px]" : ""}`}>
           <div className="mb-2 border-b border-dashed border-rule pb-2 text-center">
-            <div className="font-display text-base text-ink">Tearaway</div>
+            <div className="font-display text-base text-ink">Back of the Box</div>
             <div className="text-[0.6rem] uppercase tracking-widest text-ink-soft">
               {isStrip ? "58mm strip" : "US Letter"} · {slots.length} card{slots.length === 1 ? "" : "s"}
             </div>

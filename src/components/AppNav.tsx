@@ -20,10 +20,10 @@ export function AppNav() {
             aria-hidden
             className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-ink text-[0.7rem] font-bold tracking-tight text-cream shadow-sm"
           >
-            T
+            B
           </span>
           <span className="masthead-display text-lg leading-none text-ink group-hover:text-stamp">
-            Tearaway
+            Back of the Box
           </span>
         </Link>
         <nav aria-label="Parent app" className="flex w-full items-center justify-center gap-1 overflow-x-auto text-sm sm:w-auto sm:justify-end">

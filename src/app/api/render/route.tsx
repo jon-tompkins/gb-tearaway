@@ -89,7 +89,7 @@ export async function GET(req: Request) {
         { name: "IBM Plex Mono", data: fontBold, weight: 700, style: "normal" },
       ],
       headers: {
-        "Content-Disposition": `inline; filename="tearaway-${kid.id}-${job.date}.png"`,
+        "Content-Disposition": `inline; filename="back-of-the-box-${kid.id}-${job.date}.png"`,
         "Cache-Control": "no-store",
       },
     });

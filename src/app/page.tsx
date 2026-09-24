@@ -22,9 +22,9 @@ export default function HomePage() {
       <header className="mx-auto flex max-w-5xl items-center justify-between px-4 py-5">
         <div className="flex items-center gap-2">
           <span className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-ink text-[0.7rem] font-bold text-cream">
-            T
+            B
           </span>
-          <span className="masthead-display text-xl">Tearaway</span>
+          <span className="masthead-display text-xl">Back of the Box</span>
         </div>
         <div className="flex shrink-0 items-center gap-2 sm:gap-3">
           <AuthButton compact />
@@ -47,7 +47,7 @@ export default function HomePage() {
               Every morning, something fun and a little smart waits for your kid on paper.
             </h1>
             <p className="mt-5 max-w-xl text-lg leading-relaxed text-ink-soft">
-              Tearaway is a tiny thermal strip — personalized, age-tuned, printed in the kitchen.
+              Back of the Box is a tiny thermal strip — personalized, age-tuned, printed in the kitchen.
               Parents set the modules. Kids get the tear-off. Built by a dad and kid who wanted less
               tablet and more breakfast curiosity.
             </p>
@@ -67,7 +67,7 @@ export default function HomePage() {
           <div className="mx-auto w-full max-w-[300px]">
             <div className="strip-shell paper-grain px-4 py-4 text-ink shadow-xl">
               <div className="rule-double pb-2 text-center">
-                <div className="masthead-display text-xl">Tearaway Times</div>
+                <div className="masthead-display text-xl">Back of the Box</div>
                 <div className="mt-1 text-[0.7rem] font-semibold tracking-[0.16em]">For Sam</div>
                 <div className="mono-meta mt-1 text-ink-soft">Wednesday · Sep 16</div>
               </div>
@@ -105,7 +105,7 @@ export default function HomePage() {
       <section className="mx-auto max-w-5xl px-4 py-14">
         <h2 className="font-display text-2xl text-ink sm:text-3xl">Not another family inbox</h2>
         <p className="mt-2 max-w-2xl text-ink-soft">
-          Tearaway leans educational play — puzzles, words, and age targeting — with room for
+          Back of the Box leans educational play — puzzles, words, and age targeting — with room for
           packs later. Kids are profiles, not users.
         </p>
         <div className="mt-8 grid gap-4 sm:grid-cols-3">
@@ -133,7 +133,7 @@ export default function HomePage() {
       </section>
 
       <footer className="px-4 py-8 text-center text-xs text-ink-soft">
-        Tearaway · a screen-free morning ritual · made by a dad and his kid
+        Back of the Box · a screen-free morning ritual · made by a dad and his kid
       </footer>
     </div>
   );

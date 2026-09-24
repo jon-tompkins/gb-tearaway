@@ -31,7 +31,7 @@ export function buildPrintHtml(
   if (isLetter) {
     // one-line minimal header (title · kid · date)
     const dateLine = header?.lines?.[2] ?? "";
-    const hdr1 = `<div class="hdr1"><b>Tearaway</b> · ${esc(job.kidName)} · ${esc(dateLine)}</div>`;
+    const hdr1 = `<div class="hdr1"><b>Back of the Box</b> · ${esc(job.kidName)} · ${esc(dateLine)}</div>`;
     // Two print columns. Honor the user's per-card column choice; each card fills
     // its share of its column (half=1, full=2, double=4 flex units).
     const colA = body.filter((s) => (s.column ?? 0) !== 1);
@@ -117,7 +117,7 @@ export function buildPrintHtml(
   const auto = fit;
 
   return `<!DOCTYPE html><html><head><meta charset="utf-8"/>
-<title>Tearaway · ${job.kidName} · ${job.date}</title>
+<title>Back of the Box · ${job.kidName} · ${job.date}</title>
 <style>
   ${page}
   *{box-sizing:border-box}

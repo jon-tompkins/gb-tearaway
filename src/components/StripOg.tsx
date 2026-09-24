@@ -193,7 +193,7 @@ function SectionView({ section }: { section: StripSection }) {
     return (
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
         <div style={{ display: "flex", fontSize: 10, letterSpacing: 6, fontWeight: 700 }}>
-          · TEARAWAY ·
+          · BACK OF THE BOX ·
         </div>
         <div style={{ display: "flex", fontSize: 24, fontWeight: 700, marginTop: 8 }}>
           {section.lines[0]}

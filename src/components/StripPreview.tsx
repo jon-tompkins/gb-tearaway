@@ -140,7 +140,7 @@ export function StripPreview({
       });
       const a = document.createElement("a");
       a.href = dataUrl;
-      a.download = `tearaway-${job.kidName.toLowerCase()}-${job.date}.png`;
+      a.download = `back-of-the-box-${job.kidName.toLowerCase()}-${job.date}.png`;
       a.click();
     } catch (err) {
       console.error(err);
@@ -183,7 +183,7 @@ export function StripPreview({
             )
           ) : (
             <div className="px-2 py-10 text-center">
-              <div className="masthead-display text-lg">Tearaway Times</div>
+              <div className="masthead-display text-lg">Back of the Box</div>
               <p className="mt-3 text-sm text-ink-soft">
                 {emptyHint ?? "Hit Print now to generate today’s morning strip."}
               </p>
