@@ -4,12 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AuthButton } from "./AuthButton";
 
-const LINKS = [
-  { href: "/app", label: "Today", exact: true },
-  { href: "/app/modules", label: "Configure" },
-  { href: "/app/settings", label: "Settings" },
-  { href: "/app/setup", label: "New dispatch" },
-];
+const LINKS = [{ href: "/app", label: "Dashboard", exact: true }];
 
 export function AppNav() {
   const pathname = usePathname();

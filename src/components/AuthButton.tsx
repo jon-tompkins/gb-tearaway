@@ -37,7 +37,7 @@ export function AuthButton({ compact = false }: { compact?: boolean }) {
   return (
     <button
       type="button"
-      onClick={() => void signIn("google")}
+      onClick={() => void signIn("google", { callbackUrl: "/app" })}
       className="flex shrink-0 items-center gap-2 whitespace-nowrap rounded-full border border-rule bg-paper px-3 py-1.5 text-sm font-semibold text-ink transition hover:border-ink/30"
     >
       <GoogleGlyph />
