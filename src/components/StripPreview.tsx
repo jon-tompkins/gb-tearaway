@@ -197,7 +197,7 @@ export function StripPreview({
         <div
           ref={ref}
           className={`strip-shell paper-grain w-full px-3.5 py-3.5 ${
-            isLetter ? "letter-shell min-h-[792px]" : ""
+            isLetter ? "letter-shell" : ""
           }`}
           style={{ width: previewWidth }}
         >
