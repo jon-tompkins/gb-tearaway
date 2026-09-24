@@ -1,32 +1,37 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { AppShell } from "@/components/AppNav";
-import { ModulePicker, PaperSizeToggle } from "@/components/ModulePicker";
 import { useAppStore } from "@/lib/clientStore";
 import {
   AGE_BANDS,
-  DEFAULT_MODULES,
   DEFAULT_SETTINGS,
-  TIMEZONES,
+  DELIVERY_METHODS,
   type AgeBand,
-  type ModuleId,
-  type PaperSize,
+  type DeliveryMethod,
 } from "@/lib/types";
-import { migrateModulesToSlots } from "@/lib/slots";
+import { defaultSlotsForNewKid } from "@/lib/slots";
 
 export default function SetupPage() {
   const router = useRouter();
   const { save, hydrated } = useAppStore();
+  const { data: session } = useSession();
+  const accountEmail = session?.user?.email ?? "";
+
   const [name, setName] = useState("");
   const [ageBand, setAgeBand] = useState<AgeBand>("7-9");
-  const [paperSize, setPaperSize] = useState<PaperSize>("strip58");
-  const [modules, setModules] = useState<ModuleId[]>([...DEFAULT_MODULES].slice(0, 4));
-  const [timezone, setTimezone] = useState(DEFAULT_SETTINGS.timezone);
-  const [printTime, setPrintTime] = useState(DEFAULT_SETTINGS.printTime);
+  const [deliveryTime, setDeliveryTime] = useState(DEFAULT_SETTINGS.printTime);
+  const [deliveryMethod] = useState<DeliveryMethod>("email");
+  const [deliveryEmail, setDeliveryEmail] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Default the delivery address to the signed-in account holder's email.
+  useEffect(() => {
+    if (accountEmail && !deliveryEmail) setDeliveryEmail(accountEmail);
+  }, [accountEmail, deliveryEmail]);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -34,31 +39,26 @@ export default function SetupPage() {
       setError("Give them a first name.");
       return;
     }
-    if (modules.length < 1) {
-      setError("Pick at least one module to seed the slots.");
-      return;
-    }
     setBusy(true);
     setError(null);
     try {
-      const slots = migrateModulesToSlots(modules, paperSize);
+      // Start with a sensible default sheet; the parent shapes it on the next
+      // screen (Configure dispatch).
+      const paperSize = DEFAULT_SETTINGS.paperSize;
       await save({
         createKid: {
           name: name.trim(),
           ageBand,
           paperSize,
-          slots,
-          modules,
-          timezone,
-          printTime,
-        },
-        settings: {
-          timezone,
-          printTime,
-          paperSize,
+          slots: defaultSlotsForNewKid(paperSize),
+          printTime: deliveryTime,
+          deliveryMethod,
+          deliveryEmail: deliveryEmail.trim() || accountEmail || undefined,
+          timezone: DEFAULT_SETTINGS.timezone,
         },
       });
-      router.push("/app");
+      // Straight into configuring the page/cards.
+      router.push("/app/modules");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not save");
     } finally {
@@ -68,7 +68,7 @@ export default function SetupPage() {
 
   if (!hydrated) {
     return (
-      <AppShell title="Set up your dispatch">
+      <AppShell title="Create dispatch">
         <p className="text-ink-soft">Loading…</p>
       </AppShell>
     );
@@ -76,13 +76,13 @@ export default function SetupPage() {
 
   return (
     <AppShell
-      title="Set up your dispatch"
-      subtitle="Add a child’s profile: a name, their age, a paper size, and the modules for their morning dispatch."
+      title="Create dispatch"
+      subtitle="Who's it for and when should it go out? You'll lay out the page next."
     >
       <form onSubmit={onSubmit} className="mx-auto max-w-2xl space-y-8">
-        <div className="card space-y-4">
+        <div className="card space-y-5">
           <div className="field">
-            <label htmlFor="name">Kid’s first name</label>
+            <label htmlFor="name">Kid&apos;s first name</label>
             <input
               id="name"
               value={name}
@@ -95,7 +95,7 @@ export default function SetupPage() {
 
           <div>
             <div className="mb-2 text-xs font-semibold uppercase tracking-[0.08em] text-ink-soft">
-              Age band
+              Age
             </div>
             <div className="grid gap-2 sm:grid-cols-3">
               {AGE_BANDS.map((b) => (
@@ -122,54 +122,57 @@ export default function SetupPage() {
             </div>
           </div>
 
-          <div>
-            <div className="mb-2 text-xs font-semibold uppercase tracking-[0.08em] text-ink-soft">
-              Paper size
-            </div>
-            <PaperSizeToggle value={paperSize} onChange={setPaperSize} />
-          </div>
-
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="field">
-              <label htmlFor="tz">Timezone</label>
-              <select
-                id="tz"
-                value={timezone}
-                onChange={(e) => setTimezone(e.target.value)}
-              >
-                {TIMEZONES.map((tz) => (
-                  <option key={tz} value={tz}>
-                    {tz}
+              <label htmlFor="dt">Delivery time</label>
+              <input
+                id="dt"
+                type="time"
+                value={deliveryTime}
+                onChange={(e) => setDeliveryTime(e.target.value)}
+              />
+            </div>
+            <div className="field">
+              <label htmlFor="dm">Delivery method</label>
+              <select id="dm" value={deliveryMethod} disabled>
+                {DELIVERY_METHODS.map((m) => (
+                  <option key={m.id} value={m.id} disabled={!m.enabled}>
+                    {m.label}
+                    {m.enabled ? "" : " · soon"}
                   </option>
                 ))}
               </select>
             </div>
-            <div className="field">
-              <label htmlFor="pt">Print time</label>
-              <input
-                id="pt"
-                type="time"
-                value={printTime}
-                onChange={(e) => setPrintTime(e.target.value)}
-              />
-            </div>
+          </div>
+
+          <div className="field">
+            <label htmlFor="de">Send to</label>
+            <input
+              id="de"
+              type="email"
+              value={deliveryEmail}
+              onChange={(e) => setDeliveryEmail(e.target.value)}
+              placeholder={accountEmail || "you@example.com"}
+              autoComplete="email"
+            />
+            <p className="mt-1 text-xs text-ink-soft">
+              Defaults to your account email. Emailed each morning at the delivery time.
+            </p>
           </div>
         </div>
-
-        <ModulePicker selected={modules} onChange={setModules} />
 
         {error ? <p className="text-sm text-stamp">{error}</p> : null}
 
         <div className="flex flex-wrap items-center gap-3">
           <button type="submit" className="btn-primary" disabled={busy}>
-            {busy ? "Saving…" : "Save & open dashboard"}
+            {busy ? "Creating…" : "Create & configure →"}
           </button>
           <button
             type="button"
             className="btn-secondary"
             onClick={() => router.push("/app")}
           >
-            Skip — use demo kid
+            Cancel
           </button>
         </div>
       </form>

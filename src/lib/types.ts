@@ -37,6 +37,19 @@ export type PaperWidth = "58mm" | "80mm";
 
 export type SlotMode = "single" | "in_order" | "random";
 
+/**
+ * How a finished dispatch reaches the parent.
+ * Only "email" is wired for now (defaults to the account-holder email);
+ * "print" (local thermal) and "sms" are reserved for later.
+ */
+export type DeliveryMethod = "email" | "print" | "sms";
+
+export const DELIVERY_METHODS: { id: DeliveryMethod; label: string; blurb: string; enabled: boolean }[] = [
+  { id: "email", label: "Email", blurb: "Sent to the account-holder inbox each morning.", enabled: true },
+  { id: "print", label: "Thermal print", blurb: "Print locally on a 58mm strip.", enabled: false },
+  { id: "sms", label: "Text message", blurb: "A link by SMS.", enabled: false },
+];
+
 /** Relative footprint of a card on the page: half a cell, one cell, or two. */
 export type SlotSize = "half" | "full" | "double";
 
@@ -100,7 +113,12 @@ export interface KidProfile {
   name: string;
   ageBand: AgeBand;
   timezone: string;
+  /** Delivery time — when the morning dispatch goes out (HH:MM, 24h). */
   printTime: string;
+  /** How the dispatch is delivered. Defaults to email. */
+  deliveryMethod: DeliveryMethod;
+  /** Address for email delivery — defaults to the account-holder email. */
+  deliveryEmail?: string;
   /** Per-kid paper template (controls slot count). */
   paperSize: PaperSize;
   /** Fixed slots for the chosen paper size. */

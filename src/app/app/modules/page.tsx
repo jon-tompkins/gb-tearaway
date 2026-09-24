@@ -7,7 +7,6 @@ import { SlotEditor } from "@/components/ModulePicker";
 import { useAppStore } from "@/lib/clientStore";
 import type { ModuleId, ModuleSlot, PaperSize } from "@/lib/types";
 import { flattenSlotModules, resizeSlotsForPaper, sanitizeModuleIds } from "@/lib/slots";
-import { TEMPLATES, templateToSlots, type Template } from "@/lib/modules";
 
 export default function ModulesPage() {
   const router = useRouter();
@@ -16,7 +15,6 @@ export default function ModulesPage() {
   const [slots, setSlots] = useState<ModuleSlot[]>([]);
   const [access, setAccess] = useState<ModuleId[]>([]);
   const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null);
-  const [selectedLayout, setSelectedLayout] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -40,23 +38,6 @@ export default function ModulesPage() {
     }
   }, [hydrated, store, activeKid, router]);
 
-  function applyBlank() {
-    setSlots([]);
-    setSelectedSlotId(null);
-    setSelectedLayout("blank");
-    setStatus("Blank sheet — add cards below.");
-  }
-
-  function applyTemplate(t: Template) {
-    const next = resizeSlotsForPaper(templateToSlots(t), paperSize);
-    setSlots(next);
-    const pal = Array.from(new Set(next.flatMap((s) => s.moduleIds)));
-    setAccess(pal);
-    setSelectedSlotId(next[0]?.id ?? null);
-    setSelectedLayout(t.id);
-    setStatus(`Applied “${t.name}” — review and Save.`);
-  }
-
   function onPaperSize(size: PaperSize) {
     setPaperSize(size);
     setSlots((prev) => {
@@ -68,12 +49,12 @@ export default function ModulesPage() {
     });
   }
 
-  async function onSave() {
-    if (!activeKid) return;
+  async function onSave(): Promise<boolean> {
+    if (!activeKid) return false;
     const filled = slots.filter((s) => s.moduleIds.length > 0);
     if (filled.length === 0) {
-      setStatus("Add at least one module to a slot before saving.");
-      return;
+      setStatus("Add at least one module to a card before saving.");
+      return false;
     }
     setBusy(true);
     setStatus(null);
@@ -88,8 +69,10 @@ export default function ModulesPage() {
         },
       });
       setStatus("Saved.");
+      return true;
     } catch (e) {
       setStatus(e instanceof Error ? e.message : "Save failed");
+      return false;
     } finally {
       setBusy(false);
     }
@@ -105,68 +88,30 @@ export default function ModulesPage() {
 
   return (
     <AppShell
-      title="Modules"
-      subtitle={`Paper size → fixed slots for ${activeKid.name}. Multi-module slots rotate in order or at random each generate.`}
+      title="Configure dispatch"
+      subtitle={`Lay out ${activeKid.name}'s page: add cards, size each one, then drop in modules that fit.`}
     >
-      <section className="mb-7">
-        <h2 className="font-display text-xl text-ink">Start from a template</h2>
-        <p className="mb-3 text-sm text-ink-soft">
-          A ready-made layout — or start blank and build your own.
-        </p>
-        <div className="flex flex-wrap gap-2">
-          <button
-            type="button"
-            onClick={applyBlank}
-            aria-pressed={selectedLayout === "blank"}
-            className={`rounded-2xl border-2 border-dashed px-4 py-2.5 text-left transition ${
-              selectedLayout === "blank"
-                ? "border-ink bg-ink text-cream ring-2 ring-ink/20"
-                : "border-rule bg-paper hover:border-ink/40"
-            }`}
-          >
-            <span className={`block text-sm font-semibold ${selectedLayout === "blank" ? "text-cream" : "text-ink"}`}>
-              Blank
-            </span>
-            <span className={`mt-0.5 block text-xs ${selectedLayout === "blank" ? "text-cream/75" : "text-ink-soft"}`}>
-              Build your own — add cards
-            </span>
-          </button>
-          {TEMPLATES.map((t) => {
-            const on = selectedLayout === t.id;
-            return (
-              <button
-                key={t.id}
-                type="button"
-                onClick={() => applyTemplate(t)}
-                aria-pressed={on}
-                className={`rounded-2xl border px-4 py-2.5 text-left transition ${
-                  on ? "border-ink bg-ink text-cream ring-2 ring-ink/20" : "border-rule bg-paper hover:border-ink/30"
-                }`}
-              >
-                <span className={`block text-sm font-semibold ${on ? "text-cream" : "text-ink"}`}>{t.name}</span>
-                <span className={`mt-0.5 block text-xs ${on ? "text-cream/75" : "text-ink-soft"}`}>{t.blurb}</span>
-              </button>
-            );
-          })}
-        </div>
-      </section>
-
       <SlotEditor
         paperSize={paperSize}
         ageBand={activeKid.ageBand}
         slots={slots}
         selectedSlotId={selectedSlotId}
-        access={access}
         onSelectSlot={setSelectedSlotId}
         onChangeSlots={setSlots}
         onChangePaperSize={onPaperSize}
-        onChangeAccess={setAccess}
-        modulePoolLimit={store?.settings.modulePoolLimit ?? null}
       />
 
       <div className="mt-8 flex flex-wrap items-center gap-3">
-        <button type="button" className="btn-primary" disabled={busy} onClick={() => void onSave()}>
-          {busy ? "Saving…" : "Save slots"}
+        <button
+          type="button"
+          className="btn-primary"
+          disabled={busy}
+          onClick={() => void onSave().then((ok) => ok && router.push("/app"))}
+        >
+          {busy ? "Saving…" : "Save & view today →"}
+        </button>
+        <button type="button" className="btn-secondary" disabled={busy} onClick={() => void onSave()}>
+          {busy ? "Saving…" : "Save"}
         </button>
         {status ? <span className="text-sm text-ink-soft">{status}</span> : null}
       </div>

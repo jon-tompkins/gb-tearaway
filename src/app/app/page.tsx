@@ -161,6 +161,9 @@ export default function DashboardPage() {
           onSelect={(id) => void setActiveKid(id)}
         />
         <div className="flex flex-wrap gap-2">
+          <Link href="/app/modules" className="btn-secondary text-sm">
+            Configure
+          </Link>
           <Link href="/app/settings" className="btn-secondary text-sm">
             Settings
           </Link>
@@ -176,12 +179,17 @@ export default function DashboardPage() {
       >
         <div className="space-y-4">
           <div className="card">
-            <div className="mono-meta text-stamp">Scheduled print</div>
+            <div className="mono-meta text-stamp">Delivery</div>
             <p className="mt-2 font-display text-2xl text-ink">
               {formatTime12(activeKid.printTime || settings.printTime)}
             </p>
             <p className="mt-1 text-sm text-ink-soft">
               {schedule} · {activeKid.timezone || settings.timezone}
+            </p>
+            <p className="mt-1 text-sm text-ink-soft">
+              {(activeKid.deliveryMethod ?? "email") === "email"
+                ? `Email → ${activeKid.deliveryEmail || "account email"}`
+                : activeKid.deliveryMethod}
             </p>
             <p className="mt-3 text-sm text-ink-soft">
               Paper:{" "}

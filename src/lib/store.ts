@@ -61,6 +61,8 @@ export function seedKid(overrides: Partial<KidProfile> = {}): KidProfile {
     ageBand: overrides.ageBand || "7-9",
     timezone,
     printTime: overrides.printTime || DEFAULT_SETTINGS.printTime,
+    deliveryMethod: overrides.deliveryMethod || "email",
+    ...(overrides.deliveryEmail ? { deliveryEmail: overrides.deliveryEmail } : {}),
     paperSize,
     slots,
     modules: modules.length ? modules : [...DEFAULT_MODULES],

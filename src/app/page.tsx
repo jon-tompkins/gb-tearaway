@@ -53,7 +53,7 @@ export default function HomePage() {
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link href="/app/setup" className="btn-primary">
-                Set up your dispatch
+                Create your dispatch
               </Link>
               <Link href="/app" className="btn-secondary">
                 Peek at today’s dispatch

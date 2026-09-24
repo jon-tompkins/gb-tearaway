@@ -49,6 +49,14 @@ function sizeLabel(sz: "half" | "full" | "double" | undefined): string {
   return sz === "half" ? "½" : sz === "double" ? "2×" : "1×";
 }
 
+/** Footprint ranking so we can ask "does this module fit this card?" */
+const SIZE_RANK: Record<SlotSize, number> = { half: 1, full: 2, double: 3 };
+
+/** A module fits a card when its natural footprint is no larger than the card. */
+function moduleFitsCard(id: ModuleId, cardSize: SlotSize): boolean {
+  return SIZE_RANK[moduleSize(id)] <= SIZE_RANK[cardSize];
+}
+
 function StepBadge({ n }: { n: number }) {
   return (
     <span className="mr-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-ink text-xs font-bold text-cream">
@@ -58,10 +66,10 @@ function StepBadge({ n }: { n: number }) {
 }
 
 /**
- * Three-step module editor:
- *   1. Choose your palette (which modules you have access to).
- *   2. See your paper as a numbered grid of cards.
- *   3. Tap a card, then pick which palette modules go in it (up to 4).
+ * Two-step page editor:
+ *   1. See your paper as a numbered grid of cards; add cards and set each size.
+ *   2. Tap a card, then pick from every module that fits that card size (up to 4),
+ *      grouped by type.
  * Cards with 2+ modules get a shuffle toggle (on = random each print).
  */
 export function SlotEditor({
@@ -69,28 +77,19 @@ export function SlotEditor({
   ageBand,
   slots,
   selectedSlotId,
-  access,
   onSelectSlot,
   onChangeSlots,
   onChangePaperSize,
-  onChangeAccess,
-  modulePoolLimit,
 }: {
   paperSize: PaperSize;
   ageBand: AgeBand;
   slots: ModuleSlot[];
   selectedSlotId: string | null;
-  access: ModuleId[];
   onSelectSlot: (id: string) => void;
   onChangeSlots: (next: ModuleSlot[]) => void;
   onChangePaperSize: (size: PaperSize) => void;
-  onChangeAccess: (next: ModuleId[]) => void;
-  modulePoolLimit?: number | null;
 }) {
   const isStrip = paperSize !== "letter";
-  const limit = modulePoolLimit ?? null;
-  const atAccessCap = limit != null && access.length >= limit;
-  const accessSet = new Set(access);
   const selectedSlot = slots.find((s) => s.id === selectedSlotId) ?? null;
   const selectedIndex = slots.findIndex((s) => s.id === selectedSlotId);
   const groups = modulesByCategory();
@@ -118,8 +117,20 @@ export function SlotEditor({
     writeSlot(slotId, (s) => ({ ...s, mode: on ? "random" : "in_order", cursor: 0 }));
   }
   function setSize(slotId: string, size: SlotSize) {
-    // Card size is manual and independent of which modules are in the card.
-    onChangeSlots(slots.map((s) => (s.id === slotId ? { ...s, size } : s)));
+    // Card size is manual, but shrinking a card drops any module that no longer
+    // fits (e.g. a double-size Maze can't stay in a ½ card).
+    onChangeSlots(
+      slots.map((s) =>
+        s.id === slotId
+          ? normalizeMode({
+              ...s,
+              size,
+              moduleIds: s.moduleIds.filter((m) => moduleFitsCard(m, size)),
+              cursor: 0,
+            })
+          : s,
+      ),
+    );
   }
   const defaultDifficulty = defaultDifficultyForBand(ageBand);
   function setDifficulty(slotId: string, difficulty: number) {
@@ -136,6 +147,8 @@ export function SlotEditor({
       return;
     }
     if (s.moduleIds.length >= MAX_PER_SLOT) return;
+    // Guard: only modules that fit this card's size can go in.
+    if (!moduleFitsCard(id, s.size ?? "full")) return;
     // Seed a default difficulty when the first tunable module lands in the card.
     const seedDiff = isDifficultyModule(id) && s.difficulty == null ? defaultDifficulty : undefined;
     writeSlot(slotId, (x) => ({
@@ -143,22 +156,6 @@ export function SlotEditor({
       moduleIds: [...x.moduleIds, id],
       ...(seedDiff != null ? { difficulty: seedDiff } : {}),
     }));
-  }
-  function toggleAccess(id: ModuleId) {
-    if (accessSet.has(id)) {
-      onChangeAccess(access.filter((m) => m !== id));
-      // dropping from the palette also pulls it out of every card
-      onChangeSlots(
-        slots.map((s) =>
-          s.moduleIds.includes(id)
-            ? normalizeMode({ ...s, moduleIds: s.moduleIds.filter((m) => m !== id), cursor: 0 })
-            : s,
-        ),
-      );
-    } else {
-      if (atAccessCap) return;
-      onChangeAccess([...access, id]);
-    }
   }
 
   const renderCard = (slot: ModuleSlot) => {
@@ -334,71 +331,11 @@ export function SlotEditor({
         <PaperSizeToggle value={paperSize} onChange={onChangePaperSize} />
       </section>
 
-      {/* STEP 1 — PALETTE */}
-      <section>
-        <div className="mb-3 flex items-end justify-between gap-3">
-          <div>
-            <h2 className="font-display text-xl text-ink">
-              <StepBadge n={1} />
-              Choose your modules
-            </h2>
-            <p className="mt-1 text-sm text-ink-soft">
-              Pick the modules you want available — you&apos;ll drop these into the cards below.
-            </p>
-          </div>
-          <div className="shrink-0 rounded-full bg-paper px-3 py-1 text-sm tabular-nums text-ink-soft">
-            {access.length}
-            {limit != null ? `/${limit}` : " · unlocked"}
-          </div>
-        </div>
-
-        <div className="space-y-4">
-          {groups.map(({ category, modules }) => (
-            <div key={category.id}>
-              <h3 className="mb-2 text-xs font-bold uppercase tracking-wider text-ink-soft">
-                {category.name}
-              </h3>
-              <div className="flex flex-wrap gap-2">
-                {modules.map((mod) => {
-                  const on = accessSet.has(mod.id);
-                  const blocked = !on && atAccessCap;
-                  return (
-                    <button
-                      key={mod.id}
-                      type="button"
-                      onClick={() => toggleAccess(mod.id)}
-                      disabled={blocked}
-                      title={blocked ? "Palette limit reached" : mod.blurb}
-                      className={`rounded-full border px-3 py-1.5 text-sm font-semibold transition ${
-                        on
-                          ? "border-ink bg-ink text-cream"
-                          : "border-rule bg-paper text-ink hover:border-ink/30"
-                      } ${blocked ? "opacity-40" : ""}`}
-                    >
-                      <span className="mr-1 text-xs">{on ? "✓" : "+"}</span>
-                      {mod.name}
-                      <span
-                        className={`ml-1.5 rounded px-1 py-px text-[0.6rem] font-bold ${
-                          on ? "bg-cream/25 text-cream" : "bg-cream text-ink-soft"
-                        }`}
-                        title={`This module is a ${moduleSize(mod.id)} card`}
-                      >
-                        {sizeLabel(moduleSize(mod.id))}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* STEP 2 — CARD GRID */}
+      {/* STEP 1 — CARD GRID */}
       <section>
         <div className="mb-3">
           <h2 className="font-display text-xl text-ink">
-            <StepBadge n={2} />
+            <StepBadge n={1} />
             Your paper
           </h2>
           <p className="mt-1 text-sm text-ink-soft">
@@ -449,64 +386,90 @@ export function SlotEditor({
         </div>
       </section>
 
-      {/* STEP 3 — FILL SELECTED CARD */}
+      {/* STEP 2 — FILL SELECTED CARD */}
       <section>
         {!selectedSlot ? (
           <p className="text-sm text-ink-soft">
-            <StepBadge n={3} />
+            <StepBadge n={2} />
             Select a card above to choose what goes in it.
           </p>
         ) : (
-          <>
-            <div className="mb-3">
-              <h2 className="font-display text-xl text-ink">
-                <StepBadge n={3} />
-                What goes in Card {selectedIndex + 1}?
-              </h2>
-              <p className="mt-1 text-sm text-ink-soft">
-                Tap modules from your palette to add or remove them.{" "}
-                <span className="font-semibold text-ink">
-                  {selectedSlot.moduleIds.length}/{MAX_PER_SLOT}
-                </span>{" "}
-                chosen.
-              </p>
-            </div>
+          (() => {
+            const cardSize = selectedSlot.size ?? "full";
+            const full = selectedSlot.moduleIds.length >= MAX_PER_SLOT;
+            // Only categories that have at least one module fitting this card size.
+            const fitGroups = groups
+              .map((g) => ({
+                category: g.category,
+                modules: g.modules.filter((m) => moduleFitsCard(m.id, cardSize)),
+              }))
+              .filter((g) => g.modules.length > 0);
+            return (
+              <>
+                <div className="mb-3">
+                  <h2 className="font-display text-xl text-ink">
+                    <StepBadge n={2} />
+                    What goes in Card {selectedIndex + 1}?
+                  </h2>
+                  <p className="mt-1 text-sm text-ink-soft">
+                    Showing modules that fit a{" "}
+                    <span className="font-semibold text-ink">{sizeLabel(cardSize)}</span> card.{" "}
+                    <span className="font-semibold text-ink">
+                      {selectedSlot.moduleIds.length}/{MAX_PER_SLOT}
+                    </span>{" "}
+                    chosen — resize the card above to unlock larger modules.
+                  </p>
+                </div>
 
-            {access.length === 0 ? (
-              <p className="rounded-xl border border-dashed border-rule bg-paper/50 px-4 py-3 text-sm text-ink-soft">
-                No modules in your palette yet — pick some in step 1 first.
-              </p>
-            ) : (
-              <div className="grid gap-2 sm:grid-cols-2">
-                {access.map((id) => {
-                  const inCard = selectedSlot.moduleIds.includes(id);
-                  const full = selectedSlot.moduleIds.length >= MAX_PER_SLOT;
-                  const meta = moduleById(id);
-                  return (
-                    <button
-                      key={id}
-                      type="button"
-                      onClick={() => toggleInCard(selectedSlot.id, id)}
-                      disabled={!inCard && full}
-                      title={!inCard && full ? "Card is full (max 4)" : meta.blurb}
-                      className={`flex items-center gap-2 rounded-xl border px-3 py-2.5 text-left transition ${
-                        inCard ? "border-ink bg-ink text-cream" : "border-rule bg-paper hover:border-ink/30"
-                      } ${!inCard && full ? "opacity-40" : ""}`}
-                    >
-                      <span
-                        className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
-                          inCard ? "bg-cream text-ink" : "bg-cream text-ink-soft"
-                        }`}
-                      >
-                        {inCard ? "✓" : "+"}
-                      </span>
-                      <span className="truncate text-sm font-semibold">{meta.name}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-          </>
+                <div className="space-y-5">
+                  {fitGroups.map(({ category, modules }) => (
+                    <div key={category.id}>
+                      <h3 className="mb-2 text-xs font-bold uppercase tracking-wider text-ink-soft">
+                        {category.name}
+                      </h3>
+                      <div className="grid gap-2 sm:grid-cols-2">
+                        {modules.map((mod) => {
+                          const inCard = selectedSlot.moduleIds.includes(mod.id);
+                          const blocked = !inCard && full;
+                          return (
+                            <button
+                              key={mod.id}
+                              type="button"
+                              onClick={() => toggleInCard(selectedSlot.id, mod.id)}
+                              disabled={blocked}
+                              title={blocked ? "Card is full (max 4)" : mod.blurb}
+                              className={`flex items-center gap-2 rounded-xl border px-3 py-2.5 text-left transition ${
+                                inCard
+                                  ? "border-ink bg-ink text-cream"
+                                  : "border-rule bg-paper hover:border-ink/30"
+                              } ${blocked ? "opacity-40" : ""}`}
+                            >
+                              <span
+                                className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
+                                  inCard ? "bg-cream text-ink" : "bg-cream text-ink-soft"
+                                }`}
+                              >
+                                {inCard ? "✓" : "+"}
+                              </span>
+                              <span className="flex-1 truncate text-sm font-semibold">{mod.name}</span>
+                              <span
+                                className={`rounded px-1 py-px text-[0.6rem] font-bold ${
+                                  inCard ? "bg-cream/25 text-cream" : "bg-cream text-ink-soft"
+                                }`}
+                                title={`This module is a ${moduleSize(mod.id)} card`}
+                              >
+                                {sizeLabel(moduleSize(mod.id))}
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>
+            );
+          })()
         )}
       </section>
     </div>
