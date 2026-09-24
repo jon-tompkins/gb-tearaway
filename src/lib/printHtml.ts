@@ -82,11 +82,11 @@ export function buildPrintHtml(
   .ftr1{text-align:center;font-size:6pt;font-weight:700;letter-spacing:.24em;text-transform:uppercase;color:#000;border-top:1px solid #000;padding-top:1mm;margin-top:1.5mm}
   .cols{flex:1;min-height:0;display:flex;gap:6mm}
   .col{flex:1;min-width:0;display:flex;flex-direction:column}
-  /* each card fills its share of the column: half=1, full=2, double=4 units */
-  .sec{min-height:0;overflow:hidden;display:flex;flex-direction:column;padding-bottom:2mm;border-bottom:0.5pt solid #000}
-  .sec.size-half{flex:1}
-  .sec.size-full{flex:2}
-  .sec.size-double{flex:4}
+  /* Cards size to their content (no wasted internal stretch); the puzzle/figure
+     card in each column grows to absorb the leftover so columns fill evenly. */
+  .sec{min-height:0;overflow:hidden;display:flex;flex-direction:column;padding-bottom:2mm;margin-bottom:2.5mm;border-bottom:0.5pt solid #000;flex:0 0 auto}
+  .sec:last-child{margin-bottom:0}
+  .sec.grow{flex:1 1 0}
   .sec h3{margin:0 0 1.2mm;font-size:8pt;letter-spacing:.14em;text-transform:uppercase;flex:0 0 auto}
   .sec p{margin:0 0 1mm;font-size:9.5pt;line-height:1.3;flex:0 0 auto}
   .fig{flex:1;min-height:0;margin-top:1.2mm;display:flex;align-items:center;justify-content:center}

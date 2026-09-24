@@ -137,7 +137,7 @@ export function sectionHtml(section: StripSection): string {
       .join("");
     return `<section class="sec${sizeClass}">
     <h3>${esc(section.title)}</h3>
-    <div style="flex:1;min-height:0;display:flex;flex-direction:column;justify-content:space-between">${items}</div>
+    <div style="display:flex;flex-direction:column;gap:1.8mm">${items}</div>
   </section>`;
   }
 
@@ -163,7 +163,10 @@ export function sectionHtml(section: StripSection): string {
 
   const lines = section.lines.map((l) => `<p>${esc(l)}</p>`).join("");
   const sizeClass = section.size ? ` size-${section.size}` : "";
-  return `<section class="sec${sizeClass}">
+  // Figure cards (maze/sudoku/etc.) grow to fill the column's leftover space so
+  // there's no wasted gap; text cards stay at their natural height.
+  const growClass = svg ? " grow" : "";
+  return `<section class="sec${growClass}${sizeClass}">
     <h3>${esc(section.title)}</h3>
     ${lines}
     ${svg ? `<div class="fig">${svg}</div>` : ""}
