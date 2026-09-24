@@ -53,6 +53,22 @@ export const DELIVERY_METHODS: { id: DeliveryMethod; label: string; blurb: strin
 /** Relative footprint of a card on the page: half a cell, one cell, or two. */
 export type SlotSize = "half" | "full" | "double";
 
+/** Card footprint in ½-units: half=1, full=2, double=4. */
+export function slotSizeUnits(size?: SlotSize): number {
+  return size === "double" ? 4 : size === "half" ? 1 : 2;
+}
+
+/**
+ * A single print column holds 8 ½-units — i.e. 4 full cards, 8 half cards,
+ * or 2 double cards. The editor won't let a column exceed this.
+ */
+export const COLUMN_CAPACITY_UNITS = 8;
+
+/** Strip is one column; Letter prints two. */
+export function columnCountForPaper(paper: PaperSize): number {
+  return paper === "letter" ? 2 : 1;
+}
+
 /** One fixed strip position. May hold multiple modules with a pick mode. */
 export interface ModuleSlot {
   id: string;
@@ -64,7 +80,9 @@ export interface ModuleSlot {
   size?: SlotSize;
   /** Print column (Letter = 0|1; strip is always 0). Defaults to 0. */
   column?: number;
-  /** Per-module difficulty 1–20 (for maze/sudoku/wordfind/dots). Defaults from age. */
+  /** Per-module difficulty 1–20 (for maze/sudoku/wordfind/dots), keyed by ModuleId. */
+  moduleDifficulty?: Partial<Record<ModuleId, number>>;
+  /** @deprecated Per-card difficulty. Migrated into `moduleDifficulty`. */
   difficulty?: number;
 }
 

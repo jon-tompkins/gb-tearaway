@@ -1,6 +1,12 @@
 import type { KidProfile, ModuleId, ModuleSlot, PaperSize, SlotMode } from "./types";
-import { PAPER_SLOT_COUNTS } from "./types";
-import { isModuleId } from "./modules";
+import {
+  COLUMN_CAPACITY_UNITS,
+  columnCountForPaper,
+  PAPER_SLOT_COUNTS,
+  slotSizeUnits,
+} from "./types";
+import { isModuleId, moduleSize } from "./modules";
+import { clampDifficulty, isDifficultyModule } from "./difficulty";
 import { hashString, mulberry32, pick } from "./rng";
 
 /** Build empty slots for a paper size. */
@@ -43,6 +49,33 @@ export function sanitizeModuleIds(raw: unknown): ModuleId[] {
   return unique;
 }
 
+/**
+ * Build a validated per-module difficulty map for a card. Only tunable modules
+ * (maze/sudoku/wordfind/dots) are kept. A legacy per-card `difficulty` back-fills
+ * any tunable module that has no explicit value.
+ */
+export function sanitizeModuleDifficulty(
+  raw: unknown,
+  moduleIds: ModuleId[],
+  legacy?: number,
+): Partial<Record<ModuleId, number>> | undefined {
+  const out: Partial<Record<ModuleId, number>> = {};
+  const tunable = moduleIds.filter(isDifficultyModule);
+  if (raw && typeof raw === "object") {
+    const rec = raw as Record<string, unknown>;
+    for (const id of tunable) {
+      const v = rec[id];
+      if (typeof v === "number" && Number.isFinite(v)) out[id] = clampDifficulty(v);
+    }
+  }
+  if (legacy != null) {
+    for (const id of tunable) {
+      if (out[id] == null) out[id] = clampDifficulty(legacy);
+    }
+  }
+  return Object.keys(out).length ? out : undefined;
+}
+
 function sanitizeMode(raw: unknown, moduleCount: number): SlotMode {
   if (moduleCount <= 1) return "single";
   if (raw === "in_order" || raw === "random" || raw === "single") return raw;
@@ -72,10 +105,17 @@ export function sanitizeSlots(
     const size =
       obj.size === "half" || obj.size === "double" || obj.size === "full" ? obj.size : "full";
     const column = obj.column === 1 ? 1 : 0;
-    const difficulty =
+    const legacyDifficulty =
       typeof obj.difficulty === "number" && Number.isFinite(obj.difficulty)
         ? Math.min(20, Math.max(1, Math.round(obj.difficulty)))
         : undefined;
+    // Per-module difficulty map. Migrate a legacy per-card `difficulty` onto
+    // every tunable module in the card when no explicit map is present.
+    const moduleDifficulty = sanitizeModuleDifficulty(
+      obj.moduleDifficulty,
+      moduleIds,
+      legacyDifficulty,
+    );
     return {
       id: typeof obj.id === "string" && obj.id ? obj.id : `slot-${i}`,
       moduleIds,
@@ -83,7 +123,7 @@ export function sanitizeSlots(
       cursor,
       size,
       column,
-      ...(difficulty != null ? { difficulty } : {}),
+      ...(moduleDifficulty ? { moduleDifficulty } : {}),
     };
   });
 
@@ -190,10 +230,49 @@ export function demoSlotsStrip58(): ModuleSlot[] {
   ];
 }
 
+/**
+ * Pack one module per card, each card sized to the module's natural footprint,
+ * filling columns greedily without exceeding a column's 8-unit capacity.
+ * Anything that doesn't fit the page is dropped.
+ */
+export function packModulesIntoSlots(
+  moduleIds: ModuleId[],
+  paperSize: PaperSize,
+): ModuleSlot[] {
+  const columns = columnCountForPaper(paperSize);
+  const used = new Array<number>(columns).fill(0);
+  const slots: ModuleSlot[] = [];
+  let i = 0;
+  for (const id of moduleIds) {
+    const size = moduleSize(id);
+    const units = slotSizeUnits(size);
+    // Least-filled column that still has room.
+    let best = -1;
+    for (let c = 0; c < columns; c++) {
+      if (used[c] + units <= COLUMN_CAPACITY_UNITS && (best < 0 || used[c] < used[best])) {
+        best = c;
+      }
+    }
+    if (best < 0) continue; // page is full
+    used[best] += units;
+    slots.push({
+      id: `slot-${i++}`,
+      moduleIds: [id],
+      mode: "single",
+      cursor: 0,
+      size,
+      column: best,
+    });
+  }
+  return slots;
+}
+
 export function defaultSlotsForNewKid(paperSize: PaperSize = "strip58"): ModuleSlot[] {
+  // Fills a single column exactly (maze 2× + four ½ cards = 8 units); Letter
+  // gets a balanced second column.
   const defaults: ModuleId[] =
     paperSize === "letter"
-      ? ["word", "joke", "maze", "weather", "fact", "doodle"]
-      : ["word", "joke", "doodle", "maze"];
-  return migrateModulesToSlots(defaults, paperSize);
+      ? ["maze", "weather", "word", "joke", "fact", "history", "doodle", "spanish"]
+      : ["maze", "word", "joke", "doodle", "fact"];
+  return packModulesIntoSlots(defaults, paperSize);
 }

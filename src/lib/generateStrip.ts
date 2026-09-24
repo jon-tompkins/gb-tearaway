@@ -71,12 +71,17 @@ export function generateStrip(
   // print column (Letter = 0|1) per resolved body section, in order
   const slotColById = new Map(kidNorm.slots.map((s) => [s.id, s.column === 1 ? 1 : 0]));
   const bodyCols = resolved.map((r) => slotColById.get(r.slotId) ?? 0);
-  // per-module difficulty (1–20); falls back to the age-band default
+  // per-module difficulty (1–20); falls back to a legacy per-card value, then
+  // the age-band default. Keyed to the resolved (slot, module) pair.
   const ageDefaultDiff = defaultDifficultyForBand(kid.ageBand);
-  const slotDiffById = new Map(
-    kidNorm.slots.map((s) => [s.id, s.difficulty != null ? clampDifficulty(s.difficulty) : ageDefaultDiff]),
-  );
-  const bodyDiffs = resolved.map((r) => slotDiffById.get(r.slotId) ?? ageDefaultDiff);
+  const slotById = new Map(kidNorm.slots.map((s) => [s.id, s]));
+  const bodyDiffs = resolved.map((r) => {
+    const s = slotById.get(r.slotId);
+    const perModule = s?.moduleDifficulty?.[r.moduleId];
+    if (perModule != null) return clampDifficulty(perModule);
+    if (s?.difficulty != null) return clampDifficulty(s.difficulty);
+    return ageDefaultDiff;
+  });
 
   const paperWidthMm = paperSize === "letter" ? 216 : 58;
   const widthPx = paperSize === "letter" ? LETTER_WIDTH_PX : STRIP_WIDTH_PX;

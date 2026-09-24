@@ -1,7 +1,7 @@
 "use client";
 
 import type { AgeBand, ModuleId, ModuleSlot, PaperSize, SlotMode, SlotSize } from "@/lib/types";
-import { PAPER_SIZE_META } from "@/lib/types";
+import { COLUMN_CAPACITY_UNITS, PAPER_SIZE_META, slotSizeUnits } from "@/lib/types";
 import { moduleById, moduleSize, modulesByCategory } from "@/lib/modules";
 import {
   DIFFICULTY_MAX,
@@ -57,6 +57,20 @@ function moduleFitsCard(id: ModuleId, cardSize: SlotSize): boolean {
   return SIZE_RANK[moduleSize(id)] <= SIZE_RANK[cardSize];
 }
 
+/** Keep only the difficulty entries for modules still present in the card. */
+function pruneDifficulty(
+  map: Partial<Record<ModuleId, number>> | undefined,
+  keep: ModuleId[],
+): Partial<Record<ModuleId, number>> | undefined {
+  if (!map) return undefined;
+  const out: Partial<Record<ModuleId, number>> = {};
+  for (const id of keep) {
+    const v = map[id];
+    if (v != null) out[id] = v;
+  }
+  return Object.keys(out).length ? out : undefined;
+}
+
 function StepBadge({ n }: { n: number }) {
   return (
     <span className="mr-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-ink text-xs font-bold text-cream">
@@ -94,9 +108,22 @@ export function SlotEditor({
   const selectedIndex = slots.findIndex((s) => s.id === selectedSlotId);
   const groups = modulesByCategory();
 
+  // ½-unit budget: each print column holds COLUMN_CAPACITY_UNITS.
+  function usedUnits(column: number, excludeId?: string): number {
+    return slots
+      .filter((s) => (s.column ?? 0) === column && s.id !== excludeId)
+      .reduce((sum, s) => sum + slotSizeUnits(s.size ?? "full"), 0);
+  }
+  function remainingUnits(column: number, excludeId?: string): number {
+    return COLUMN_CAPACITY_UNITS - usedUnits(column, excludeId);
+  }
+
   function addCard(column: number) {
+    const remaining = remainingUnits(column);
+    if (remaining <= 0) return; // column is full
+    const size: SlotSize = remaining >= 2 ? "full" : "half";
     const id = `slot-${Date.now().toString(36)}${Math.floor(Math.random() * 1000)}`;
-    onChangeSlots([...slots, { id, moduleIds: [], mode: "single", cursor: 0, size: "full", column }]);
+    onChangeSlots([...slots, { id, moduleIds: [], mode: "single", cursor: 0, size, column }]);
     onSelectSlot(id);
   }
   function removeCard(slotId: string) {
@@ -117,27 +144,37 @@ export function SlotEditor({
     writeSlot(slotId, (s) => ({ ...s, mode: on ? "random" : "in_order", cursor: 0 }));
   }
   function setSize(slotId: string, size: SlotSize) {
-    // Card size is manual, but shrinking a card drops any module that no longer
-    // fits (e.g. a double-size Maze can't stay in a ½ card).
+    const s = slots.find((x) => x.id === slotId);
+    if (!s) return;
+    // Don't let a resize blow past the column's ½-unit budget.
+    if (remainingUnits(s.column ?? 0, slotId) < slotSizeUnits(size)) return;
+    // Shrinking a card drops any module that no longer fits (a double-size Maze
+    // can't stay in a ½ card) plus its difficulty entry.
+    const keep = s.moduleIds.filter((m) => moduleFitsCard(m, size));
+    const nextDiff = pruneDifficulty(s.moduleDifficulty, keep);
     onChangeSlots(
-      slots.map((s) =>
-        s.id === slotId
-          ? normalizeMode({
-              ...s,
-              size,
-              moduleIds: s.moduleIds.filter((m) => moduleFitsCard(m, size)),
-              cursor: 0,
-            })
-          : s,
+      slots.map((x) =>
+        x.id === slotId
+          ? normalizeMode({ ...x, size, moduleIds: keep, cursor: 0, moduleDifficulty: nextDiff })
+          : x,
       ),
     );
   }
   const defaultDifficulty = defaultDifficultyForBand(ageBand);
-  function setDifficulty(slotId: string, difficulty: number) {
-    onChangeSlots(slots.map((s) => (s.id === slotId ? { ...s, difficulty } : s)));
+  function setModuleDifficulty(slotId: string, moduleId: ModuleId, difficulty: number) {
+    onChangeSlots(
+      slots.map((s) =>
+        s.id === slotId
+          ? { ...s, moduleDifficulty: { ...(s.moduleDifficulty ?? {}), [moduleId]: difficulty } }
+          : s,
+      ),
+    );
   }
   function removeFromCard(slotId: string, id: ModuleId) {
-    writeSlot(slotId, (s) => ({ ...s, moduleIds: s.moduleIds.filter((m) => m !== id), cursor: 0 }));
+    writeSlot(slotId, (s) => {
+      const moduleIds = s.moduleIds.filter((m) => m !== id);
+      return { ...s, moduleIds, cursor: 0, moduleDifficulty: pruneDifficulty(s.moduleDifficulty, moduleIds) };
+    });
   }
   function toggleInCard(slotId: string, id: ModuleId) {
     const s = slots.find((x) => x.id === slotId);
@@ -149,12 +186,14 @@ export function SlotEditor({
     if (s.moduleIds.length >= MAX_PER_SLOT) return;
     // Guard: only modules that fit this card's size can go in.
     if (!moduleFitsCard(id, s.size ?? "full")) return;
-    // Seed a default difficulty when the first tunable module lands in the card.
-    const seedDiff = isDifficultyModule(id) && s.difficulty == null ? defaultDifficulty : undefined;
+    // Seed a per-module default difficulty when a tunable module lands in the card.
+    const seed = isDifficultyModule(id) && s.moduleDifficulty?.[id] == null ? defaultDifficulty : undefined;
     writeSlot(slotId, (x) => ({
       ...x,
       moduleIds: [...x.moduleIds, id],
-      ...(seedDiff != null ? { difficulty: seedDiff } : {}),
+      ...(seed != null
+        ? { moduleDifficulty: { ...(x.moduleDifficulty ?? {}), [id]: seed } }
+        : {}),
     }));
   }
 
@@ -165,12 +204,11 @@ export function SlotEditor({
     const multi = n >= 2;
     const shuffleOn = slot.mode === "random";
     const size = slot.size ?? "full";
-    // proportional row-spans so 4×½ = 2×full = 1×double, aligned on a shared grid
-    const spanClass = size === "double" ? "row-span-4" : size === "half" ? "row-span-1" : "row-span-2";
-    // short ½ card → one row of 4 tiles; taller cards → 2×2
-    const tileGridClass = size === "half" ? "grid-cols-4 grid-rows-1" : "grid-cols-2 grid-rows-2";
-    const hasDiff = slot.moduleIds.some(isDifficultyModule);
-    const diffVal = slot.difficulty ?? defaultDifficulty;
+    // Proportional row-spans so 4×½ = 2×full = 1×double, aligned on a shared grid.
+    // Each tier is roomy enough to hold a 2×2 module grid and its controls.
+    const spanClass = size === "double" ? "row-span-8" : size === "half" ? "row-span-2" : "row-span-4";
+    const tileGridClass = "grid-cols-2 grid-rows-2";
+    const usedExcl = usedUnits(slot.column ?? 0, slot.id);
     return (
       <div
         key={slot.id}
@@ -192,22 +230,35 @@ export function SlotEditor({
             {i + 1}
           </span>
           <div className="flex gap-0.5" onClick={(e) => e.stopPropagation()}>
-            {(["half", "full", "double"] as const).map((sz) => (
-              <button
-                key={sz}
-                type="button"
-                title={sz === "half" ? "Half card" : sz === "full" ? "One card" : "Double (tall)"}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setSize(slot.id, sz);
-                }}
-                className={`rounded px-1.5 py-0.5 text-[0.55rem] font-bold uppercase transition ${
-                  size === sz ? "bg-ink text-cream" : "border border-rule bg-paper text-ink-soft"
-                }`}
-              >
-                {sizeLabel(sz)}
-              </button>
-            ))}
+            {(["half", "full", "double"] as const).map((sz) => {
+              const fits = usedExcl + slotSizeUnits(sz) <= COLUMN_CAPACITY_UNITS;
+              const disabled = !fits && size !== sz;
+              return (
+                <button
+                  key={sz}
+                  type="button"
+                  disabled={disabled}
+                  title={
+                    disabled
+                      ? "Not enough room left in this column"
+                      : sz === "half"
+                        ? "Half card"
+                        : sz === "full"
+                          ? "One card"
+                          : "Double (tall)"
+                  }
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSize(slot.id, sz);
+                  }}
+                  className={`rounded px-1.5 py-0.5 text-[0.55rem] font-bold uppercase transition ${
+                    size === sz ? "bg-ink text-cream" : "border border-rule bg-paper text-ink-soft"
+                  } ${disabled ? "opacity-30" : ""}`}
+                >
+                  {sizeLabel(sz)}
+                </button>
+              );
+            })}
           </div>
           <span className="ml-auto flex items-center gap-1">
             {multi ? (
@@ -240,29 +291,6 @@ export function SlotEditor({
             </button>
           </span>
         </div>
-
-        {hasDiff ? (
-          <div
-            className="mb-1.5 flex items-center gap-2 rounded-lg bg-paper/60 px-2 py-1"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <span className="text-[0.55rem] font-bold uppercase tracking-wide text-ink-soft">
-              Difficulty
-            </span>
-            <input
-              type="range"
-              min={DIFFICULTY_MIN}
-              max={DIFFICULTY_MAX}
-              value={diffVal}
-              onChange={(e) => setDifficulty(slot.id, Number(e.target.value))}
-              className="h-1 flex-1 cursor-pointer accent-ink"
-              title={`Difficulty ${diffVal} of ${DIFFICULTY_MAX}`}
-            />
-            <span className="w-4 text-center text-[0.7rem] font-bold tabular-nums text-ink">
-              {diffVal}
-            </span>
-          </div>
-        ) : null}
 
         <div className={`grid flex-1 min-h-0 gap-1.5 ${tileGridClass}`}>
           {Array.from({ length: MAX_PER_SLOT }).map((_, idx) => {
@@ -310,15 +338,24 @@ export function SlotEditor({
     );
   };
 
-  const addCardBtn = (col: number, label: string) => (
-    <button
-      type="button"
-      onClick={() => addCard(col)}
-      className="h-full w-full rounded-xl border-2 border-dashed border-rule py-2 text-sm font-semibold text-ink-soft transition hover:border-ink/40 hover:text-ink"
-    >
-      {label}
-    </button>
-  );
+  const addCardBtn = (col: number) => {
+    const full = remainingUnits(col) <= 0;
+    return (
+      <button
+        type="button"
+        disabled={full}
+        onClick={() => addCard(col)}
+        title={full ? "This column is full — remove or shrink a card to add more" : undefined}
+        className={`h-full w-full rounded-xl border-2 border-dashed border-rule py-2 text-sm font-semibold transition ${
+          full
+            ? "cursor-not-allowed text-ink-soft/50 opacity-50"
+            : "text-ink-soft hover:border-ink/40 hover:text-ink"
+        }`}
+      >
+        {full ? "Page full" : "+ Add card"}
+      </button>
+    );
+  };
 
   return (
     <div className="space-y-9">
@@ -356,7 +393,7 @@ export function SlotEditor({
           {isStrip ? (
             <div className="grid grid-cols-1 gap-3 [grid-auto-rows:52px]">
               {slots.filter((s) => (s.column ?? 0) === 0).map((slot) => renderCard(slot))}
-              <div className="row-span-1">{addCardBtn(0, "+ Add card")}</div>
+              <div className="row-span-1">{addCardBtn(0)}</div>
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-x-6 gap-y-3">
@@ -367,7 +404,7 @@ export function SlotEditor({
                   </div>
                   <div className="grid grid-cols-1 gap-3 [grid-auto-rows:52px]">
                     {slots.filter((s) => (s.column ?? 0) === col).map((slot) => renderCard(slot))}
-                    <div className="row-span-1">{addCardBtn(col, "+ Add card")}</div>
+                    <div className="row-span-1">{addCardBtn(col)}</div>
                   </div>
                 </div>
               ))}
@@ -420,6 +457,38 @@ export function SlotEditor({
                     chosen — resize the card above to unlock larger modules.
                   </p>
                 </div>
+
+                {selectedSlot.moduleIds.some(isDifficultyModule) ? (
+                  <div className="mb-5 space-y-2 rounded-xl border border-rule bg-paper/50 p-3">
+                    <div className="text-xs font-bold uppercase tracking-wider text-ink-soft">
+                      Difficulty · per module
+                    </div>
+                    {selectedSlot.moduleIds.filter(isDifficultyModule).map((id) => {
+                      const val = selectedSlot.moduleDifficulty?.[id] ?? defaultDifficulty;
+                      return (
+                        <div key={id} className="flex items-center gap-3">
+                          <span className="w-28 shrink-0 truncate text-sm font-semibold text-ink">
+                            {moduleById(id).name}
+                          </span>
+                          <input
+                            type="range"
+                            min={DIFFICULTY_MIN}
+                            max={DIFFICULTY_MAX}
+                            value={val}
+                            onChange={(e) =>
+                              setModuleDifficulty(selectedSlot.id, id, Number(e.target.value))
+                            }
+                            className="h-1 flex-1 cursor-pointer accent-ink"
+                            title={`Difficulty ${val} of ${DIFFICULTY_MAX}`}
+                          />
+                          <span className="w-5 text-center text-sm font-bold tabular-nums text-ink">
+                            {val}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : null}
 
                 <div className="space-y-5">
                   {fitGroups.map(({ category, modules }) => (
