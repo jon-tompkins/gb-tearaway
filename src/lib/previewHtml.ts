@@ -69,8 +69,21 @@ function weatherHtml(w: WeatherSnapshot, opts: { compact?: boolean } = {}): stri
       opts.compact ? hiLo : ""
     }</span>
   </div>`;
-  // Compact (half card): today only — skip the periods row and the 7-day strip.
+  // Compact (half card): today + the 7-day forecast, but skip the
+  // morning/afternoon/evening periods row to keep it small.
   if (opts.compact) {
+    if (w.daily?.length) {
+      h += `<div style="display:flex;gap:2px;border-top:1px solid #000;padding-top:1.2mm;margin-top:1mm">${w.daily
+        .map(
+          (d) => `<div style="flex:1;text-align:center">
+        <div style="font-size:5.5pt;font-weight:700;text-transform:uppercase">${esc(d.day)}</div>
+        <div style="line-height:0;margin:1px 0">${weatherIcon(d.code, 12)}</div>
+        <div style="font-size:6pt;font-weight:700">${d.hi != null ? d.hi : "—"}°</div>
+        <div style="font-size:5.5pt">${d.lo != null ? d.lo : "—"}°</div>
+      </div>`,
+        )
+        .join("")}</div>`;
+    }
     h += `</div>`;
     return h;
   }
@@ -166,10 +179,11 @@ export function sectionHtml(section: StripSection): string {
   // Figure cards (maze/sudoku/etc.) grow to fill the column's leftover space so
   // there's no wasted gap; text cards stay at their natural height.
   const growClass = svg ? " grow" : "";
+  const figClass = section.kind === "maze" ? "fig fig-fill" : "fig";
   return `<section class="sec${growClass}${sizeClass}">
     <h3>${esc(section.title)}</h3>
     ${lines}
-    ${svg ? `<div class="fig">${svg}</div>` : ""}
+    ${svg ? `<div class="${figClass}">${svg}</div>` : ""}
   </section>`;
 }
 

@@ -224,5 +224,5 @@ export function mazeToSvg(
   lines.push(`<circle cx="${sc}" cy="${sr}" r="${cell * 0.18}" fill="#111"/>`);
   lines.push(`<circle cx="${ec}" cy="${er}" r="${cell * 0.18}" fill="none" stroke="#111" stroke-width="${stroke}"/>`);
 
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" role="img" aria-label="Solvable maze puzzle">${lines.join("")}</svg>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" preserveAspectRatio="none" role="img" aria-label="Solvable maze puzzle">${lines.join("")}</svg>`;
 }
