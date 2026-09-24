@@ -272,7 +272,7 @@ export function defaultSlotsForNewKid(paperSize: PaperSize = "strip58"): ModuleS
   // gets a balanced second column.
   const defaults: ModuleId[] =
     paperSize === "letter"
-      ? ["maze", "weather", "word", "joke", "fact", "history", "doodle", "spanish"]
-      : ["maze", "word", "joke", "doodle", "fact"];
+      ? ["maze", "wordfind", "word", "joke", "weather", "fact", "history", "doodle"]
+      : ["maze", "word", "joke", "weather", "fact"];
   return packModulesIntoSlots(defaults, paperSize);
 }

@@ -50,12 +50,13 @@ function sizeLabel(sz: "half" | "full" | "double" | undefined): string {
   return sz === "half" ? "½" : sz === "double" ? "2×" : "1×";
 }
 
-/** Footprint ranking so we can ask "does this module fit this card?" */
-const SIZE_RANK: Record<SlotSize, number> = { half: 1, full: 2, double: 3 };
-
-/** A module fits a card when its natural footprint is no larger than the card. */
+/**
+ * A module fits a card only when its footprint matches the card size exactly —
+ * a 2× card takes only 2× modules, a ½ card only ½ modules. (Flexible modules
+ * that come in multiple sizes, e.g. World News 1× vs 2×, can be added later.)
+ */
 function moduleFitsCard(id: ModuleId, cardSize: SlotSize): boolean {
-  return SIZE_RANK[moduleSize(id)] <= SIZE_RANK[cardSize];
+  return moduleSize(id) === cardSize;
 }
 
 /** Keep only the difficulty entries for modules still present in the card. */
@@ -70,6 +71,128 @@ function pruneDifficulty(
     if (v != null) out[id] = v;
   }
   return Object.keys(out).length ? out : undefined;
+}
+
+/**
+ * A filled circle showing a module's difficulty (1–20). Click to open a small
+ * slider popover and adjust. `onDark` flips colors for use on a selected row.
+ */
+function DifficultyDial({
+  value,
+  onChange,
+  onDark = false,
+}: {
+  value: number;
+  onChange: (v: number) => void;
+  onDark?: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  return (
+    <span className="relative shrink-0" onClick={(e) => e.stopPropagation()}>
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        title={`Difficulty ${value} of ${DIFFICULTY_MAX} — click to adjust`}
+        className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold tabular-nums transition hover:opacity-80 ${
+          onDark ? "bg-cream text-ink" : "bg-ink text-cream"
+        }`}
+      >
+        {value}
+      </button>
+      {open ? (
+        <>
+          <span className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
+          <span className="absolute right-0 top-9 z-50 flex w-52 flex-col gap-1.5 rounded-xl border border-rule bg-cream p-3 text-ink shadow-lg">
+            <span className="flex items-center justify-between text-[0.6rem] font-bold uppercase tracking-wide text-ink-soft">
+              <span>Difficulty</span>
+              <span className="text-ink">
+                {value}/{DIFFICULTY_MAX}
+              </span>
+            </span>
+            <input
+              type="range"
+              min={DIFFICULTY_MIN}
+              max={DIFFICULTY_MAX}
+              value={value}
+              onChange={(e) => onChange(Number(e.target.value))}
+              className="h-1 w-full cursor-pointer accent-ink"
+            />
+            <span className="flex justify-between text-[0.55rem] text-ink-soft">
+              <span>Easier</span>
+              <span>Harder</span>
+            </span>
+          </span>
+        </>
+      ) : null}
+    </span>
+  );
+}
+
+/**
+ * One selectable module row (used in the picker modal and the fill step).
+ * Selected modules render in solid ink; tunable in-card modules show a
+ * clickable difficulty dial instead of the size badge.
+ */
+function ModuleOption({
+  id,
+  name,
+  blurb,
+  inCard,
+  blocked,
+  difficulty,
+  onToggle,
+  onDifficulty,
+}: {
+  id: ModuleId;
+  name: string;
+  blurb: string;
+  inCard: boolean;
+  blocked: boolean;
+  difficulty: number;
+  onToggle: () => void;
+  onDifficulty: (v: number) => void;
+}) {
+  const tunable = isDifficultyModule(id);
+  return (
+    <div
+      role="button"
+      aria-pressed={inCard}
+      aria-disabled={blocked}
+      tabIndex={blocked ? -1 : 0}
+      onClick={() => !blocked && onToggle()}
+      onKeyDown={(e) => {
+        if (!blocked && (e.key === "Enter" || e.key === " ")) {
+          e.preventDefault();
+          onToggle();
+        }
+      }}
+      title={blocked ? "Card is full (max 4)" : blurb}
+      className={`flex items-center gap-2 rounded-xl border px-3 py-2.5 text-left transition ${
+        inCard ? "border-ink bg-ink text-cream" : "border-rule bg-paper hover:border-ink/30"
+      } ${blocked ? "cursor-not-allowed opacity-40" : "cursor-pointer"}`}
+    >
+      <span
+        className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
+          inCard ? "bg-cream text-ink" : "bg-cream text-ink-soft"
+        }`}
+      >
+        {inCard ? "✓" : "+"}
+      </span>
+      <span className="flex-1 truncate text-sm font-semibold">{name}</span>
+      {inCard && tunable ? (
+        <DifficultyDial value={difficulty} onChange={onDifficulty} onDark />
+      ) : (
+        <span
+          className={`rounded px-1 py-px text-[0.6rem] font-bold ${
+            inCard ? "bg-cream/25 text-cream" : "bg-cream text-ink-soft"
+          }`}
+          title={`This module is a ${moduleSize(id)} card`}
+        >
+          {sizeLabel(moduleSize(id))}
+        </span>
+      )}
+    </div>
+  );
 }
 
 function StepBadge({ n }: { n: number }) {
@@ -473,46 +596,14 @@ export function SlotEditor({
                     What goes in Card {selectedIndex + 1}?
                   </h2>
                   <p className="mt-1 text-sm text-ink-soft">
-                    Showing modules that fit a{" "}
-                    <span className="font-semibold text-ink">{sizeLabel(cardSize)}</span> card.{" "}
+                    Only modules sized for this{" "}
+                    <span className="font-semibold text-ink">{sizeLabel(cardSize)}</span> card show.{" "}
                     <span className="font-semibold text-ink">
                       {selectedSlot.moduleIds.length}/{MAX_PER_SLOT}
                     </span>{" "}
-                    chosen — resize the card above to unlock larger modules.
+                    chosen — tap a module&apos;s difficulty circle to tune it.
                   </p>
                 </div>
-
-                {selectedSlot.moduleIds.some(isDifficultyModule) ? (
-                  <div className="mb-5 space-y-2 rounded-xl border border-rule bg-paper/50 p-3">
-                    <div className="text-xs font-bold uppercase tracking-wider text-ink-soft">
-                      Difficulty · per module
-                    </div>
-                    {selectedSlot.moduleIds.filter(isDifficultyModule).map((id) => {
-                      const val = selectedSlot.moduleDifficulty?.[id] ?? defaultDifficulty;
-                      return (
-                        <div key={id} className="flex items-center gap-3">
-                          <span className="w-28 shrink-0 truncate text-sm font-semibold text-ink">
-                            {moduleById(id).name}
-                          </span>
-                          <input
-                            type="range"
-                            min={DIFFICULTY_MIN}
-                            max={DIFFICULTY_MAX}
-                            value={val}
-                            onChange={(e) =>
-                              setModuleDifficulty(selectedSlot.id, id, Number(e.target.value))
-                            }
-                            className="h-1 flex-1 cursor-pointer accent-ink"
-                            title={`Difficulty ${val} of ${DIFFICULTY_MAX}`}
-                          />
-                          <span className="w-5 text-center text-sm font-bold tabular-nums text-ink">
-                            {val}
-                          </span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                ) : null}
 
                 <div className="space-y-5">
                   {fitGroups.map(({ category, modules }) => (
@@ -523,37 +614,18 @@ export function SlotEditor({
                       <div className="grid gap-2 sm:grid-cols-2">
                         {modules.map((mod) => {
                           const inCard = selectedSlot.moduleIds.includes(mod.id);
-                          const blocked = !inCard && full;
                           return (
-                            <button
+                            <ModuleOption
                               key={mod.id}
-                              type="button"
-                              onClick={() => toggleInCard(selectedSlot.id, mod.id)}
-                              disabled={blocked}
-                              title={blocked ? "Card is full (max 4)" : mod.blurb}
-                              className={`flex items-center gap-2 rounded-xl border px-3 py-2.5 text-left transition ${
-                                inCard
-                                  ? "border-ink bg-ink text-cream"
-                                  : "border-rule bg-paper hover:border-ink/30"
-                              } ${blocked ? "opacity-40" : ""}`}
-                            >
-                              <span
-                                className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
-                                  inCard ? "bg-cream text-ink" : "bg-cream text-ink-soft"
-                                }`}
-                              >
-                                {inCard ? "✓" : "+"}
-                              </span>
-                              <span className="flex-1 truncate text-sm font-semibold">{mod.name}</span>
-                              <span
-                                className={`rounded px-1 py-px text-[0.6rem] font-bold ${
-                                  inCard ? "bg-cream/25 text-cream" : "bg-cream text-ink-soft"
-                                }`}
-                                title={`This module is a ${moduleSize(mod.id)} card`}
-                              >
-                                {sizeLabel(moduleSize(mod.id))}
-                              </span>
-                            </button>
+                              id={mod.id}
+                              name={mod.name}
+                              blurb={mod.blurb}
+                              inCard={inCard}
+                              blocked={!inCard && full}
+                              difficulty={selectedSlot.moduleDifficulty?.[mod.id] ?? defaultDifficulty}
+                              onToggle={() => toggleInCard(selectedSlot.id, mod.id)}
+                              onDifficulty={(v) => setModuleDifficulty(selectedSlot.id, mod.id, v)}
+                            />
                           );
                         })}
                       </div>
@@ -617,37 +689,18 @@ export function SlotEditor({
                         <div className="grid gap-2 sm:grid-cols-2">
                           {modules.map((mod) => {
                             const inCard = pickerSlot.moduleIds.includes(mod.id);
-                            const blocked = !inCard && cardFull;
                             return (
-                              <button
+                              <ModuleOption
                                 key={mod.id}
-                                type="button"
-                                onClick={() => toggleInCard(pickerSlot.id, mod.id)}
-                                disabled={blocked}
-                                title={blocked ? "Card is full (max 4)" : mod.blurb}
-                                className={`flex items-center gap-2 rounded-xl border px-3 py-2.5 text-left transition ${
-                                  inCard
-                                    ? "border-ink bg-ink text-cream"
-                                    : "border-rule bg-paper hover:border-ink/30"
-                                } ${blocked ? "opacity-40" : ""}`}
-                              >
-                                <span
-                                  className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
-                                    inCard ? "bg-cream text-ink" : "bg-cream text-ink-soft"
-                                  }`}
-                                >
-                                  {inCard ? "✓" : "+"}
-                                </span>
-                                <span className="flex-1 truncate text-sm font-semibold">{mod.name}</span>
-                                <span
-                                  className={`rounded px-1 py-px text-[0.6rem] font-bold ${
-                                    inCard ? "bg-cream/25 text-cream" : "bg-cream text-ink-soft"
-                                  }`}
-                                  title={`This module is a ${moduleSize(mod.id)} card`}
-                                >
-                                  {sizeLabel(moduleSize(mod.id))}
-                                </span>
-                              </button>
+                                id={mod.id}
+                                name={mod.name}
+                                blurb={mod.blurb}
+                                inCard={inCard}
+                                blocked={!inCard && cardFull}
+                                difficulty={pickerSlot.moduleDifficulty?.[mod.id] ?? defaultDifficulty}
+                                onToggle={() => toggleInCard(pickerSlot.id, mod.id)}
+                                onDifficulty={(v) => setModuleDifficulty(pickerSlot.id, mod.id, v)}
+                              />
                             );
                           })}
                         </div>
