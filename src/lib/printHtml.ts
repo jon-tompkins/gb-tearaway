@@ -53,8 +53,11 @@ export function buildPrintHtml(
   // Letter is a valid named size. The 58mm strip is a continuous roll, so we
   // measure the rendered height on load and inject an exact `@page{size:58mm Hmm}`
   // (mixing a length with `auto` is invalid CSS and gets dropped → Letter fallback).
+  // margin:0 suppresses the browser's own print header/footer (the page URL,
+  // date, and title it injects into the margins). We reinstate a safe print
+  // margin as padding inside .sheet instead.
   const page = isLetter
-    ? "@page{size:Letter;margin:10mm 12mm}"
+    ? "@page{size:Letter;margin:0}"
     : "@page{size:58mm 200mm;margin:0}";
 
   // 58mm paper, ~3mm side margins → ~52mm printable column.
@@ -78,7 +81,7 @@ export function buildPrintHtml(
   const letterCss = `
   html,body{background:#fff;color:#000}
   /* newspaper: two balanced columns that fill the page, a light rule under each card */
-  .sheet{width:100%;height:252mm;box-sizing:border-box;display:flex;flex-direction:column;overflow:hidden}
+  .sheet{width:100%;height:279.4mm;box-sizing:border-box;padding:12mm;display:flex;flex-direction:column;overflow:hidden}
   .hdr1{text-align:center;padding-bottom:1.6mm;margin-bottom:2.8mm;border-bottom:1.4px solid #000}
   .mast1{font-family:Georgia,'Times New Roman',serif;font-weight:700;font-size:18pt;line-height:1;letter-spacing:-.01em}
   .date1{font-size:7pt;letter-spacing:.06em;text-transform:uppercase;margin-top:1mm}
