@@ -14,8 +14,11 @@ import { sectionHtml } from "./previewHtml";
  */
 export function buildPrintHtml(
   job: PrintJob,
-  opts: { autoPrint?: boolean } = {},
+  opts: { autoPrint?: boolean; qrSvg?: string } = {},
 ): string {
+  const qrBlock = opts.qrSvg
+    ? `<div class="qr">${opts.qrSvg}<div class="qrcap">Scan for answers</div></div>`
+    : "";
   const isLetter = job.paperSize === "letter";
   const header = job.sections.find((s) => s.kind === "header");
   const body = job.sections.filter(
@@ -49,7 +52,7 @@ export function buildPrintHtml(
         .map(sectionHtml)
         .join("\n")}</div>`;
     const bodyHtml = `<div class="cols">${col(colA)}${col(colB)}</div>`;
-    const ftr1 = `<div class="ftr1"><div class="tear1">— tear here —</div><div class="brand1">Back of the Box</div></div>`;
+    const ftr1 = `<div class="ftr1"><div class="ftr1-mid"><div class="tear1">— tear here —</div><div class="brand1">Back of the Box</div></div>${qrBlock}</div>`;
     inner = [hdr1, bodyHtml, ftr1].join("\n");
   } else {
     const footer = job.sections.find((s) => s.kind === "footer");
@@ -57,6 +60,7 @@ export function buildPrintHtml(
       header ? sectionHtml(header) : "",
       body.map(sectionHtml).join("\n"),
       footer ? sectionHtml(footer) : "",
+      qrBlock,
     ].join("\n");
   }
 
@@ -86,7 +90,10 @@ export function buildPrintHtml(
   .perf{border-top:1.5px dashed #000;margin:0 10% 1.6mm}
   .tear{font-size:7pt;font-weight:700;letter-spacing:.24em}
   .closer{font-size:7pt;margin:1.6mm 0 .8mm}
-  .brand{font-size:6pt;letter-spacing:.16em;text-transform:uppercase}`;
+  .brand{font-size:6pt;letter-spacing:.16em;text-transform:uppercase}
+  .qr{text-align:center;margin-top:2mm}
+  .qr svg{width:20mm;height:20mm}
+  .qrcap{font-size:6pt;letter-spacing:.08em;text-transform:uppercase;margin-top:.8mm}`;
 
   const letterCss = `
   html,body{background:#fff;color:#000}
@@ -95,9 +102,13 @@ export function buildPrintHtml(
   .hdr1{text-align:center;padding-bottom:1.6mm;margin-bottom:2.8mm;border-bottom:1.4px solid #000}
   .mast1{font-family:Georgia,'Times New Roman',serif;font-weight:700;font-size:18pt;line-height:1;letter-spacing:-.01em}
   .date1{font-size:7pt;letter-spacing:.06em;text-transform:uppercase;margin-top:1mm}
-  .ftr1{text-align:center;border-top:1px solid #000;padding-top:1.2mm;margin-top:1.5mm}
+  .ftr1{display:flex;align-items:center;justify-content:center;gap:6mm;border-top:1px solid #000;padding-top:1.4mm;margin-top:1.5mm}
+  .ftr1-mid{text-align:center}
   .ftr1 .tear1{font-size:6pt;font-weight:700;letter-spacing:.24em;text-transform:uppercase}
   .ftr1 .brand1{font-family:Georgia,'Times New Roman',serif;font-size:8pt;font-weight:700;margin-top:.8mm}
+  .ftr1 .qr{text-align:center;line-height:0}
+  .ftr1 .qr svg{width:15mm;height:15mm}
+  .ftr1 .qrcap{font-size:5pt;letter-spacing:.06em;text-transform:uppercase;margin-top:.6mm;line-height:1}
   .cols{flex:1;min-height:0;display:flex;gap:6mm}
   .col{flex:1;min-width:0;display:grid}
   /* Each card spans its ½-unit footprint in the shared row grid, so dividers

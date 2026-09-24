@@ -28,6 +28,66 @@ function filePath(userKey: string): string {
   return path.join(FILE_DIR, `${encodeURIComponent(userKey)}.json`);
 }
 
+/** Store any JSON payload under a key (reuses the same botb_state table/file). */
+export async function savePayload(key: string, value: unknown): Promise<void> {
+  await saveRaw(key, value);
+}
+
+/** Load a JSON payload previously stored with savePayload. */
+export async function loadPayload<T>(key: string): Promise<T | null> {
+  return (await loadRaw(key)) as T | null;
+}
+
+async function loadRaw(userKey: string): Promise<unknown> {
+  if (SUPA_URL && SUPA_KEY) {
+    try {
+      const res = await fetch(
+        `${SUPA_URL}/rest/v1/${TABLE}?user_key=eq.${encodeURIComponent(userKey)}&select=state`,
+        {
+          headers: { apikey: SUPA_KEY, Authorization: `Bearer ${SUPA_KEY}` },
+          cache: "no-store",
+        },
+      );
+      if (!res.ok) return null;
+      const rows = (await res.json()) as Array<{ state: unknown }>;
+      return rows[0]?.state ?? null;
+    } catch {
+      return null;
+    }
+  }
+  try {
+    return JSON.parse(await fs.readFile(filePath(userKey), "utf8"));
+  } catch {
+    return null;
+  }
+}
+
+async function saveRaw(userKey: string, value: unknown): Promise<void> {
+  if (SUPA_URL && SUPA_KEY) {
+    try {
+      await fetch(`${SUPA_URL}/rest/v1/${TABLE}?on_conflict=user_key`, {
+        method: "POST",
+        headers: {
+          apikey: SUPA_KEY,
+          Authorization: `Bearer ${SUPA_KEY}`,
+          "Content-Type": "application/json",
+          Prefer: "resolution=merge-duplicates,return=minimal",
+        },
+        body: JSON.stringify({ user_key: userKey, state: value, updated_at: new Date().toISOString() }),
+      });
+    } catch {
+      // best effort
+    }
+    return;
+  }
+  try {
+    await fs.mkdir(FILE_DIR, { recursive: true });
+    await fs.writeFile(filePath(userKey), JSON.stringify(value, null, 2), "utf8");
+  } catch {
+    // read-only fs
+  }
+}
+
 export async function loadState(userKey: string): Promise<AppState | null> {
   if (SUPA_URL && SUPA_KEY) {
     try {

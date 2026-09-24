@@ -7,6 +7,9 @@ import { buildJobForKid, estimateJobHeight } from "@/lib/serverStrip";
 import { buildPrintHtml } from "@/lib/printHtml";
 import { readStore } from "@/lib/store";
 import { currentUserKey } from "@/lib/userKey";
+import { savePayload } from "@/lib/persist";
+import { answersToken, collectAnswers } from "@/lib/answers";
+import { qrSvg } from "@/lib/qr";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -65,7 +68,23 @@ export async function GET(req: Request) {
 
   if (format === "print" || format === "pdf") {
     const autoPrint = url.searchParams.get("auto") === "1";
-    const html = buildPrintHtml(job, { autoPrint });
+    // Persist this dispatch's answer keys under a stable token and print a QR
+    // to the public answers page (the scanning phone need not be signed in).
+    let qr: string | undefined;
+    const items = collectAnswers(job);
+    if (items.length) {
+      const token = answersToken(kid.id, job.date, job.nonce);
+      await savePayload(`answers:${token}`, {
+        kidName: job.kidName,
+        date: job.date,
+        items,
+        generatedAt: new Date().toISOString(),
+      });
+      const host = req.headers.get("x-forwarded-host") ?? req.headers.get("host") ?? url.host;
+      const proto = req.headers.get("x-forwarded-proto") ?? url.protocol.replace(":", "");
+      qr = qrSvg(`${proto}://${host}/answers/${token}`, { sizePx: 96 });
+    }
+    const html = buildPrintHtml(job, { autoPrint, qrSvg: qr });
     return new NextResponse(html, {
       status: 200,
       headers: {
