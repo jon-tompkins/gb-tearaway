@@ -1,5 +1,6 @@
 import type { AgeBand, SudokuData } from "../types";
 import { mulberry32 } from "../rng";
+import { sudokuConfigForDifficulty } from "../difficulty";
 
 function configForBand(band: AgeBand): {
   size: number; boxRows: number; boxCols: number; blanks: number; label: string;
@@ -78,8 +79,9 @@ function countSolutions(
   return count;
 }
 
-export function generateSudoku(seed: number, band: AgeBand): SudokuData {
-  const { size, boxRows, boxCols, blanks, label } = configForBand(band);
+export function generateSudoku(seed: number, band: AgeBand, difficulty?: number): SudokuData {
+  const { size, boxRows, boxCols, blanks, label } =
+    difficulty != null ? sudokuConfigForDifficulty(difficulty) : configForBand(band);
   const rand = mulberry32(seed);
   const solution = Array.from({ length: size }, () => Array.from({ length: size }, () => 0));
   fillGrid(solution, size, boxRows, boxCols, rand);

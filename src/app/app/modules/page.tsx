@@ -153,6 +153,7 @@ export default function ModulesPage() {
 
       <SlotEditor
         paperSize={paperSize}
+        ageBand={activeKid.ageBand}
         slots={slots}
         selectedSlotId={selectedSlotId}
         access={access}

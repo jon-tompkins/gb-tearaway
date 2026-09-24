@@ -1,8 +1,14 @@
 "use client";
 
-import type { ModuleId, ModuleSlot, PaperSize, SlotMode, SlotSize } from "@/lib/types";
+import type { AgeBand, ModuleId, ModuleSlot, PaperSize, SlotMode, SlotSize } from "@/lib/types";
 import { PAPER_SIZE_META } from "@/lib/types";
 import { moduleById, moduleSize, modulesByCategory } from "@/lib/modules";
+import {
+  DIFFICULTY_MAX,
+  DIFFICULTY_MIN,
+  defaultDifficultyForBand,
+  isDifficultyModule,
+} from "@/lib/difficulty";
 
 /** Hard cap of modules per card → a tidy 2×2 grid. */
 const MAX_PER_SLOT = 4;
@@ -60,6 +66,7 @@ function StepBadge({ n }: { n: number }) {
  */
 export function SlotEditor({
   paperSize,
+  ageBand,
   slots,
   selectedSlotId,
   access,
@@ -70,6 +77,7 @@ export function SlotEditor({
   modulePoolLimit,
 }: {
   paperSize: PaperSize;
+  ageBand: AgeBand;
   slots: ModuleSlot[];
   selectedSlotId: string | null;
   access: ModuleId[];
@@ -113,6 +121,10 @@ export function SlotEditor({
     // Card size is manual and independent of which modules are in the card.
     onChangeSlots(slots.map((s) => (s.id === slotId ? { ...s, size } : s)));
   }
+  const defaultDifficulty = defaultDifficultyForBand(ageBand);
+  function setDifficulty(slotId: string, difficulty: number) {
+    onChangeSlots(slots.map((s) => (s.id === slotId ? { ...s, difficulty } : s)));
+  }
   function removeFromCard(slotId: string, id: ModuleId) {
     writeSlot(slotId, (s) => ({ ...s, moduleIds: s.moduleIds.filter((m) => m !== id), cursor: 0 }));
   }
@@ -124,7 +136,13 @@ export function SlotEditor({
       return;
     }
     if (s.moduleIds.length >= MAX_PER_SLOT) return;
-    writeSlot(slotId, (x) => ({ ...x, moduleIds: [...x.moduleIds, id] }));
+    // Seed a default difficulty when the first tunable module lands in the card.
+    const seedDiff = isDifficultyModule(id) && s.difficulty == null ? defaultDifficulty : undefined;
+    writeSlot(slotId, (x) => ({
+      ...x,
+      moduleIds: [...x.moduleIds, id],
+      ...(seedDiff != null ? { difficulty: seedDiff } : {}),
+    }));
   }
   function toggleAccess(id: ModuleId) {
     if (accessSet.has(id)) {
@@ -154,6 +172,8 @@ export function SlotEditor({
     const spanClass = size === "double" ? "row-span-4" : size === "half" ? "row-span-1" : "row-span-2";
     // short ½ card → one row of 4 tiles; taller cards → 2×2
     const tileGridClass = size === "half" ? "grid-cols-4 grid-rows-1" : "grid-cols-2 grid-rows-2";
+    const hasDiff = slot.moduleIds.some(isDifficultyModule);
+    const diffVal = slot.difficulty ?? defaultDifficulty;
     return (
       <div
         key={slot.id}
@@ -223,6 +243,29 @@ export function SlotEditor({
             </button>
           </span>
         </div>
+
+        {hasDiff ? (
+          <div
+            className="mb-1.5 flex items-center gap-2 rounded-lg bg-paper/60 px-2 py-1"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <span className="text-[0.55rem] font-bold uppercase tracking-wide text-ink-soft">
+              Difficulty
+            </span>
+            <input
+              type="range"
+              min={DIFFICULTY_MIN}
+              max={DIFFICULTY_MAX}
+              value={diffVal}
+              onChange={(e) => setDifficulty(slot.id, Number(e.target.value))}
+              className="h-1 flex-1 cursor-pointer accent-ink"
+              title={`Difficulty ${diffVal} of ${DIFFICULTY_MAX}`}
+            />
+            <span className="w-4 text-center text-[0.7rem] font-bold tabular-nums text-ink">
+              {diffVal}
+            </span>
+          </div>
+        ) : null}
 
         <div className={`grid flex-1 min-h-0 gap-1.5 ${tileGridClass}`}>
           {Array.from({ length: MAX_PER_SLOT }).map((_, idx) => {

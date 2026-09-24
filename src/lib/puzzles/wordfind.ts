@@ -1,5 +1,6 @@
 import type { AgeBand, WordFindData } from "../types";
 import { mulberry32, pick, shuffle } from "../rng";
+import { wordFindConfigForDifficulty, bandFromDifficulty } from "../difficulty";
 
 const WORDS_46 = ["CAT", "SUN", "HAT", "DOG", "BUG", "MAP", "CUP", "BEE", "OWL", "PIG", "BAT", "EGG"];
 const WORDS_79 = ["STAR", "FROG", "CAKE", "MOON", "BIRD", "SHIP", "TREE", "RAIN", "BOOK", "FISH", "KITE", "LEAF"];
@@ -16,14 +17,6 @@ function sizeFor(band: AgeBand): { cols: number; rows: number; count: number } {
   if (band === "7-9") return { cols: 7, rows: 7, count: 5 };
   return { cols: 8, rows: 8, count: 5 };
 }
-
-const DIRS: [number, number][] = [
-  [0, 1],
-  [1, 0],
-  [1, 1],
-  [0, -1],
-  [-1, 0],
-];
 
 function canPlace(grid: (string | null)[][], word: string, r: number, c: number, dr: number, dc: number): boolean {
   const rows = grid.length;
@@ -44,10 +37,23 @@ function place(grid: (string | null)[][], word: string, r: number, c: number, dr
   }
 }
 
-export function generateWordFind(seed: number, band: AgeBand): WordFindData {
+export function generateWordFind(seed: number, band: AgeBand, difficulty?: number): WordFindData {
   const rng = mulberry32(seed);
-  const { cols, rows, count } = sizeFor(band);
-  const candidates = shuffle(rng, poolFor(band));
+  const cfg = difficulty != null ? wordFindConfigForDifficulty(difficulty) : null;
+  const { cols, rows, count } = cfg ?? sizeFor(band);
+  const poolBand = difficulty != null ? bandFromDifficulty(difficulty) : band;
+  // Direction set widens with difficulty: forwards → diagonals → backwards.
+  const dirSet: [number, number][] = [
+    [0, 1],
+    [1, 0],
+  ];
+  if (!cfg || cfg.diagonals) dirSet.push([1, 1], [-1, 1]);
+  if (!cfg || cfg.backwards) {
+    dirSet.push([0, -1], [-1, 0]);
+    if (!cfg || cfg.diagonals) dirSet.push([1, -1], [-1, -1]);
+  }
+  const DIRS = dirSet;
+  const candidates = shuffle(rng, poolFor(poolBand));
   const grid: (string | null)[][] = Array.from({ length: rows }, () => Array.from({ length: cols }, () => null));
   const placed: string[] = [];
 
@@ -72,7 +78,7 @@ export function generateWordFind(seed: number, band: AgeBand): WordFindData {
   );
 
   if (placed.length === 0) {
-    placed.push(pick(rng, poolFor(band)));
+    placed.push(pick(rng, poolFor(poolBand)));
   }
 
   return { cols, rows, grid: filled, words: placed };

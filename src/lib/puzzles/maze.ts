@@ -1,5 +1,6 @@
 import type { AgeBand, MazeCell, MazeData } from "../types";
 import { mulberry32 } from "../rng";
+import { mazeSizeForDifficulty, mazeCandidatesForDifficulty } from "../difficulty";
 
 function sizeForBand(band: AgeBand): { cols: number; rows: number } {
   if (band === "4-6") return { cols: 10, rows: 13 };
@@ -118,10 +119,18 @@ function difficultyScore(maze: MazeData): number {
  * for long off-path branches gives the tempting wrong turns that make a maze
  * actually tricky instead of a single obvious corridor.
  */
-export function generateMaze(seed: number, band: AgeBand): MazeData {
-  const { cols, rows } = sizeForBand(band);
+export function generateMaze(seed: number, band: AgeBand, difficulty?: number): MazeData {
+  const { cols, rows } =
+    difficulty != null ? mazeSizeForDifficulty(difficulty) : sizeForBand(band);
   // Little kids get an easy maze; bigger kids get a harder-selected one.
-  const candidates = band === "4-6" ? 6 : band === "7-9" ? 28 : 40;
+  const candidates =
+    difficulty != null
+      ? mazeCandidatesForDifficulty(difficulty)
+      : band === "4-6"
+        ? 6
+        : band === "7-9"
+          ? 28
+          : 40;
   let best = buildPerfectMaze(seed >>> 0, cols, rows);
   let bestScore = difficultyScore(best);
   for (let i = 1; i < candidates; i++) {

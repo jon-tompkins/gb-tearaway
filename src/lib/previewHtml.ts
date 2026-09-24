@@ -62,18 +62,30 @@ function weatherHtml(w: WeatherSnapshot, opts: { compact?: boolean } = {}): stri
     w.highF != null && w.lowF != null
       ? `<br><span style="font-size:7.5pt">H ${w.highF}° · L ${w.lowF}°</span>`
       : "";
-  h += `<div style="display:flex;align-items:center;gap:7px;margin-bottom:${opts.compact ? "1mm" : "2mm"}">
-    ${weatherIcon(code, opts.compact ? 28 : 34)}
-    <span style="font-size:${opts.compact ? "16pt" : "19pt"};font-weight:700;line-height:1">${now}</span>
-    <span style="font-size:8.5pt;line-height:1.15">${esc(w.label)}<br>${esc(condName(code))}${
-      opts.compact ? hiLo : ""
-    }</span>
-  </div>`;
-  // Compact (half card): today + the 7-day forecast, but skip the
-  // morning/afternoon/evening periods row to keep it small.
+  // Morning/Afternoon/Evening mini-forecast (M / A / E) for the compact header.
+  const periodsMini = w.periods?.length
+    ? `<div style="display:flex;gap:6px;flex-shrink:0">${w.periods
+        .map(
+          (p) => `<div style="text-align:center">
+        <div style="font-size:6pt;font-weight:700;text-transform:uppercase">${esc(p.label.charAt(0))}</div>
+        <div style="line-height:0;margin:1px 0">${weatherIcon(p.code, 15)}</div>
+        <div style="font-size:8pt;font-weight:700">${p.tempF != null ? `${p.tempF}°` : "—"}</div>
+      </div>`,
+        )
+        .join("")}</div>`
+    : "";
+  // Compact (half card): today (with M/A/E to the right) + the 7-day strip.
   if (opts.compact) {
+    h += `<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:1mm">
+      <div style="display:flex;align-items:center;gap:7px">
+        ${weatherIcon(code, 28)}
+        <span style="font-size:16pt;font-weight:700;line-height:1">${now}</span>
+        <span style="font-size:8.5pt;line-height:1.15">${esc(w.label)}<br>${esc(condName(code))}${hiLo}</span>
+      </div>
+      ${periodsMini}
+    </div>`;
     if (w.daily?.length) {
-      h += `<div style="display:flex;gap:2px;border-top:1px solid #000;padding-top:1.2mm;margin-top:1mm">${w.daily
+      h += `<div style="display:flex;gap:2px;border-top:1px solid #000;padding-top:1.2mm;margin-top:0.5mm">${w.daily
         .map(
           (d) => `<div style="flex:1;text-align:center">
         <div style="font-size:5.5pt;font-weight:700;text-transform:uppercase">${esc(d.day)}</div>
@@ -87,6 +99,12 @@ function weatherHtml(w: WeatherSnapshot, opts: { compact?: boolean } = {}): stri
     h += `</div>`;
     return h;
   }
+  // Full (double card): big header, then periods row, then the 7-day strip.
+  h += `<div style="display:flex;align-items:center;gap:7px;margin-bottom:2mm">
+    ${weatherIcon(code, 34)}
+    <span style="font-size:19pt;font-weight:700;line-height:1">${now}</span>
+    <span style="font-size:8.5pt;line-height:1.15">${esc(w.label)}<br>${esc(condName(code))}</span>
+  </div>`;
   if (w.periods?.length) {
     h += `<div style="display:flex;gap:4px;margin-bottom:2mm">${w.periods
       .map(

@@ -29,6 +29,7 @@ import { generateDots, dotsToSvg } from "./puzzles/dots";
 import { moduleById } from "./modules";
 import { buildPreviewHtml } from "./previewHtml";
 import { ensureKidSlots, resolveActiveModules } from "./slots";
+import { bandFromDifficulty, clampDifficulty, defaultDifficultyForBand } from "./difficulty";
 
 export interface GenerateOptions {
   nonce?: number;
@@ -67,6 +68,12 @@ export function generateStrip(
   // print column (Letter = 0|1) per resolved body section, in order
   const slotColById = new Map(kidNorm.slots.map((s) => [s.id, s.column === 1 ? 1 : 0]));
   const bodyCols = resolved.map((r) => slotColById.get(r.slotId) ?? 0);
+  // per-module difficulty (1–20); falls back to the age-band default
+  const ageDefaultDiff = defaultDifficultyForBand(kid.ageBand);
+  const slotDiffById = new Map(
+    kidNorm.slots.map((s) => [s.id, s.difficulty != null ? clampDifficulty(s.difficulty) : ageDefaultDiff]),
+  );
+  const bodyDiffs = resolved.map((r) => slotDiffById.get(r.slotId) ?? ageDefaultDiff);
 
   const paperWidthMm = paperSize === "letter" ? 216 : 58;
   const widthPx = paperSize === "letter" ? LETTER_WIDTH_PX : STRIP_WIDTH_PX;
@@ -89,9 +96,12 @@ export function generateStrip(
   for (let bodyIdx = 0; bodyIdx < activeModules.length; bodyIdx++) {
     const moduleId = activeModules[bodyIdx];
     const cardSize = bodySizes[bodyIdx] ?? "full";
+    const difficulty = bodyDiffs[bodyIdx] ?? ageDefaultDiff;
+    // Content level for this card follows its own difficulty dial, not the kid's age.
+    const band = bandFromDifficulty(difficulty);
     const meta = moduleById(moduleId);
     if (moduleId === "word") {
-      const word = pickWord(kid.ageBand, rng);
+      const word = pickWord(band, rng);
       const lines = [
         `${word.word.toUpperCase()}  ·  ${word.phonetic}  ·  ${word.pos}`,
         word.definition,
@@ -102,7 +112,7 @@ export function generateStrip(
       continue;
     }
     if (moduleId === "fact") {
-      const fact = pickFact(kid.ageBand, rng);
+      const fact = pickFact(band, rng);
       sections.push({
         id: `fact-${hashish(fact.fact)}`,
         moduleId,
@@ -113,7 +123,7 @@ export function generateStrip(
       continue;
     }
     if (moduleId === "history") {
-      const hist = pickHistory(date, kid.ageBand, rng);
+      const hist = pickHistory(date, band, rng);
       const lead = hist.year ? `${hist.dateLabel}, ${hist.year}` : hist.dateLabel;
       sections.push({
         id: `hist-${hist.year || "x"}`,
@@ -125,7 +135,7 @@ export function generateStrip(
       continue;
     }
     if (moduleId === "maze") {
-      const maze = generateMaze((seed ^ 0x4d41) >>> 0, kid.ageBand);
+      const maze = generateMaze((seed ^ 0x4d41) >>> 0, band, difficulty);
       const svg = mazeToSvg(maze, { showPath: false });
       sections.push({
         id: `maze-${maze.cols}x${maze.rows}`,
@@ -139,7 +149,7 @@ export function generateStrip(
       continue;
     }
     if (moduleId === "sudoku") {
-      const sudoku = generateSudoku((seed ^ 0x5355) >>> 0, kid.ageBand);
+      const sudoku = generateSudoku((seed ^ 0x5355) >>> 0, band, difficulty);
       const svg = sudokuToSvg(sudoku, { showSolution: false });
       sections.push({
         id: `sudoku-${sudoku.size}`,
@@ -160,7 +170,7 @@ export function generateStrip(
         settings.weatherCity || settings.weatherZip || "home";
       const weather =
         opts.weather ??
-        mockWeather(kid.ageBand, place);
+        mockWeather(band, place);
       const tempLine =
         weather.tempF != null
           ? `Now ${weather.tempF}°F${
@@ -216,7 +226,7 @@ export function generateStrip(
       continue;
     }
     if (moduleId === "joke") {
-      const joke = pickJoke(kid.ageBand, rng);
+      const joke = pickJoke(band, rng);
       sections.push({
         id: `joke-${hashish(joke.setup)}`,
         moduleId,
@@ -227,7 +237,7 @@ export function generateStrip(
       continue;
     }
     if (moduleId === "doodle") {
-      const doodle = pickDoodle(kid.ageBand, rng);
+      const doodle = pickDoodle(band, rng);
       sections.push({
         id: `doodle-${hashish(doodle.prompt)}`,
         moduleId,
@@ -238,7 +248,7 @@ export function generateStrip(
       continue;
     }
     if (moduleId === "riddle") {
-      const riddle = pickRiddle(kid.ageBand, rng);
+      const riddle = pickRiddle(band, rng);
       sections.push({
         id: `riddle-${hashish(riddle.question)}`,
         moduleId,
@@ -251,7 +261,7 @@ export function generateStrip(
       continue;
     }
     if (moduleId === "scramble") {
-      const item = pickScramble(kid.ageBand, rng);
+      const item = pickScramble(band, rng);
       const scrambled = scrambleWord(item.word, rng);
       sections.push({
         id: `scramble-${hashish(item.word)}`,
@@ -269,7 +279,7 @@ export function generateStrip(
       continue;
     }
     if (moduleId === "spanish") {
-      const word = pickSpanish(kid.ageBand, rng);
+      const word = pickSpanish(band, rng);
       sections.push({
         id: `spanish-${word.spanish}`,
         moduleId,
@@ -284,7 +294,7 @@ export function generateStrip(
       continue;
     }
     if (moduleId === "wyr") {
-      const wyr = pickWyr(kid.ageBand, rng);
+      const wyr = pickWyr(band, rng);
       sections.push({
         id: `wyr-${hashish(wyr.a + wyr.b)}`,
         moduleId,
@@ -295,7 +305,7 @@ export function generateStrip(
       continue;
     }
     if (moduleId === "poem") {
-      const poem = pickPoem(kid.ageBand, rng);
+      const poem = pickPoem(band, rng);
       sections.push({
         id: `poem-${hashish(poem.title)}`,
         moduleId,
@@ -306,7 +316,7 @@ export function generateStrip(
       continue;
     }
     if (moduleId === "wordfind") {
-      const wordfind = generateWordFind((seed ^ 0x5746) >>> 0, kid.ageBand);
+      const wordfind = generateWordFind((seed ^ 0x5746) >>> 0, band, difficulty);
       const svg = wordFindToSvg(wordfind);
       sections.push({
         id: `wordfind-${wordfind.cols}x${wordfind.rows}`,
@@ -323,7 +333,7 @@ export function generateStrip(
       continue;
     }
     if (moduleId === "dots") {
-      const dots = generateDots((seed ^ 0x444f) >>> 0, kid.ageBand);
+      const dots = generateDots((seed ^ 0x444f) >>> 0, band);
       const svg = dotsToSvg(dots);
       sections.push({
         id: `dots-${dots.points.length}`,
@@ -339,7 +349,7 @@ export function generateStrip(
     if (isNewsModule(moduleId)) {
       // 2x (double) = 4 stories, 1x (full) = 2, half = 1 — each a short paragraph.
       const count = cardSize === "double" ? 4 : cardSize === "half" ? 1 : 2;
-      const items = pickNewsList(moduleId, kid.ageBand, rng, count);
+      const items = pickNewsList(moduleId, band, rng, count);
       sections.push({
         id: `${moduleId}-${hashish(items[0]?.headline ?? moduleId)}`,
         moduleId,

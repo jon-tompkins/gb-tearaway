@@ -51,6 +51,8 @@ export interface ModuleSlot {
   size?: SlotSize;
   /** Print column (Letter = 0|1; strip is always 0). Defaults to 0. */
   column?: number;
+  /** Per-module difficulty 1–20 (for maze/sudoku/wordfind/dots). Defaults from age. */
+  difficulty?: number;
 }
 
 export const PAPER_SLOT_COUNTS: Record<PaperSize, number> = {

@@ -72,6 +72,10 @@ export function sanitizeSlots(
     const size =
       obj.size === "half" || obj.size === "double" || obj.size === "full" ? obj.size : "full";
     const column = obj.column === 1 ? 1 : 0;
+    const difficulty =
+      typeof obj.difficulty === "number" && Number.isFinite(obj.difficulty)
+        ? Math.min(20, Math.max(1, Math.round(obj.difficulty)))
+        : undefined;
     return {
       id: typeof obj.id === "string" && obj.id ? obj.id : `slot-${i}`,
       moduleIds,
@@ -79,6 +83,7 @@ export function sanitizeSlots(
       cursor,
       size,
       column,
+      ...(difficulty != null ? { difficulty } : {}),
     };
   });
 

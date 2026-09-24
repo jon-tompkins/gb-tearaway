@@ -90,7 +90,8 @@ export function buildPrintHtml(
   .sec h3{margin:0 0 1.2mm;font-size:8pt;letter-spacing:.14em;text-transform:uppercase;flex:0 0 auto}
   .sec p{margin:0 0 1mm;font-size:9.5pt;line-height:1.3;flex:0 0 auto}
   .fig{flex:1;min-height:0;margin-top:1.2mm;display:flex;align-items:center;justify-content:center}
-  .fig svg{max-width:100%;max-height:100%;height:auto;width:auto}
+  /* Figures scale up to the column width (bigger sudoku/word-find), capped to card height */
+  .fig svg{width:100%;height:auto;max-width:100%;max-height:100%}
   /* Maze stretches to fill its card — rectangular cells are fine and kill the gaps */
   .col .fig-fill svg{width:100%;height:100%;max-width:none;max-height:none}`;
 
