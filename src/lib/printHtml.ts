@@ -29,16 +29,17 @@ export function buildPrintHtml(
 
   let inner: string;
   if (isLetter) {
-    // one-line minimal header (title · kid · date)
+    // Masthead: the big title, with a small date beneath (drop the redundant
+    // "· name · date" clutter).
     const dateLine = header?.lines?.[2] ?? "";
-    const hdr1 = `<div class="hdr1"><b>Back of the Box</b> · ${esc(job.kidName)} · ${esc(dateLine)}</div>`;
+    const hdr1 = `<div class="hdr1"><div class="mast1">Back of the Box</div><div class="date1">${esc(dateLine)}</div></div>`;
     // Two print columns. Honor the user's per-card column choice; each card fills
     // its share of its column (half=1, full=2, double=4 flex units).
     const colA = body.filter((s) => (s.column ?? 0) !== 1);
     const colB = body.filter((s) => (s.column ?? 0) === 1);
     const col = (arr: typeof body) => `<div class="col">${arr.map(sectionHtml).join("\n")}</div>`;
     const bodyHtml = `<div class="cols">${col(colA)}${col(colB)}</div>`;
-    const ftr1 = `<div class="ftr1">— tear here —</div>`;
+    const ftr1 = `<div class="ftr1"><div class="tear1">— tear here —</div><div class="brand1">Back of the Box</div></div>`;
     inner = [hdr1, bodyHtml, ftr1].join("\n");
   } else {
     const footer = job.sections.find((s) => s.kind === "footer");
@@ -78,20 +79,29 @@ export function buildPrintHtml(
   html,body{background:#fff;color:#000}
   /* newspaper: two balanced columns that fill the page, a light rule under each card */
   .sheet{width:100%;height:252mm;box-sizing:border-box;display:flex;flex-direction:column;overflow:hidden}
-  .hdr1{font-family:Georgia,'Times New Roman',serif;font-size:11pt;text-align:center;padding-bottom:1.2mm;margin-bottom:2.5mm;border-bottom:1.2px solid #000}
-  .ftr1{text-align:center;font-size:6pt;font-weight:700;letter-spacing:.24em;text-transform:uppercase;color:#000;border-top:1px solid #000;padding-top:1mm;margin-top:1.5mm}
+  .hdr1{text-align:center;padding-bottom:1.6mm;margin-bottom:2.8mm;border-bottom:1.4px solid #000}
+  .mast1{font-family:Georgia,'Times New Roman',serif;font-weight:700;font-size:18pt;line-height:1;letter-spacing:-.01em}
+  .date1{font-size:7pt;letter-spacing:.06em;text-transform:uppercase;margin-top:1mm}
+  .ftr1{text-align:center;border-top:1px solid #000;padding-top:1.2mm;margin-top:1.5mm}
+  .ftr1 .tear1{font-size:6pt;font-weight:700;letter-spacing:.24em;text-transform:uppercase}
+  .ftr1 .brand1{font-family:Georgia,'Times New Roman',serif;font-size:8pt;font-weight:700;margin-top:.8mm}
   .cols{flex:1;min-height:0;display:flex;gap:6mm}
   .col{flex:1;min-width:0;display:flex;flex-direction:column}
   /* Cards size to their content (no wasted internal stretch); the puzzle/figure
      card in each column grows to absorb the leftover so columns fill evenly. */
   .sec{min-height:0;overflow:hidden;display:flex;flex-direction:column;padding-bottom:2mm;margin-bottom:2.5mm;border-bottom:0.5pt solid #000;flex:0 0 auto}
-  .sec:last-child{margin-bottom:0}
+  .sec:last-child{margin-bottom:0;border-bottom:0}
   .sec.grow{flex:1 1 0}
   .sec h3{margin:0 0 1.2mm;font-size:8pt;letter-spacing:.14em;text-transform:uppercase;flex:0 0 auto}
   .sec p{margin:0 0 1mm;font-size:9.5pt;line-height:1.3;flex:0 0 auto}
+  /* This-day-in-history: tighter so more text fits in a half card */
+  .mod-history p{font-size:8pt;line-height:1.28}
+  .mod-history p:first-of-type{font-weight:700}
   .fig{flex:1;min-height:0;margin-top:1.2mm;display:flex;align-items:center;justify-content:center}
   /* Figures scale up to the column width (bigger sudoku/word-find), capped to card height */
   .fig svg{width:100%;height:auto;max-width:100%;max-height:100%}
+  /* Number grid stays compact — about half a maze */
+  .fig.fig-small svg{width:auto;max-width:46mm;max-height:100%}
   /* Maze stretches to fill its card — rectangular cells are fine and kill the gaps */
   .col .fig-fill svg{width:100%;height:100%;max-width:none;max-height:none}`;
 
@@ -117,7 +127,7 @@ export function buildPrintHtml(
   const auto = fit;
 
   return `<!DOCTYPE html><html><head><meta charset="utf-8"/>
-<title>Back of the Box · ${job.kidName} · ${job.date}</title>
+<title>Back of the Box</title>
 <style>
   ${page}
   *{box-sizing:border-box}

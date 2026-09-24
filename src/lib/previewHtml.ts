@@ -197,8 +197,10 @@ export function sectionHtml(section: StripSection): string {
   // Figure cards (maze/sudoku/etc.) grow to fill the column's leftover space so
   // there's no wasted gap; text cards stay at their natural height.
   const growClass = svg ? " grow" : "";
-  const figClass = section.kind === "maze" ? "fig fig-fill" : "fig";
-  return `<section class="sec${growClass}${sizeClass}">
+  // Maze fills its card; the number grid stays small (~half a maze).
+  const figClass =
+    section.kind === "maze" ? "fig fig-fill" : section.kind === "sudoku" ? "fig fig-small" : "fig";
+  return `<section class="sec${growClass}${sizeClass} mod-${section.moduleId}">
     <h3>${esc(section.title)}</h3>
     ${lines}
     ${svg ? `<div class="${figClass}">${svg}</div>` : ""}

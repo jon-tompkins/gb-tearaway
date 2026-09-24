@@ -133,13 +133,15 @@ export function generateStrip(
     }
     if (moduleId === "history") {
       const hist = pickHistory(date, band, rng);
-      const lead = hist.year ? `${hist.dateLabel}, ${hist.year}` : hist.dateLabel;
+      // Year only as the lead — the month/day is redundant (it's today). Entries
+      // without a year drop the lead entirely rather than print the date.
+      const lines = hist.year ? [String(hist.year), hist.text] : [hist.text];
       sections.push({
         id: `hist-${hist.year || "x"}`,
         moduleId,
         title: meta.name,
         kind: "text",
-        lines: [lead, hist.text],
+        lines,
       });
       continue;
     }
