@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import type { AgeBand, ModuleId, ModuleSlot, PaperSize, SlotMode, SlotSize } from "@/lib/types";
 import { COLUMN_CAPACITY_UNITS, PAPER_SIZE_META, slotSizeUnits } from "@/lib/types";
 import { moduleById, moduleSize, modulesByCategory } from "@/lib/modules";
@@ -107,6 +108,22 @@ export function SlotEditor({
   const selectedSlot = slots.find((s) => s.id === selectedSlotId) ?? null;
   const selectedIndex = slots.findIndex((s) => s.id === selectedSlotId);
   const groups = modulesByCategory();
+
+  // "+" on a card opens a module picker modal for that card.
+  const [pickerSlotId, setPickerSlotId] = useState<string | null>(null);
+  const pickerSlot = slots.find((s) => s.id === pickerSlotId) ?? null;
+  // Close if the target card disappears (e.g. deleted) and on Escape.
+  useEffect(() => {
+    if (pickerSlotId && !slots.some((s) => s.id === pickerSlotId)) setPickerSlotId(null);
+  }, [pickerSlotId, slots]);
+  useEffect(() => {
+    if (!pickerSlotId) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setPickerSlotId(null);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [pickerSlotId]);
 
   // ½-unit budget: each print column holds COLUMN_CAPACITY_UNITS.
   function usedUnits(column: number, excludeId?: string): number {
@@ -323,14 +340,21 @@ export function SlotEditor({
               );
             }
             return (
-              <div
+              <button
                 key={`empty-${idx}`}
-                className={`flex h-full min-h-0 items-center justify-center rounded-lg border border-dashed text-lg ${
+                type="button"
+                aria-label="Add a module to this card"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onSelectSlot(slot.id);
+                  setPickerSlotId(slot.id);
+                }}
+                className={`flex h-full min-h-0 items-center justify-center rounded-lg border border-dashed text-lg transition hover:border-ink hover:text-ink ${
                   selected ? "border-ink/40 bg-paper/50 text-ink/60" : "border-rule bg-paper/30 text-ink-soft"
                 }`}
               >
                 +
-              </div>
+              </button>
             );
           })}
         </div>
@@ -541,6 +565,106 @@ export function SlotEditor({
           })()
         )}
       </section>
+
+      {/* MODULE PICKER MODAL — opened from a card's "+" tile */}
+      {pickerSlot
+        ? (() => {
+            const cardSize = pickerSlot.size ?? "full";
+            const cardIndex = slots.indexOf(pickerSlot);
+            const cardFull = pickerSlot.moduleIds.length >= MAX_PER_SLOT;
+            const fitGroups = groups
+              .map((g) => ({
+                category: g.category,
+                modules: g.modules.filter((m) => moduleFitsCard(m.id, cardSize)),
+              }))
+              .filter((g) => g.modules.length > 0);
+            return (
+              <div
+                className="fixed inset-0 z-50 flex items-end justify-center bg-ink/40 backdrop-blur-sm sm:items-center sm:p-4"
+                onClick={() => setPickerSlotId(null)}
+              >
+                <div
+                  role="dialog"
+                  aria-modal="true"
+                  onClick={(e) => e.stopPropagation()}
+                  className="flex max-h-[85vh] w-full max-w-2xl flex-col rounded-t-2xl border border-rule bg-cream shadow-xl sm:rounded-2xl"
+                >
+                  <div className="flex items-start justify-between gap-3 border-b border-rule px-5 py-4">
+                    <div>
+                      <h3 className="font-display text-lg text-ink">Add to Card {cardIndex + 1}</h3>
+                      <p className="mt-0.5 text-xs text-ink-soft">
+                        Modules that fit a{" "}
+                        <span className="font-semibold text-ink">{sizeLabel(cardSize)}</span> card ·{" "}
+                        {pickerSlot.moduleIds.length}/{MAX_PER_SLOT} chosen
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setPickerSlotId(null)}
+                      aria-label="Close"
+                      className="-mr-1 rounded-full px-2 py-1 text-xl leading-none text-ink-soft transition hover:bg-paper hover:text-ink"
+                    >
+                      ×
+                    </button>
+                  </div>
+
+                  <div className="flex-1 space-y-5 overflow-y-auto px-5 py-4">
+                    {fitGroups.map(({ category, modules }) => (
+                      <div key={category.id}>
+                        <h4 className="mb-2 text-xs font-bold uppercase tracking-wider text-ink-soft">
+                          {category.name}
+                        </h4>
+                        <div className="grid gap-2 sm:grid-cols-2">
+                          {modules.map((mod) => {
+                            const inCard = pickerSlot.moduleIds.includes(mod.id);
+                            const blocked = !inCard && cardFull;
+                            return (
+                              <button
+                                key={mod.id}
+                                type="button"
+                                onClick={() => toggleInCard(pickerSlot.id, mod.id)}
+                                disabled={blocked}
+                                title={blocked ? "Card is full (max 4)" : mod.blurb}
+                                className={`flex items-center gap-2 rounded-xl border px-3 py-2.5 text-left transition ${
+                                  inCard
+                                    ? "border-ink bg-ink text-cream"
+                                    : "border-rule bg-paper hover:border-ink/30"
+                                } ${blocked ? "opacity-40" : ""}`}
+                              >
+                                <span
+                                  className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
+                                    inCard ? "bg-cream text-ink" : "bg-cream text-ink-soft"
+                                  }`}
+                                >
+                                  {inCard ? "✓" : "+"}
+                                </span>
+                                <span className="flex-1 truncate text-sm font-semibold">{mod.name}</span>
+                                <span
+                                  className={`rounded px-1 py-px text-[0.6rem] font-bold ${
+                                    inCard ? "bg-cream/25 text-cream" : "bg-cream text-ink-soft"
+                                  }`}
+                                  title={`This module is a ${moduleSize(mod.id)} card`}
+                                >
+                                  {sizeLabel(moduleSize(mod.id))}
+                                </span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="border-t border-rule px-5 py-3 text-right">
+                    <button type="button" onClick={() => setPickerSlotId(null)} className="btn-primary">
+                      Done
+                    </button>
+                  </div>
+                </div>
+              </div>
+            );
+          })()
+        : null}
     </div>
   );
 }
