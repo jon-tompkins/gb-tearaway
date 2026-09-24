@@ -53,6 +53,14 @@ function SectionBlock({
       <h3 className="mb-1 text-[0.68rem] font-bold uppercase tracking-[0.16em] text-stamp">
         {section.title}
       </h3>
+      {section.news?.length
+        ? section.news.map((n, i) => (
+            <div key={i} className="mb-1.5 last:mb-0">
+              <p className="text-[0.82rem] font-bold leading-snug text-ink">{n.headline}</p>
+              <p className="text-[0.76rem] leading-snug text-ink-soft">{n.blurb}</p>
+            </div>
+          ))
+        : null}
       {section.lines.map((line, i) => (
         <p key={i} className="text-[0.84rem] leading-snug text-ink">
           {line}

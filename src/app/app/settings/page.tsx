@@ -158,27 +158,10 @@ export default function SettingsPage() {
           </p>
         </section>
 
-        <section className="card space-y-3">
-          <h2 className="font-display text-lg">Subscription tiers (later)</h2>
-          <p className="text-sm text-ink-soft">
-            MVP unlocks all first-party modules. Later, plans may set a{" "}
-            <code className="text-xs">modulePoolLimit</code> on dispatch settings so only N unique
-            modules can sit in a kid&apos;s pool. No payments in this build — structure only.
-          </p>
-          <p className="text-xs text-ink-soft">
-            Current pool limit:{" "}
-            <strong className="text-ink">
-              {store?.settings.modulePoolLimit == null
-                ? "unlocked (all first-party)"
-                : store.settings.modulePoolLimit}
-            </strong>
-          </p>
-        </section>
-
         <section className="card space-y-4">
           <h2 className="font-display text-lg">Weather location</h2>
           <p className="text-sm text-ink-soft">
-            Open-Meteo — no API key. City or US ZIP.
+            Used by the Weather module. Enter a city or US ZIP.
           </p>
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="field">

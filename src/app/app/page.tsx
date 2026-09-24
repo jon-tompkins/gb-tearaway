@@ -85,7 +85,7 @@ export default function DashboardPage() {
         return [job, ...h.filter((j) => j.id !== job.id)].slice(0, HISTORY_MAX);
       });
       setJob(next);
-      setMsg(`New dispatch · seed ${next.nonce}`);
+      setMsg("Fresh mix ready.");
       await reload();
     } catch (e) {
       setMsg(e instanceof Error ? e.message : "Generate failed");
@@ -100,7 +100,7 @@ export default function DashboardPage() {
     try {
       const printed = await printNow();
       setJob(printed);
-      setMsg(`Queued for ${printed.kidName} · ${printed.date} · seed ${printed.nonce}`);
+      setMsg(`Queued for ${printed.kidName} · ${printed.date}`);
       await reload();
     } catch (e) {
       setMsg(e instanceof Error ? e.message : "Print failed");
@@ -117,7 +117,7 @@ export default function DashboardPage() {
       });
     }
     setJob(past);
-    setMsg(`Comparing seed ${past.nonce}`);
+    setMsg("Comparing an earlier mix.");
   }
 
   if (!hydrated) {
@@ -148,12 +148,11 @@ export default function DashboardPage() {
     activeKid.printTime || settings.printTime,
     activeKid.timezone || settings.timezone,
   );
-  const currentNonce = job?.nonce ?? store.nonceByKid[activeKid.id] ?? 0;
 
   return (
     <AppShell
       title={`Good morning, ${activeKid.name}`}
-      subtitle="Slot-resolved preview · reshuffle rotates in-order / random slots · Print now for the future ESP32 bridge"
+      subtitle="Preview today’s dispatch, shuffle for a fresh mix, or save it to print."
     >
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <KidSwitcher
@@ -194,10 +193,6 @@ export default function DashboardPage() {
               Today&apos;s pick:{" "}
               {(job?.modules ?? activeKid.modules).map((id) => moduleById(id).name).join(" · ")}
             </p>
-            <p className="mt-2 text-xs text-ink-soft">
-              Content seed: <span className="font-semibold text-ink">{currentNonce}</span>{" "}
-              (date + name + seed)
-            </p>
           </div>
 
           <div className="card flex flex-wrap items-center gap-3">
@@ -207,7 +202,7 @@ export default function DashboardPage() {
               disabled={generating || loadingPreview}
               onClick={() => void onGenerateNew()}
             >
-              {generating ? "Generating…" : "Generate new dispatch"}
+              {generating ? "Shuffling…" : "Shuffle"}
             </button>
             <button
               type="button"
@@ -238,20 +233,19 @@ export default function DashboardPage() {
           </div>
 
           <p className="text-xs text-ink-soft">
-            <strong className="font-semibold text-ink">Generate new dispatch</strong> bumps an
-            explicit seed so the same kid and day reshuffles. Print now saves the current seed to{" "}
-            <code className="text-[0.7rem]">GET /api/print-jobs/latest</code>.
+            <strong className="font-semibold text-ink">Shuffle</strong> swaps in a fresh mix for the
+            same day. <strong className="font-semibold text-ink">Print now</strong> locks in what
+            you see for the morning.
           </p>
 
           {history.length > 0 ? (
             <div className="card space-y-3">
-              <div className="mono-meta text-stamp">Recent previews</div>
+              <div className="mono-meta text-stamp">Recent mixes</div>
               <p className="text-xs text-ink-soft">
-                Last {history.length} generated dispatch{history.length === 1 ? "" : "es"} — tap to
-                compare.
+                Last {history.length} shuffle{history.length === 1 ? "" : "s"} — tap to compare.
               </p>
               <ul className="space-y-2">
-                {history.map((h) => {
+                {history.map((h, i) => {
                   const active = job?.id === h.id;
                   return (
                     <li key={h.id}>
@@ -269,7 +263,7 @@ export default function DashboardPage() {
                             active ? "bg-cream text-ink" : "bg-cream text-ink-soft"
                           }`}
                         >
-                          #{h.nonce}
+                          {history.length - i}
                         </span>
                         <span className="min-w-0 flex-1">
                           <span className={`block text-sm font-semibold ${active ? "" : "text-ink"}`}>
@@ -291,67 +285,11 @@ export default function DashboardPage() {
             </div>
           ) : null}
 
-          <div className="card space-y-2">
-            <div className="mono-meta text-stamp">Firmware bridge</div>
-            <p className="text-sm text-ink-soft">
-              ESP32 can fetch today&apos;s dispatch without this UI. Open any of these in a tab:
-            </p>
-            <ul className="space-y-1.5 text-sm">
-              <li>
-                <a
-                  className="font-semibold text-ink underline decoration-rule underline-offset-2 hover:text-stamp"
-                  href={`/api/render?kid=${activeKid.id}`}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  HTML
-                </a>
-                <span className="text-ink-soft"> · </span>
-                <a
-                  className="font-semibold text-ink underline decoration-rule underline-offset-2 hover:text-stamp"
-                  href={`/api/render?kid=${activeKid.id}&format=png`}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  PNG
-                </a>
-                <span className="text-ink-soft"> · </span>
-                <a
-                  className="font-semibold text-ink underline decoration-rule underline-offset-2 hover:text-stamp"
-                  href={`/api/render?kid=${activeKid.id}&format=print`}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  PDF
-                </a>
-                <span className="text-ink-soft"> · </span>
-                <a
-                  className="font-semibold text-ink underline decoration-rule underline-offset-2 hover:text-stamp"
-                  href={`/api/render?kid=${activeKid.id}&format=json`}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  JSON
-                </a>
-                <span className="text-ink-soft"> · </span>
-                <a
-                  className="font-semibold text-ink underline decoration-rule underline-offset-2 hover:text-stamp"
-                  href={`/strip/${activeKid.id}`}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  {`/strip/${activeKid.id}`}
-                </a>
-              </li>
-            </ul>
-          </div>
         </div>
 
         <div>
           <div className="mb-3 text-center mono-meta text-ink-soft">
-            {activeKid.paperSize === "letter"
-              ? `Letter preview · ~612px · seed ${currentNonce}`
-              : `58mm preview · ~384px · seed ${currentNonce}`}
+            {activeKid.paperSize === "letter" ? "US Letter preview" : "58mm strip preview"}
           </div>
           <StripPreview job={job} emptyHint="Loading today’s dispatch…" />
         </div>

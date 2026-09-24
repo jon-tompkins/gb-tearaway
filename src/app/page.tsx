@@ -57,7 +57,7 @@ export default function HomePage() {
               </Link>
             </div>
             <p className="mt-4 text-sm text-ink-soft">
-              Local demo — no signup. Store lives in <code className="text-xs">data/store.json</code>.
+              Free to try — no signup needed. Sign in to save your setup.
             </p>
           </div>
 
@@ -130,7 +130,7 @@ export default function HomePage() {
       </section>
 
       <footer className="px-4 py-8 text-center text-xs text-ink-soft">
-        Tearaway · parent demo · built by Jonto with his son
+        Tearaway · a screen-free morning ritual · made by a dad and his kid
       </footer>
     </div>
   );

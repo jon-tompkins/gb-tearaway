@@ -77,7 +77,7 @@ export default function SetupPage() {
   return (
     <AppShell
       title="Set up your dispatch"
-      subtitle="Kids are profiles, not users. Pick a paper size, a name, and a few starter modules — refine slots later."
+      subtitle="Add a child’s profile: a name, their age, a paper size, and the modules for their morning dispatch."
     >
       <form onSubmit={onSubmit} className="mx-auto max-w-2xl space-y-8">
         <div className="card space-y-4">
