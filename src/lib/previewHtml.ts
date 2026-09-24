@@ -54,7 +54,7 @@ function weatherIcon(code: number, px: number): string {
   return `${open}${cloud(-2)}<line x1="6" y1="19" x2="16" y2="19"/><line x1="7.5" y1="21.5" x2="14.5" y2="21.5"/></svg>`;
 }
 /** Rich weather block: current + morning/afternoon/evening + 7-day, all mono. */
-function weatherHtml(w: WeatherSnapshot, opts: { compact?: boolean } = {}): string {
+export function weatherHtml(w: WeatherSnapshot, opts: { compact?: boolean } = {}): string {
   const code = w.code ?? 1;
   const now = w.tempF != null ? `${w.tempF}°` : "—";
   let h = `<div style="width:100%;font-family:ui-monospace,'SFMono-Regular',Menlo,monospace;color:#000">`;

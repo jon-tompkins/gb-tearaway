@@ -5,6 +5,7 @@ import type { PrintJob, StripSection } from "@/lib/types";
 import { LETTER_WIDTH_PX, STRIP_WIDTH_PX } from "@/lib/types";
 import { mazeToSvg } from "@/lib/puzzles/maze";
 import { sudokuToSvg } from "@/lib/puzzles/sudoku";
+import { weatherHtml } from "@/lib/previewHtml";
 
 /** Rough vertical weight of a card, used to balance columns when the saved
  * layout doesn't assign columns itself (older dispatches). */
@@ -89,7 +90,14 @@ function SectionBlock({
       <h3 className="mb-1 text-[0.68rem] font-bold uppercase tracking-[0.16em] text-stamp">
         {section.title}
       </h3>
-      {section.news?.length
+      {section.kind === "weather" && section.weather ? (
+        <div
+          dangerouslySetInnerHTML={{
+            __html: weatherHtml(section.weather, { compact: section.size !== "double" }),
+          }}
+        />
+      ) : null}
+      {section.kind !== "weather" && section.news?.length
         ? section.news.map((n, i) => (
             <div key={i} className="mb-1.5 last:mb-0">
               <p className="text-[0.82rem] font-bold leading-snug text-ink">{n.headline}</p>
@@ -105,11 +113,13 @@ function SectionBlock({
             </div>
           ))
         : null}
-      {section.lines.map((line, i) => (
-        <p key={i} className="text-[0.84rem] leading-snug text-ink">
-          {line}
-        </p>
-      ))}
+      {section.kind !== "weather"
+        ? section.lines.map((line, i) => (
+            <p key={i} className="text-[0.84rem] leading-snug text-ink">
+              {line}
+            </p>
+          ))
+        : null}
       {section.answer ? (
         showKeys ? (
           <p className="mt-1 text-[0.84rem] font-semibold leading-snug text-stamp">
