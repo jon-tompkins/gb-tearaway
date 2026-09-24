@@ -261,8 +261,8 @@ export interface StripSection {
   size?: SlotSize;
   /** Print column carried from the owning slot (Letter = 0|1). */
   column?: number;
-  /** For news modules: a short column of headlines. */
-  news?: { headline: string; blurb: string }[];
+  /** For news modules: a short column of stories with a dateline. */
+  news?: { headline: string; blurb: string; location?: string }[];
   /** Solution shown in the app under the Parent key toggle — never printed. */
   answer?: string;
 }

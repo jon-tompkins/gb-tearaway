@@ -54,15 +54,26 @@ function weatherIcon(code: number, px: number): string {
   return `${open}${cloud(-2)}<line x1="6" y1="19" x2="16" y2="19"/><line x1="7.5" y1="21.5" x2="14.5" y2="21.5"/></svg>`;
 }
 /** Rich weather block: current + morning/afternoon/evening + 7-day, all mono. */
-function weatherHtml(w: WeatherSnapshot): string {
+function weatherHtml(w: WeatherSnapshot, opts: { compact?: boolean } = {}): string {
   const code = w.code ?? 1;
   const now = w.tempF != null ? `${w.tempF}°` : "—";
   let h = `<div style="width:100%;font-family:ui-monospace,'SFMono-Regular',Menlo,monospace;color:#000">`;
-  h += `<div style="display:flex;align-items:center;gap:7px;margin-bottom:2mm">
-    ${weatherIcon(code, 34)}
-    <span style="font-size:19pt;font-weight:700;line-height:1">${now}</span>
-    <span style="font-size:8.5pt;line-height:1.15">${esc(w.label)}<br>${esc(condName(code))}</span>
+  const hiLo =
+    w.highF != null && w.lowF != null
+      ? `<br><span style="font-size:7.5pt">H ${w.highF}° · L ${w.lowF}°</span>`
+      : "";
+  h += `<div style="display:flex;align-items:center;gap:7px;margin-bottom:${opts.compact ? "1mm" : "2mm"}">
+    ${weatherIcon(code, opts.compact ? 28 : 34)}
+    <span style="font-size:${opts.compact ? "16pt" : "19pt"};font-weight:700;line-height:1">${now}</span>
+    <span style="font-size:8.5pt;line-height:1.15">${esc(w.label)}<br>${esc(condName(code))}${
+      opts.compact ? hiLo : ""
+    }</span>
   </div>`;
+  // Compact (half card): today only — skip the periods row and the 7-day strip.
+  if (opts.compact) {
+    h += `</div>`;
+    return h;
+  }
   if (w.periods?.length) {
     h += `<div style="display:flex;gap:4px;margin-bottom:2mm">${w.periods
       .map(
@@ -115,7 +126,13 @@ export function sectionHtml(section: StripSection): string {
         (i) =>
           `<div><div style="font-weight:700;font-size:8pt;line-height:1.12">${esc(
             i.headline,
-          )}</div><div style="font-size:7pt;line-height:1.2">${esc(i.blurb)}</div></div>`,
+          )}</div><div style="font-size:7pt;line-height:1.25">${
+            i.location
+              ? `<span style="font-weight:700;text-transform:uppercase;letter-spacing:.02em">${esc(
+                  i.location,
+                )}</span> — `
+              : ""
+          }${esc(i.blurb)}</div></div>`,
       )
       .join("");
     return `<section class="sec${sizeClass}">
@@ -128,7 +145,7 @@ export function sectionHtml(section: StripSection): string {
     const sizeClass = section.size ? ` size-${section.size}` : "";
     return `<section class="sec${sizeClass}">
     <h3>${esc(section.title)}</h3>
-    ${weatherHtml(section.weather)}
+    ${weatherHtml(section.weather, { compact: section.size === "half" })}
   </section>`;
   }
 

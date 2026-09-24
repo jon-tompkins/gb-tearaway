@@ -337,7 +337,8 @@ export function generateStrip(
       continue;
     }
     if (isNewsModule(moduleId)) {
-      const count = cardSize === "double" ? 5 : cardSize === "half" ? 2 : 3;
+      // 2x (double) = 4 stories, 1x (full) = 2, half = 1 — each a short paragraph.
+      const count = cardSize === "double" ? 4 : cardSize === "half" ? 1 : 2;
       const items = pickNewsList(moduleId, kid.ageBand, rng, count);
       sections.push({
         id: `${moduleId}-${hashish(items[0]?.headline ?? moduleId)}`,
@@ -345,7 +346,11 @@ export function generateStrip(
         title: meta.name,
         kind: "text",
         lines: [],
-        news: items.map((i) => ({ headline: i.headline, blurb: `${i.blurb} ${i.wonder}` })),
+        news: items.map((i) => ({
+          headline: i.headline,
+          location: i.location,
+          blurb: `${i.blurb} ${i.wonder}`,
+        })),
       });
       continue;
     }

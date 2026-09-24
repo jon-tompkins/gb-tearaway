@@ -57,7 +57,15 @@ function SectionBlock({
         ? section.news.map((n, i) => (
             <div key={i} className="mb-1.5 last:mb-0">
               <p className="text-[0.82rem] font-bold leading-snug text-ink">{n.headline}</p>
-              <p className="text-[0.76rem] leading-snug text-ink-soft">{n.blurb}</p>
+              <p className="text-[0.76rem] leading-snug text-ink-soft">
+                {n.location ? (
+                  <span className="font-bold uppercase tracking-wide text-ink">
+                    {n.location}
+                    {" — "}
+                  </span>
+                ) : null}
+                {n.blurb}
+              </p>
             </div>
           ))
         : null}
