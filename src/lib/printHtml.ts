@@ -14,7 +14,7 @@ import { sectionHtml } from "./previewHtml";
  */
 export function buildPrintHtml(
   job: PrintJob,
-  opts: { autoPrint?: boolean; qrSvg?: string } = {},
+  opts: { autoPrint?: boolean; qrSvg?: string; embed?: boolean } = {},
 ): string {
   const qrBlock = opts.qrSvg
     ? `<div class="qr">${opts.qrSvg}<div class="qrcap">Scan for answers</div></div>`
@@ -150,7 +150,10 @@ export function buildPrintHtml(
       else window.addEventListener('load',go);
     })();
   </script>`;
-  const auto = fit;
+  // Embed mode (on-screen preview inside an iframe): no toolbar, no auto-print,
+  // no top padding — just the sheet, so the preview is pixel-identical to print.
+  const embed = !!opts.embed;
+  const auto = embed ? "" : fit;
 
   return `<!DOCTYPE html><html><head><meta charset="utf-8"/>
 <title>Back of the Box</title>
@@ -163,19 +166,27 @@ export function buildPrintHtml(
   .fig svg [stroke="#c45c26"]{stroke:#000}
   .fig svg [fill="#c45c26"]{fill:#000}
   .fig svg{max-width:100%;height:auto}
-  /* screen-only toolbar (hidden in the actual print/PDF) */
+  ${
+    embed
+      ? "body{padding-top:0}"
+      : `/* screen-only toolbar (hidden in the actual print/PDF) */
   .bar{position:fixed;top:0;left:0;right:0;display:flex;gap:8px;justify-content:center;align-items:center;
     padding:10px;background:#111;color:#fff;font:600 13px ui-monospace,monospace;z-index:9}
   .bar button{border:0;border-radius:8px;background:#fff;color:#111;font:inherit;padding:8px 14px;cursor:pointer}
   .bar span{opacity:.75;font-weight:500}
   body{padding-top:52px}
-  @media print{.bar{display:none}body{padding-top:0}}
+  @media print{.bar{display:none}body{padding-top:0}}`
+  }
 </style></head>
 <body>
-  <div class="bar">
+  ${
+    embed
+      ? ""
+      : `<div class="bar">
     <span>${isLetter ? "US Letter" : "58mm strip"} · ${job.kidName} · ${job.date}</span>
     <button type="button" onclick="window.print()">Save as PDF / Print</button>
-  </div>
+  </div>`
+  }
   <div class="sheet">${inner}</div>
   ${auto}
 </body></html>`;

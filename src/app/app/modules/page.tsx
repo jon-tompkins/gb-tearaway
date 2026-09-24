@@ -43,6 +43,7 @@ export default function EditDispatchPage() {
   // Preview — off by default, loaded on demand.
   const [showPreview, setShowPreview] = useState(false);
   const [job, setJob] = useState<PrintJob | null>(null);
+  const [previewVersion, setPreviewVersion] = useState(0);
   const [previewBusy, setPreviewBusy] = useState(false);
   const [previewMsg, setPreviewMsg] = useState<string | null>(null);
 
@@ -72,6 +73,7 @@ export default function EditDispatchPage() {
     setPreviewBusy(true);
     try {
       setJob(await fetchPreview());
+      setPreviewVersion((v) => v + 1);
       setPreviewMsg(null);
     } catch (e) {
       setPreviewMsg(e instanceof Error ? e.message : "Could not load preview");
@@ -135,6 +137,7 @@ export default function EditDispatchPage() {
     setPreviewMsg(null);
     try {
       setJob(await reshufflePreview());
+      setPreviewVersion((v) => v + 1);
       setPreviewMsg("Fresh mix.");
       await reload();
     } catch (e) {
@@ -150,6 +153,7 @@ export default function EditDispatchPage() {
     try {
       const printed = await printNow();
       setJob(printed);
+      setPreviewVersion((v) => v + 1);
       setPreviewMsg(`Queued for ${printed.date}.`);
       await reload();
     } catch (e) {
@@ -285,7 +289,7 @@ export default function EditDispatchPage() {
               {previewMsg ? <span className="text-sm text-ink-soft">{previewMsg}</span> : null}
             </div>
             <div className="w-full max-w-[640px]">
-              <StripPreview job={job} emptyHint="Save the layout, then preview." />
+              <StripPreview job={job} version={previewVersion} emptyHint="Save the layout, then preview." />
             </div>
             <p className="text-xs text-ink-soft">Preview reflects your last saved version.</p>
           </div>

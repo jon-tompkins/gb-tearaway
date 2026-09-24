@@ -1,318 +1,87 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
-import type { PrintJob, StripSection } from "@/lib/types";
-import { LETTER_WIDTH_PX, STRIP_WIDTH_PX } from "@/lib/types";
-import { mazeToSvg } from "@/lib/puzzles/maze";
-import { sudokuToSvg } from "@/lib/puzzles/sudoku";
-import { weatherHtml } from "@/lib/previewHtml";
+import { useEffect, useRef, useState } from "react";
+import type { PrintJob } from "@/lib/types";
 
-/** Rough vertical weight of a card, used to balance columns when the saved
- * layout doesn't assign columns itself (older dispatches). */
-function sectionWeight(s: StripSection): number {
-  if (s.kind === "maze" || s.kind === "sudoku" || s.kind === "wordfind" || s.kind === "dots") return 8;
-  if (s.news?.length) return 2 + s.news.length * 5; // each story is several lines tall
-  if (s.kind === "weather") return 5;
-  const lines = (s.lines?.length ?? 0) + (s.answer ? 1 : 0);
-  return Math.max(2, lines);
-}
-
-/** Split body cards into two print columns: honor each card's saved `column`
- * when the layout uses both, otherwise greedily balance by weight. */
-function splitColumns(sections: StripSection[]): [StripSection[], StripSection[]] {
-  const usesColumns = sections.some((s) => (s.column ?? 0) === 1);
-  if (usesColumns) {
-    return [
-      sections.filter((s) => (s.column ?? 0) === 0),
-      sections.filter((s) => (s.column ?? 0) === 1),
-    ];
-  }
-  const a: StripSection[] = [];
-  const b: StripSection[] = [];
-  let wa = 0;
-  let wb = 0;
-  for (const s of sections) {
-    if (wa <= wb) {
-      a.push(s);
-      wa += sectionWeight(s);
-    } else {
-      b.push(s);
-      wb += sectionWeight(s);
-    }
-  }
-  return [a, b];
-}
-
-/** ½-unit footprint of a card, for the shared column grid. */
-function sectionUnits(s: StripSection): number {
-  return s.size === "double" ? 4 : s.size === "half" ? 1 : 2;
-}
-
-function SectionBlock({
-  section,
-  showKeys,
-  divider = true,
-}: {
-  section: StripSection;
-  showKeys: boolean;
-  divider?: boolean;
-}) {
-  if (section.kind === "header") {
-    return (
-      <header className="rule-double mb-3 pb-2 text-center">
-        <div className="masthead-display text-[1.4rem] leading-tight tracking-tight">
-          {section.lines[0]}
-        </div>
-        <div className="mt-1.5 text-[0.78rem] font-semibold tracking-[0.14em]">
-          {section.lines[1]}
-        </div>
-        <div className="mono-meta mt-1 text-ink-soft">{section.lines[2]}</div>
-        <div className="mono-meta text-ink-soft/80">{section.lines[3]}</div>
-      </header>
-    );
-  }
-
-  if (section.kind === "footer") {
-    return (
-      <footer className="mt-2 pt-2 text-center">
-        <div className="perf-line mb-2" />
-        <div className="text-[0.72rem] font-bold tracking-[0.24em] text-stamp">TEAR HERE</div>
-        <p className="mt-2 text-[0.68rem] leading-snug text-ink-soft">{section.lines[1]}</p>
-        <p className="mt-1 text-[0.6rem] uppercase tracking-[0.16em] text-ink-soft/70">
-          {section.lines[2]}
-        </p>
-      </footer>
-    );
-  }
-
-  const svg =
-    section.kind === "maze" && section.maze
-      ? mazeToSvg(section.maze, { showPath: showKeys })
-      : section.kind === "sudoku" && section.sudoku
-        ? sudokuToSvg(section.sudoku, { showSolution: showKeys })
-        : section.svg || null;
-
-  return (
-    <section
-      className={`flex h-full min-h-0 flex-col overflow-hidden py-2.5 ${
-        divider ? "border-b border-dashed border-rule" : ""
-      }`}
-    >
-      <h3 className="mb-1 text-[0.68rem] font-bold uppercase tracking-[0.16em] text-stamp">
-        {section.title}
-      </h3>
-      {section.kind === "weather" && section.weather ? (
-        <div
-          dangerouslySetInnerHTML={{
-            __html: weatherHtml(section.weather, { compact: section.size !== "double" }),
-          }}
-        />
-      ) : null}
-      {section.kind !== "weather" && section.news?.length
-        ? section.news.map((n, i) => (
-            <div key={i} className="mb-1.5 last:mb-0">
-              <p className="text-[0.82rem] font-bold leading-snug text-ink">{n.headline}</p>
-              <p className="text-[0.76rem] leading-snug text-ink-soft">
-                {n.location ? (
-                  <span className="font-bold uppercase tracking-wide text-ink">
-                    {n.location}
-                    {" — "}
-                  </span>
-                ) : null}
-                {n.blurb}
-              </p>
-            </div>
-          ))
-        : null}
-      {section.kind !== "weather"
-        ? section.lines.map((line, i) => (
-            <p key={i} className="text-[0.84rem] leading-snug text-ink">
-              {line}
-            </p>
-          ))
-        : null}
-      {section.answer ? (
-        showKeys ? (
-          <p className="mt-1 text-[0.84rem] font-semibold leading-snug text-stamp">
-            Answer: {section.answer}
-          </p>
-        ) : (
-          <p className="mt-1 text-[0.72rem] italic leading-snug text-ink-soft/70">
-            Answer hidden — flip on Parent key to reveal.
-          </p>
-        )
-      ) : null}
-      {svg ? (
-        <div
-          className="mt-2 flex justify-center [&_svg]:max-w-full"
-          dangerouslySetInnerHTML={{ __html: svg }}
-        />
-      ) : null}
-    </section>
-  );
-}
-
+/**
+ * On-screen preview = the ACTUAL print HTML in a scaled iframe, so it is
+ * pixel-identical to the Save-as-PDF output (same layout, fonts, mono styling,
+ * QR, and page proportions). No separate React renderer to drift out of sync.
+ */
 export function StripPreview({
   job,
   emptyHint,
-  showParentKeyToggle = true,
+  version = 0,
 }: {
   job: PrintJob | null;
   emptyHint?: string;
-  showParentKeyToggle?: boolean;
+  /** Bump to force the iframe to reload after a save/shuffle/print. */
+  version?: number;
 }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const [showKeys, setShowKeys] = useState(false);
-  const [busy, setBusy] = useState(false);
-
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const frameRef = useRef<HTMLIFrameElement>(null);
   const isLetter = job?.paperSize === "letter";
-  const previewWidth = isLetter
-    ? LETTER_WIDTH_PX
-    : Math.min(job?.widthPx ?? STRIP_WIDTH_PX, STRIP_WIDTH_PX);
+  // Design size at 96dpi: US Letter = 816×1056; 58mm strip = 219 wide (height measured).
+  const designW = isLetter ? 816 : 219;
+  const [scale, setScale] = useState(0.75);
+  const [sheetH, setSheetH] = useState(isLetter ? 1056 : 520);
 
-  const hasKeys = useMemo(
-    () =>
-      !!job?.sections.some(
-        (s) => s.kind === "maze" || s.kind === "sudoku" || !!s.answer,
-      ),
-    [job],
-  );
+  useEffect(() => {
+    const el = wrapRef.current;
+    if (!el) return;
+    const measure = () => setScale(Math.min(el.clientWidth / designW, isLetter ? 1 : 1.7));
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [designW, isLetter]);
 
-  const bodySections = useMemo(
-    () => job?.sections.filter((s) => s.kind !== "header" && s.kind !== "footer") ?? [],
-    [job],
-  );
-  const header = job?.sections.find((s) => s.kind === "header");
-  const footer = job?.sections.find((s) => s.kind === "footer");
-  const [colA, colB] = useMemo(() => splitColumns(bodySections), [bodySections]);
-
-  async function downloadPng() {
-    if (!ref.current || !job) return;
-    setBusy(true);
+  function onLoad() {
     try {
-      const { toPng } = await import("html-to-image");
-      const dataUrl = await toPng(ref.current, {
-        pixelRatio: 2,
-        backgroundColor: "#f7f1e3",
-        cacheBust: true,
-      });
-      const a = document.createElement("a");
-      a.href = dataUrl;
-      a.download = `back-of-the-box-${job.kidName.toLowerCase()}-${job.date}.png`;
-      a.click();
-    } catch (err) {
-      console.error(err);
-      window.alert("Couldn’t export PNG in this browser. Try Chrome or Edge.");
-    } finally {
-      setBusy(false);
+      const sheet = frameRef.current?.contentDocument?.querySelector(".sheet") as HTMLElement | null;
+      if (sheet) setSheetH(sheet.getBoundingClientRect().height);
+    } catch {
+      // cross-origin (shouldn't happen, same origin) — keep the default height
     }
   }
 
-  return (
-    <div className="w-full">
-      <div
-        className={`relative mx-auto flex w-full justify-center ${
-          isLetter ? "max-w-[612px]" : "max-w-[384px]"
-        }`}
-      >
-        <div
-          ref={ref}
-          className={`strip-shell paper-grain w-full px-3.5 py-3.5 ${
-            isLetter ? "letter-shell" : ""
-          }`}
-          style={{ width: previewWidth }}
-        >
-          <div className="strip-curl" aria-hidden />
-          {job ? (
-            isLetter ? (
-              <>
-                {header ? <SectionBlock section={header} showKeys={showKeys} /> : null}
-                {/* Shared row grid: both columns use the same 1fr rows (the fuller
-                    column's ½-unit total) so card boundaries + dividers align
-                    column-to-column, matching the printed page. */}
-                <div className="grid grid-cols-1 items-stretch gap-x-4 sm:grid-cols-2">
-                  {[colA, colB].map((col, ci) => {
-                    const rows = Math.max(
-                      1,
-                      colA.reduce((n, s) => n + sectionUnits(s), 0),
-                      colB.reduce((n, s) => n + sectionUnits(s), 0),
-                    );
-                    return (
-                      <div
-                        key={ci}
-                        className="grid"
-                        style={{ gridTemplateRows: `repeat(${rows}, minmax(0, 1fr))` }}
-                      >
-                        {col.map((s, i) => (
-                          <div
-                            key={`${s.id}-${i}`}
-                            className="min-h-0 overflow-hidden"
-                            style={{ gridRow: `span ${sectionUnits(s)}` }}
-                          >
-                            <SectionBlock
-                              section={s}
-                              showKeys={showKeys}
-                              divider={i < col.length - 1}
-                            />
-                          </div>
-                        ))}
-                      </div>
-                    );
-                  })}
-                </div>
-                {footer ? <SectionBlock section={footer} showKeys={showKeys} /> : null}
-              </>
-            ) : (
-              job.sections.map((s, i) => (
-                <SectionBlock key={`${s.id}-${i}`} section={s} showKeys={showKeys} />
-              ))
-            )
-          ) : (
-            <div className="px-2 py-10 text-center">
-              <div className="masthead-display text-lg">Back of the Box</div>
-              <p className="mt-3 text-sm text-ink-soft">
-                {emptyHint ?? "Hit Print now to generate today’s morning strip."}
-              </p>
-              <div className="perf-line mx-auto mt-8 w-4/5" />
-              <div className="mt-2 text-[0.65rem] font-bold tracking-[0.2em] text-stamp">
-                TEAR HERE
-              </div>
-            </div>
-          )}
+  if (!job) {
+    return (
+      <div className="mx-auto w-full max-w-[640px]">
+        <div className="strip-shell paper-grain rounded px-4 py-10 text-center">
+          <div className="masthead-display text-lg">Back of the Box</div>
+          <p className="mt-3 text-sm text-ink-soft">{emptyHint ?? "Save the layout, then preview."}</p>
         </div>
       </div>
+    );
+  }
 
-      {job ? (
-        <div
-          className={`mx-auto mt-4 flex flex-wrap items-center justify-center gap-2 ${
-            isLetter ? "max-w-[612px]" : "max-w-[384px]"
-          }`}
-        >
-          <button type="button" onClick={downloadPng} disabled={busy} className="btn-secondary text-sm">
-            {busy ? "Saving…" : "Download PNG"}
-          </button>
-          {showParentKeyToggle && hasKeys ? (
-            <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-rule bg-paper/80 px-3 py-2 text-sm text-ink-soft">
-              <input
-                type="checkbox"
-                checked={showKeys}
-                onChange={(e) => setShowKeys(e.target.checked)}
-                className="accent-stamp"
-              />
-              Parent key
-            </label>
-          ) : null}
-        </div>
-      ) : null}
-      {showKeys ? (
-        <p
-          className={`mx-auto mt-2 text-center text-xs text-ink-soft ${
-            isLetter ? "max-w-[612px]" : "max-w-[384px]"
-          }`}
-        >
-          Parent key is on-screen only. It is not part of the printed strip.
-        </p>
-      ) : null}
+  const naturalH = isLetter ? 1056 : sheetH;
+  const src = `/api/render?kid=${encodeURIComponent(job.kidId)}&format=print&embed=1&v=${version}`;
+
+  return (
+    <div ref={wrapRef} className="mx-auto w-full" style={{ maxWidth: isLetter ? 640 : 384 }}>
+      <div
+        className="relative overflow-hidden rounded shadow-sm ring-1 ring-rule/40"
+        style={{ height: naturalH * scale }}
+      >
+        <iframe
+          ref={frameRef}
+          key={`${job.kidId}:${version}`}
+          src={src}
+          title="Dispatch preview"
+          onLoad={onLoad}
+          scrolling="no"
+          style={{
+            width: designW,
+            height: naturalH,
+            border: 0,
+            background: "#fff",
+            transform: `scale(${scale})`,
+            transformOrigin: "top left",
+          }}
+        />
+      </div>
     </div>
   );
 }

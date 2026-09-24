@@ -68,8 +68,10 @@ export async function GET(req: Request) {
 
   if (format === "print" || format === "pdf") {
     const autoPrint = url.searchParams.get("auto") === "1";
-    // Persist this dispatch's answer keys under a stable token and print a QR
+    const embed = url.searchParams.get("embed") === "1";
+    // Persist this dispatch's answer keys under a stable token and render a QR
     // to the public answers page (the scanning phone need not be signed in).
+    // Done for embed too so the on-screen preview matches print exactly.
     let qr: string | undefined;
     const items = collectAnswers(job);
     if (items.length) {
@@ -84,7 +86,7 @@ export async function GET(req: Request) {
       const proto = req.headers.get("x-forwarded-proto") ?? url.protocol.replace(":", "");
       qr = qrSvg(`${proto}://${host}/answers/${token}`, { sizePx: 96 });
     }
-    const html = buildPrintHtml(job, { autoPrint, qrSvg: qr });
+    const html = buildPrintHtml(job, { autoPrint, qrSvg: qr, embed });
     return new NextResponse(html, {
       status: 200,
       headers: {
