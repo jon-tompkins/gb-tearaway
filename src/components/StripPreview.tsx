@@ -206,9 +206,12 @@ export function StripPreview({
             isLetter ? (
               <>
                 {header ? <SectionBlock section={header} showKeys={showKeys} /> : null}
-                <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-2">
+                {/* Grid stretches both columns to the same height; each column
+                    spreads its cards with space-between so any slack shows as
+                    gaps BETWEEN cards, never a blank tail on the shorter one. */}
+                <div className="grid grid-cols-1 items-stretch gap-x-4 sm:grid-cols-2">
                   {[colA, colB].map((col, ci) => (
-                    <div key={ci} className="flex flex-col">
+                    <div key={ci} className="flex min-h-full flex-col justify-between">
                       {col.map((s, i) => (
                         <SectionBlock key={`${s.id}-${i}`} section={s} showKeys={showKeys} />
                       ))}
