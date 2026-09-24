@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { buildJobForKid } from "@/lib/serverStrip";
 import { readStore } from "@/lib/store";
+import { currentUserKey } from "@/lib/userKey";
 
 export const dynamic = "force-dynamic";
 
@@ -13,7 +14,8 @@ export default async function StripPage({
 }) {
   const { kidId } = await params;
   const { date } = await searchParams;
-  const store = await readStore();
+  const userKey = await currentUserKey();
+  const store = await readStore(userKey);
   const kid = store.kids.find((k) => k.id === kidId);
   if (!kid) notFound();
 
@@ -25,7 +27,7 @@ export default async function StripPage({
     );
   }
 
-  const job = await buildJobForKid(kid, { dateISO: date });
+  const job = await buildJobForKid(kid, { dateISO: date, userKey });
 
   return (
     <main

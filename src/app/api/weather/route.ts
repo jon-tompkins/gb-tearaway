@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { readStore, getActiveKid, getSettings } from "@/lib/store";
+import { currentUserKey } from "@/lib/userKey";
 import { fetchWeather } from "@/lib/weather";
 import type { AgeBand } from "@/lib/types";
 
@@ -7,7 +8,7 @@ export const runtime = "nodejs";
 
 export async function GET(req: Request) {
   const url = new URL(req.url);
-  const store = await readStore();
+  const store = await readStore(await currentUserKey());
   const kid = await getActiveKid(store);
   const settings = getSettings(store);
 

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { generateStrip } from "@/lib/generateStrip";
 import { getActiveKid, getSettings, readStore, writeStore } from "@/lib/store";
+import { currentUserKey } from "@/lib/userKey";
 import { fetchWeather } from "@/lib/weather";
 import {
   advanceInOrderCursors,
@@ -15,7 +16,8 @@ export const runtime = "nodejs";
  * in_order cursors, then advance those cursors for the next run.
  */
 export async function POST() {
-  const store = await readStore();
+  const userKey = await currentUserKey();
+  const store = await readStore(userKey);
   const kid = await getActiveKid(store);
   if (!kid) {
     return NextResponse.json({ error: "No kid profile" }, { status: 404 });
@@ -49,7 +51,7 @@ export async function POST() {
       slots: advanceInOrderCursors(kidNorm.slots),
     };
   }
-  await writeStore(store);
+  await writeStore(userKey, store);
 
   return NextResponse.json(job);
 }

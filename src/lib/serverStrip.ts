@@ -1,5 +1,5 @@
 import { generateStrip } from "./generateStrip";
-import { getSettings, readStore, writeStore } from "./store";
+import { DEMO_KEY, getSettings, readStore, writeStore } from "./store";
 import { fetchWeather } from "./weather";
 import type { KidProfile, PrintJob } from "./types";
 import {
@@ -16,9 +16,12 @@ export async function buildJobForKid(
     persistStatus?: PrintJob["status"];
     /** Advance in_order cursors after this generate (reshuffle / print). */
     advanceCursors?: boolean;
+    /** Which user's store to read/write (defaults to the shared demo store). */
+    userKey?: string;
   } = {},
 ): Promise<PrintJob> {
-  const store = await readStore();
+  const userKey = opts.userKey ?? DEMO_KEY;
+  const store = await readStore(userKey);
   const settings = getSettings(store);
   const nonce = opts.nonce ?? store.nonceByKid[kid.id] ?? 0;
   const kidNorm = ensureKidSlots(kid);
@@ -48,7 +51,7 @@ export async function buildJobForKid(
         ...store.kids[idx],
         slots: advanceInOrderCursors(store.kids[idx].slots),
       };
-      await writeStore(store);
+      await writeStore(userKey, store);
     }
   }
 

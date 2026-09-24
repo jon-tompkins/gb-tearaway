@@ -1,7 +1,7 @@
 import { promises as fs } from "fs";
-import os from "os";
 import path from "path";
 import type { AppSettings, AppState, KidProfile, PrintJob } from "./types";
+import { loadState, saveState } from "./persist";
 import {
   DEFAULT_MODULES,
   DEFAULT_SETTINGS,
@@ -23,11 +23,9 @@ import {
 } from "./slots";
 
 const DATA_DIR = path.join(process.cwd(), "data");
-// Serverless runtimes (Vercel) ship a read-only app filesystem; only the temp dir
-// is writable. Persist there when deployed, and to ./data locally.
-const RUNTIME_DIR = process.env.VERCEL ? path.join(os.tmpdir(), "tearaway-data") : DATA_DIR;
-const STORE_PATH = path.join(RUNTIME_DIR, "store.json");
 const SAMPLE_PATH = path.join(DATA_DIR, "store.sample.json");
+/** Shared store key for signed-out visitors (the public demo). */
+export const DEMO_KEY = "demo";
 
 function migratePaperSize(settings: Partial<AppSettings> | undefined, kid?: Partial<KidProfile>): PaperSize {
   if (kid && isPaperSize(kid.paperSize)) return kid.paperSize;
@@ -109,9 +107,21 @@ function normalizeSettings(raw: Partial<AppSettings> | null | undefined): AppSet
   };
 }
 
-function normalize(raw: Partial<AppState> | null | undefined): AppState {
-  const base = emptyState();
-  if (!raw || !Array.isArray(raw.kids) || raw.kids.length === 0) return base;
+/** An empty account: no dispatches yet (a signed-in user starts here). */
+function blankState(rawSettings?: Partial<AppSettings> | null): AppState {
+  return {
+    kids: [],
+    activeKidId: null,
+    settings: normalizeSettings(rawSettings),
+    lastPrintByKid: {},
+    nonceByKid: {},
+  };
+}
+
+function normalize(raw: Partial<AppState> | null | undefined, allowEmpty = false): AppState {
+  if (!raw || !Array.isArray(raw.kids) || raw.kids.length === 0) {
+    return allowEmpty ? blankState(raw?.settings) : emptyState();
+  }
   const settings = normalizeSettings(raw.settings);
   return {
     kids: raw.kids.map((k) => {
@@ -137,12 +147,12 @@ function normalize(raw: Partial<AppState> | null | undefined): AppState {
   };
 }
 
-// In-memory copy is the source of truth within a running instance, so the app
-// works even when the disk is read-only (serverless). Disk is best-effort for
-// warm-instance / local durability. NOTE: serverless instances are ephemeral and
-// not shared, so cross-instance durability needs a real KV store (e.g. Vercel KV).
-let mem: AppState | null = null;
+// Per-user in-memory cache (source of truth within a warm instance). Durable
+// persistence is delegated to ./persist (Supabase when configured, else a
+// best-effort file). Signed-out visitors share the DEMO_KEY store.
+const mem = new Map<string, AppState>();
 
+/** Demo store seed — the sample dispatch, so signed-out visitors see the app. */
 async function seedState(): Promise<AppState> {
   try {
     const sample = await fs.readFile(SAMPLE_PATH, "utf8");
@@ -152,47 +162,43 @@ async function seedState(): Promise<AppState> {
   }
 }
 
-async function persist(state: AppState): Promise<void> {
-  try {
-    await fs.mkdir(RUNTIME_DIR, { recursive: true });
-    await fs.writeFile(STORE_PATH, JSON.stringify(state, null, 2), "utf8");
-  } catch {
-    // read-only fs (serverless) — the in-memory copy carries the state
+export async function readStore(userKey: string = DEMO_KEY): Promise<AppState> {
+  const cached = mem.get(userKey);
+  if (cached) return cached;
+  const allowEmpty = userKey !== DEMO_KEY;
+  const raw = await loadState(userKey);
+  let state: AppState;
+  if (raw) {
+    state = normalize(raw, allowEmpty);
+  } else {
+    // First visit: demo gets the sample; a real user starts with no dispatches.
+    state = userKey === DEMO_KEY ? await seedState() : blankState();
+    void saveState(userKey, state);
   }
+  mem.set(userKey, state);
+  return state;
 }
 
-export async function readStore(): Promise<AppState> {
-  if (mem) return mem;
-  try {
-    const raw = await fs.readFile(STORE_PATH, "utf8");
-    mem = normalize(JSON.parse(raw) as AppState);
-  } catch {
-    mem = await seedState();
-    void persist(mem);
-  }
-  return mem;
-}
-
-export async function writeStore(state: AppState): Promise<AppState> {
-  const next = normalize(state);
-  mem = next;
-  await persist(next);
+export async function writeStore(userKey: string, state: AppState): Promise<AppState> {
+  const next = normalize(state, userKey !== DEMO_KEY);
+  mem.set(userKey, next);
+  await saveState(userKey, next);
   return next;
 }
 
-export async function getActiveKid(store?: AppState): Promise<KidProfile | null> {
-  const s = store ?? (await readStore());
-  if (!s.kids.length) return null;
-  return s.kids.find((k) => k.id === s.activeKidId) ?? s.kids[0] ?? null;
+export async function getActiveKid(store: AppState): Promise<KidProfile | null> {
+  if (!store.kids.length) return null;
+  return store.kids.find((k) => k.id === store.activeKidId) ?? store.kids[0] ?? null;
 }
 
 export async function patchStore(
+  userKey: string,
   patch: Partial<AppState> & {
     kid?: Partial<KidProfile> & { id?: string };
     createKid?: Partial<KidProfile>;
   },
 ): Promise<AppState> {
-  const store = await readStore();
+  const store = await readStore(userKey);
 
   if (patch.createKid) {
     const paperSize = isPaperSize(patch.createKid.paperSize)
@@ -242,14 +248,14 @@ export async function patchStore(
   if (patch.lastPrintByKid) store.lastPrintByKid = patch.lastPrintByKid;
   if (patch.nonceByKid) store.nonceByKid = patch.nonceByKid;
 
-  return writeStore(store);
+  return writeStore(userKey, store);
 }
 
-export async function savePrintJob(job: PrintJob): Promise<AppState> {
-  const store = await readStore();
+export async function savePrintJob(userKey: string, job: PrintJob): Promise<AppState> {
+  const store = await readStore(userKey);
   store.lastPrintByKid = { ...store.lastPrintByKid, [job.kidId]: job };
   store.nonceByKid = { ...store.nonceByKid, [job.kidId]: job.nonce };
-  return writeStore(store);
+  return writeStore(userKey, store);
 }
 
 export function getSettings(store: AppState): AppSettings {

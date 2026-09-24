@@ -6,6 +6,7 @@ import { StripOg } from "@/components/StripOg";
 import { buildJobForKid, estimateJobHeight } from "@/lib/serverStrip";
 import { buildPrintHtml } from "@/lib/printHtml";
 import { readStore } from "@/lib/store";
+import { currentUserKey } from "@/lib/userKey";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -47,13 +48,14 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "date must be YYYY-MM-DD" }, { status: 400 });
   }
 
-  const store = await readStore();
+  const userKey = await currentUserKey();
+  const store = await readStore(userKey);
   const kid = store.kids.find((k) => k.id === kidId);
   if (!kid) {
     return NextResponse.json({ error: "Unknown kid id" }, { status: 404 });
   }
 
-  const job = await buildJobForKid(kid, { dateISO: date });
+  const job = await buildJobForKid(kid, { dateISO: date, userKey });
 
   if (format === "json") {
     // Drop bulky HTML for JSON consumers; keep sections + meta
