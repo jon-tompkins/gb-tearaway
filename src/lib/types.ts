@@ -138,6 +138,8 @@ export interface KidProfile {
   deliveryMethod: DeliveryMethod;
   /** Address for email delivery — defaults to the account-holder email. */
   deliveryEmail?: string;
+  /** Last date (YYYY-MM-DD) a delivery email went out — dedupes the cron. */
+  lastEmailedDate?: string;
   /** Per-kid paper template (controls slot count). */
   paperSize: PaperSize;
   /** Fixed slots for the chosen paper size. */

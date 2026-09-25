@@ -10,6 +10,7 @@ import { currentUserKey } from "@/lib/userKey";
 import { savePayload } from "@/lib/persist";
 import { answersToken, collectAnswers } from "@/lib/answers";
 import { qrSvg } from "@/lib/qr";
+import { loadDispatchRef } from "@/lib/deliver";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -20,9 +21,23 @@ export const runtime = "nodejs";
  */
 export async function GET(req: Request) {
   const url = new URL(req.url);
-  const kidId = url.searchParams.get("kid") ?? url.searchParams.get("kidId");
-  const date = url.searchParams.get("date") ?? undefined;
+  let kidId = url.searchParams.get("kid") ?? url.searchParams.get("kidId");
+  let date = url.searchParams.get("date") ?? undefined;
   const format = (url.searchParams.get("format") ?? "html").toLowerCase();
+
+  // Public delivery token (from the daily email) — resolves the dispatch without
+  // needing the recipient's session.
+  const token = url.searchParams.get("token");
+  let tokenUserKey: string | null = null;
+  if (token) {
+    const ref = await loadDispatchRef(token);
+    if (!ref) {
+      return NextResponse.json({ error: "This dispatch link has expired." }, { status: 404 });
+    }
+    tokenUserKey = ref.userKey;
+    kidId = ref.kidId;
+    date = date ?? ref.date;
+  }
 
   if (!kidId) {
     return NextResponse.json(
@@ -51,7 +66,7 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "date must be YYYY-MM-DD" }, { status: 400 });
   }
 
-  const userKey = await currentUserKey();
+  const userKey = tokenUserKey ?? (await currentUserKey());
   const store = await readStore(userKey);
   const kid = store.kids.find((k) => k.id === kidId);
   if (!kid) {

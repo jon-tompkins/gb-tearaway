@@ -33,6 +33,40 @@ export async function savePayload(key: string, value: unknown): Promise<void> {
   await saveRaw(key, value);
 }
 
+/** Every signed-in user's stored state (for the delivery cron). */
+export async function listUserStates(): Promise<Array<{ userKey: string; state: AppState }>> {
+  if (SUPA_URL && SUPA_KEY) {
+    try {
+      const res = await fetch(
+        `${SUPA_URL}/rest/v1/${TABLE}?user_key=like.user:*&select=user_key,state`,
+        { headers: { apikey: SUPA_KEY, Authorization: `Bearer ${SUPA_KEY}` }, cache: "no-store" },
+      );
+      if (!res.ok) return [];
+      const rows = (await res.json()) as Array<{ user_key: string; state: AppState }>;
+      return rows.map((r) => ({ userKey: r.user_key, state: r.state }));
+    } catch {
+      return [];
+    }
+  }
+  try {
+    const files = await fs.readdir(FILE_DIR);
+    const out: Array<{ userKey: string; state: AppState }> = [];
+    for (const f of files) {
+      if (!f.endsWith(".json")) continue;
+      const userKey = decodeURIComponent(f.replace(/\.json$/, ""));
+      if (!userKey.startsWith("user:")) continue;
+      try {
+        out.push({ userKey, state: JSON.parse(await fs.readFile(path.join(FILE_DIR, f), "utf8")) });
+      } catch {
+        // skip unreadable
+      }
+    }
+    return out;
+  } catch {
+    return [];
+  }
+}
+
 /** Load a JSON payload previously stored with savePayload. */
 export async function loadPayload<T>(key: string): Promise<T | null> {
   return (await loadRaw(key)) as T | null;
