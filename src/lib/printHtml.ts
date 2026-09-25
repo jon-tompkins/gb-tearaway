@@ -48,7 +48,7 @@ export function buildPrintHtml(
     const sum = (arr: typeof body) => arr.reduce((n, s) => n + unitsOf(s), 0);
     const rows = Math.max(1, sum(colA), sum(colB));
     const col = (arr: typeof body) =>
-      `<div class="col" style="grid-template-rows:repeat(${rows},1fr)">${arr
+      `<div class="col" style="grid-template-rows:repeat(${rows},minmax(0,1fr))">${arr
         .map(sectionHtml)
         .join("\n")}</div>`;
     const bodyHtml = `<div class="cols">${col(colA)}${col(colB)}</div>`;
@@ -98,19 +98,24 @@ export function buildPrintHtml(
   const letterCss = `
   html,body{background:#fff;color:#000}
   /* newspaper: two balanced columns that fill the page, a light rule under each card */
-  .sheet{width:100%;height:279.4mm;box-sizing:border-box;padding:12mm;display:flex;flex-direction:column;overflow:hidden}
-  .hdr1{text-align:center;padding-bottom:1.6mm;margin-bottom:2.8mm;border-bottom:1.4px solid #000}
+  /* Fixed vertical budget: 15mm masthead + 220.4mm columns + 20mm footer =
+     255.4mm (the 279.4mm page minus 12mm padding top/bottom). Giving the
+     column band an explicit height makes the grid rows definite, so tall
+     content clips instead of growing its row (Chromium print doesn't resolve
+     grid fr heights from flex:1). */
+  .sheet{width:100%;height:279.4mm;box-sizing:border-box;padding:12mm;overflow:hidden}
+  .hdr1{height:15mm;box-sizing:border-box;text-align:center;padding-bottom:1.6mm;border-bottom:1.4px solid #000}
   .mast1{font-family:Georgia,'Times New Roman',serif;font-weight:700;font-size:18pt;line-height:1;letter-spacing:-.01em}
   .date1{font-size:7pt;letter-spacing:.06em;text-transform:uppercase;margin-top:1mm}
-  .ftr1{display:flex;align-items:center;justify-content:center;gap:6mm;border-top:1px solid #000;padding-top:1.4mm;margin-top:1.5mm}
+  .ftr1{height:20mm;box-sizing:border-box;display:flex;align-items:center;justify-content:center;gap:6mm;border-top:1px solid #000;padding-top:1.4mm}
   .ftr1-mid{text-align:center}
   .ftr1 .tear1{font-size:6pt;font-weight:700;letter-spacing:.24em;text-transform:uppercase}
   .ftr1 .brand1{font-family:Georgia,'Times New Roman',serif;font-size:8pt;font-weight:700;margin-top:.8mm}
   .ftr1 .qr{text-align:center;line-height:0}
   .ftr1 .qr svg{width:15mm;height:15mm}
   .ftr1 .qrcap{font-size:5pt;letter-spacing:.06em;text-transform:uppercase;margin-top:.6mm;line-height:1}
-  .cols{flex:1;min-height:0;display:flex;gap:6mm}
-  .col{flex:1;min-width:0;display:grid}
+  .cols{height:220.4mm;display:flex;gap:6mm}
+  .col{flex:1;min-width:0;height:100%;display:grid}
   /* Each card spans its ½-unit footprint in the shared row grid, so dividers
      align column-to-column. Content is clipped to its cell if it overruns. */
   .sec{min-height:0;overflow:hidden;display:flex;flex-direction:column;padding:1.4mm 0 2mm;border-bottom:0.5pt solid #000}

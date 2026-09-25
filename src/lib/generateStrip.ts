@@ -118,7 +118,8 @@ export function generateStrip(
         word.definition,
         `Try it: “${word.example}”`,
       ];
-      if (word.tryThis) lines.push(`Challenge: ${word.tryThis}`);
+      // A ½ card can't fit the extra challenge line — drop it there.
+      if (word.tryThis && cardSize !== "half") lines.push(`Challenge: ${word.tryThis}`);
       sections.push({ id: `word-${word.word}`, moduleId, title: meta.name, kind: "text", lines });
       continue;
     }
