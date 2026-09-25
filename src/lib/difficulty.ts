@@ -1,9 +1,13 @@
 import type { AgeBand, ModuleId } from "./types";
 
 /**
- * Difficulty is a 1–20 dial per module on a dispatch.
+ * Appropriateness is a 1–20 dial on EVERY module in a dispatch (labeled
+ * "Appropriateness" in the UI; the field is still `moduleDifficulty` for
+ * back-compat). It grades content level for text/news modules and puzzle
+ * difficulty for puzzle modules.
  *   1  ≈ kindergarten        20 ≈ adult
- * Age band picks the default; the parent can nudge each module up or down.
+ * The dispatch age band picks the default; the parent nudges each module up
+ * or down from there.
  */
 export const DIFFICULTY_MIN = 1;
 export const DIFFICULTY_MAX = 20;

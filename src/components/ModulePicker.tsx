@@ -8,7 +8,6 @@ import {
   DIFFICULTY_MAX,
   DIFFICULTY_MIN,
   defaultDifficultyForBand,
-  isDifficultyModule,
 } from "@/lib/difficulty";
 
 /** Hard cap of modules per card → a tidy 2×2 grid. */
@@ -74,17 +73,20 @@ function pruneDifficulty(
 }
 
 /**
- * A filled circle showing a module's difficulty (1–20). Click to open a small
- * slider popover and adjust. `onDark` flips colors for use on a selected row.
+ * A filled circle showing a module's appropriateness (1–20). Click to open a
+ * small slider popover and adjust. `onDark` flips colors for a selected row;
+ * `compact` shrinks the circle to sit beside the × on a card chip.
  */
 function DifficultyDial({
   value,
   onChange,
   onDark = false,
+  compact = false,
 }: {
   value: number;
   onChange: (v: number) => void;
   onDark?: boolean;
+  compact?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   return (
@@ -92,19 +94,19 @@ function DifficultyDial({
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        title={`Difficulty ${value} of ${DIFFICULTY_MAX} — click to adjust`}
-        className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold tabular-nums transition hover:opacity-80 ${
-          onDark ? "bg-cream text-ink" : "bg-ink text-cream"
-        }`}
+        title={`Appropriateness ${value} of ${DIFFICULTY_MAX} — click to adjust`}
+        className={`flex items-center justify-center rounded-full font-bold tabular-nums transition hover:opacity-80 ${
+          compact ? "h-5 w-5 text-[0.6rem]" : "h-7 w-7 text-xs"
+        } ${onDark ? "bg-cream text-ink" : "bg-ink text-cream"}`}
       >
         {value}
       </button>
       {open ? (
         <>
           <span className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-          <span className="absolute right-0 top-9 z-50 flex w-52 flex-col gap-1.5 rounded-xl border border-rule bg-cream p-3 text-ink shadow-lg">
+          <span className="absolute right-0 top-7 z-50 flex w-52 flex-col gap-1.5 rounded-xl border border-rule bg-cream p-3 text-ink shadow-lg">
             <span className="flex items-center justify-between text-[0.6rem] font-bold uppercase tracking-wide text-ink-soft">
-              <span>Difficulty</span>
+              <span>Appropriateness</span>
               <span className="text-ink">
                 {value}/{DIFFICULTY_MAX}
               </span>
@@ -118,8 +120,8 @@ function DifficultyDial({
               className="h-1 w-full cursor-pointer accent-ink"
             />
             <span className="flex justify-between text-[0.55rem] text-ink-soft">
-              <span>Easier</span>
-              <span>Harder</span>
+              <span>Younger</span>
+              <span>Older</span>
             </span>
           </span>
         </>
@@ -152,7 +154,6 @@ function ModuleOption({
   onToggle: () => void;
   onDifficulty: (v: number) => void;
 }) {
-  const tunable = isDifficultyModule(id);
   return (
     <div
       role="button"
@@ -179,7 +180,7 @@ function ModuleOption({
         {inCard ? "✓" : "+"}
       </span>
       <span className="flex-1 truncate text-sm font-semibold">{name}</span>
-      {inCard && tunable ? (
+      {inCard ? (
         <DifficultyDial value={difficulty} onChange={onDifficulty} onDark />
       ) : (
         <span
@@ -326,15 +327,10 @@ export function SlotEditor({
     if (s.moduleIds.length >= MAX_PER_SLOT) return;
     // Guard: only modules that fit this card's size can go in.
     if (!moduleFitsCard(id, s.size ?? "full")) return;
-    // Seed a per-module default difficulty when a tunable module lands in the card.
-    const seed = isDifficultyModule(id) && s.moduleDifficulty?.[id] == null ? defaultDifficulty : undefined;
-    writeSlot(slotId, (x) => ({
-      ...x,
-      moduleIds: [...x.moduleIds, id],
-      ...(seed != null
-        ? { moduleDifficulty: { ...(x.moduleDifficulty ?? {}), [id]: seed } }
-        : {}),
-    }));
+    // Appropriateness isn't materialized on add — every chip shows the dispatch's
+    // band default (defaultDifficulty) until the parent nudges it, so changing the
+    // age band re-defaults any module they haven't customized.
+    writeSlot(slotId, (x) => ({ ...x, moduleIds: [...x.moduleIds, id] }));
   }
 
   const renderCard = (slot: ModuleSlot) => {
@@ -448,17 +444,24 @@ export function SlotEditor({
                   <span className="flex-1 truncate text-xs font-semibold text-ink">
                     {moduleById(id).name}
                   </span>
-                  <button
-                    type="button"
-                    aria-label={`Remove ${moduleById(id).name}`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      removeFromCard(slot.id, id);
-                    }}
-                    className="ml-1 shrink-0 rounded px-1 text-sm font-bold text-ink-soft hover:text-stamp"
-                  >
-                    ×
-                  </button>
+                  <span className="ml-1 flex shrink-0 items-center gap-1">
+                    <DifficultyDial
+                      value={slot.moduleDifficulty?.[id] ?? defaultDifficulty}
+                      onChange={(v) => setModuleDifficulty(slot.id, id, v)}
+                      compact
+                    />
+                    <button
+                      type="button"
+                      aria-label={`Remove ${moduleById(id).name}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        removeFromCard(slot.id, id);
+                      }}
+                      className="rounded px-1 text-sm font-bold text-ink-soft hover:text-stamp"
+                    >
+                      ×
+                    </button>
+                  </span>
                 </div>
               );
             }
@@ -601,7 +604,7 @@ export function SlotEditor({
                     <span className="font-semibold text-ink">
                       {selectedSlot.moduleIds.length}/{MAX_PER_SLOT}
                     </span>{" "}
-                    chosen — tap a module&apos;s difficulty circle to tune it.
+                    chosen — tap a module&apos;s appropriateness circle to tune it.
                   </p>
                 </div>
 

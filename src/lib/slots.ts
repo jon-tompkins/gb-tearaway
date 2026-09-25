@@ -6,7 +6,7 @@ import {
   slotSizeUnits,
 } from "./types";
 import { isModuleId, moduleSize } from "./modules";
-import { clampDifficulty, isDifficultyModule } from "./difficulty";
+import { clampDifficulty } from "./difficulty";
 import { hashString, mulberry32, pick } from "./rng";
 
 /** Build empty slots for a paper size. */
@@ -50,9 +50,10 @@ export function sanitizeModuleIds(raw: unknown): ModuleId[] {
 }
 
 /**
- * Build a validated per-module difficulty map for a card. Only tunable modules
- * (maze/sudoku/wordfind/dots) are kept. A legacy per-card `difficulty` back-fills
- * any tunable module that has no explicit value.
+ * Build a validated per-module appropriateness map for a card. Every module in
+ * the card can carry an appropriateness value (1–20) — it grades content level
+ * for text/news modules and puzzle difficulty for puzzle modules. A legacy
+ * per-card `difficulty` back-fills any module that has no explicit value.
  */
 export function sanitizeModuleDifficulty(
   raw: unknown,
@@ -60,16 +61,15 @@ export function sanitizeModuleDifficulty(
   legacy?: number,
 ): Partial<Record<ModuleId, number>> | undefined {
   const out: Partial<Record<ModuleId, number>> = {};
-  const tunable = moduleIds.filter(isDifficultyModule);
   if (raw && typeof raw === "object") {
     const rec = raw as Record<string, unknown>;
-    for (const id of tunable) {
+    for (const id of moduleIds) {
       const v = rec[id];
       if (typeof v === "number" && Number.isFinite(v)) out[id] = clampDifficulty(v);
     }
   }
   if (legacy != null) {
-    for (const id of tunable) {
+    for (const id of moduleIds) {
       if (out[id] == null) out[id] = clampDifficulty(legacy);
     }
   }
