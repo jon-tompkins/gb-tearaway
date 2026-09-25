@@ -116,10 +116,12 @@ export function generateStrip(
       const lines = [
         `${word.word.toUpperCase()}  ·  ${word.phonetic}  ·  ${word.pos}`,
         word.definition,
-        `Try it: “${word.example}”`,
       ];
-      // A ½ card can't fit the extra challenge line — drop it there.
-      if (word.tryThis && cardSize !== "half") lines.push(`Challenge: ${word.tryThis}`);
+      // A ½ card only fits the word + definition; larger cards add example + challenge.
+      if (cardSize !== "half") {
+        lines.push(`Try it: “${word.example}”`);
+        if (word.tryThis) lines.push(`Challenge: ${word.tryThis}`);
+      }
       sections.push({ id: `word-${word.word}`, moduleId, title: meta.name, kind: "text", lines });
       continue;
     }
