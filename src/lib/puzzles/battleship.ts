@@ -282,6 +282,33 @@ export function validateBattleship(d: BattleshipData): void {
           if (rr >= 0 && rr < n && cc >= 0 && cc < n && solution[rr][cc] === 1)
             throw new Error(`ships touch diagonally at ${r},${c}`);
         }
+  // every ship must be a STRAIGHT line: no cell may have both a horizontal and a
+  // vertical ship neighbor (that's an L/corner — two ships touching orthogonally).
+  for (let r = 0; r < n; r++)
+    for (let c = 0; c < n; c++)
+      if (solution[r][c] === 1) {
+        const h = (c > 0 && solution[r][c - 1] === 1) || (c < n - 1 && solution[r][c + 1] === 1);
+        const v = (r > 0 && solution[r - 1][c] === 1) || (r < n - 1 && solution[r + 1][c] === 1);
+        if (h && v) throw new Error(`bent ship / orthogonal touch at ${r},${c}`);
+      }
+  // connected ship components must equal the fleet exactly (right count of each length)
+  const seen = solution.map((row) => row.map(() => false));
+  const found: number[] = [];
+  for (let r = 0; r < n; r++)
+    for (let c = 0; c < n; c++) {
+      if (solution[r][c] !== 1 || seen[r][c]) continue;
+      let len = 0;
+      if (c < n - 1 && solution[r][c + 1] === 1) {
+        let cc = c;
+        while (cc < n && solution[r][cc] === 1) { seen[r][cc] = true; cc++; len++; }
+      } else if (r < n - 1 && solution[r + 1][c] === 1) {
+        let rr = r;
+        while (rr < n && solution[rr][c] === 1) { seen[rr][c] = true; rr++; len++; }
+      } else { seen[r][c] = true; len = 1; }
+      found.push(len);
+    }
+  const key = (a: number[]) => [...a].sort((x, y) => y - x).join(",");
+  if (key(found) !== key(ships)) throw new Error(`fleet mismatch: found [${key(found)}] vs [${key(ships)}]`);
   // reveals consistent with the solution
   for (const [key, v] of Object.entries(reveal)) {
     const [r, c] = key.split(",").map(Number);
