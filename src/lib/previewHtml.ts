@@ -198,7 +198,14 @@ export function sectionHtml(section: StripSection): string {
             : "");
 
   const pStyle = section.fontPt ? ` style="font-size:${section.fontPt}pt;line-height:1.15;margin:0"` : "";
-  const lines = section.lines.map((l) => `<p${pStyle}>${esc(l)}</p>`).join("");
+  const lines = section.lines
+    .map((l) =>
+      // Poems: blank lines are stanza breaks → a small gap, not a full line.
+      section.fontPt && l.trim() === ""
+        ? `<div style="height:${(section.fontPt * 0.4).toFixed(1)}pt"></div>`
+        : `<p${pStyle}>${esc(l)}</p>`,
+    )
+    .join("");
   const sizeClass = section.size ? ` size-${section.size}` : "";
   // Figure cards (maze/sudoku/etc.) grow to fill the column's leftover space so
   // there's no wasted gap; text cards stay at their natural height.

@@ -155,6 +155,48 @@ const POEMS: PoemEntry[] = [
   },
   {
     bands: ["4-6", "7-9", "10-12"],
+    title: "Where Go the Boats?",
+    author: "Robert Louis Stevenson",
+    lines: [
+      "Dark brown is the river,",
+      "Golden is the sand.",
+      "It flows along for ever,",
+      "With trees on either hand.",
+      "",
+      "Green leaves a-floating,",
+      "Castles of the foam,",
+      "Boats of mine a-boating—",
+      "Where will all come home?",
+      "",
+      "On goes the river",
+      "And out past the mill,",
+      "Away down the valley,",
+      "Away down the hill.",
+      "",
+      "Away down the river,",
+      "A hundred miles or more,",
+      "Other little children",
+      "Shall bring my boats ashore.",
+    ],
+  },
+  {
+    bands: ["7-9", "10-12"],
+    title: "My Shadow",
+    author: "Robert Louis Stevenson",
+    lines: [
+      "I have a little shadow that goes in and out with me,",
+      "And what can be the use of him is more than I can see.",
+      "He is very, very like me from the heels up to the head;",
+      "And I see him jump before me, when I jump into my bed.",
+      "",
+      "The funniest thing about him is the way he likes to grow—",
+      "Not at all like proper children, which is always very slow;",
+      "For he sometimes shoots up taller like an india-rubber ball,",
+      "And he sometimes gets so little that there’s none of him at all.",
+    ],
+  },
+  {
+    bands: ["4-6", "7-9", "10-12"],
     title: "The Land of Counterpane",
     author: "Robert Louis Stevenson",
     lines: [
@@ -181,32 +223,56 @@ const POEMS: PoemEntry[] = [
   },
 ];
 
-/**
- * Line windows per card size (title + body + attribution). Min keeps a big card
- * from sitting half-empty at the max font; max keeps a poem from clipping at the
- * news-size (8pt) floor. A poem too long for a size belongs in the next size up.
- */
-export const POEM_MIN_LINES: Record<SlotSize, number> = { half: 4, full: 7, double: 14 };
-export const POEM_MAX_LINES: Record<SlotSize, number> = { half: 6, full: 13, double: 26 };
+/** Printable content height (mm) inside each card size, and the column width. */
+const POEM_CONTENT_MM: Record<SlotSize, number> = { half: 20, full: 48, double: 104 };
+const POEM_COL_MM = 90; // a Letter print column
+const POEM_MIN_FONT = 8; // never smaller than the news size
+const POEM_MAX_FONT = 16; // grow this large to fill a card (a featured verse)
+const PT_MM = 0.3528; // 1pt in mm
 
-/** Total printed lines for a poem (title + body + attribution). */
-export function poemLineCount(p: PoemItem): number {
-  return 1 + p.lines.length + 1;
+/** All printed lines of a poem: title, body, attribution. */
+export function poemLines(p: PoemItem): string[] {
+  return [p.title, ...p.lines, `— ${p.author}`];
 }
 
 /**
- * Body font (pt) so the poem roughly fills the card: bigger for short poems,
- * shrinking toward the news size (8pt) for long ones, never past an 11pt cap.
+ * Rendered height (mm) of a poem's lines at a font size — accounts for long
+ * lines WRAPPING (monospace ≈ 0.6em/char) and half-height blank stanza breaks.
  */
-export function poemFontPt(lineCount: number, size: SlotSize): number {
-  const contentMm = size === "half" ? 19 : size === "full" ? 47 : 103;
-  const ideal = (contentMm * 2.1) / Math.max(1, lineCount);
-  return Math.max(8, Math.min(11, Math.round(ideal * 2) / 2));
+function poemHeightMm(lines: string[], fontPt: number): number {
+  const charsPerLine = Math.max(8, Math.floor(POEM_COL_MM / (0.6 * fontPt * PT_MM)));
+  const lineMm = fontPt * 1.15 * PT_MM;
+  let h = 0;
+  for (const l of lines) {
+    if (l.trim() === "") {
+      h += 0.4 * fontPt * PT_MM;
+      continue;
+    }
+    h += Math.max(1, Math.ceil(l.length / charsPerLine)) * lineMm;
+  }
+  return h;
+}
+
+/** A poem's home = the SMALLEST card it fits in at the 8pt floor. */
+export function naturalPoemSize(p: PoemItem): SlotSize {
+  const lines = poemLines(p);
+  const floorH = poemHeightMm(lines, POEM_MIN_FONT);
+  if (floorH <= POEM_CONTENT_MM.half) return "half";
+  if (floorH <= POEM_CONTENT_MM.full) return "full";
+  return "double";
+}
+
+/** Largest font (8–16pt) at which the poem still fits the card — fills it. */
+export function poemFontPt(lines: string[], size: SlotSize): number {
+  const budget = POEM_CONTENT_MM[size] * 0.98;
+  for (let f = POEM_MAX_FONT; f >= POEM_MIN_FONT; f -= 0.5) {
+    if (poemHeightMm(lines, f) <= budget) return f;
+  }
+  return POEM_MIN_FONT;
 }
 
 function fitsSize(p: PoemItem, size: SlotSize): boolean {
-  const n = poemLineCount(p);
-  return n >= POEM_MIN_LINES[size] && n <= POEM_MAX_LINES[size];
+  return naturalPoemSize(p) === size;
 }
 
 /** Pick a public-domain poem whose length suits the card size. */
@@ -223,7 +289,9 @@ export function pickPoem(band: AgeBand, rng: () => number, size: SlotSize = "ful
 export function extremePoemForSize(size: SlotSize, which: "longest" | "shortest"): PoemItem {
   const fits = POEMS.filter((p) => fitsSize(p, size));
   const pool = fits.length ? fits : POEMS;
-  const sorted = [...pool].sort((a, b) => poemLineCount(a) - poemLineCount(b));
+  const sorted = [...pool].sort(
+    (a, b) => poemHeightMm(poemLines(a), POEM_MIN_FONT) - poemHeightMm(poemLines(b), POEM_MIN_FONT),
+  );
   const p = which === "longest" ? sorted[sorted.length - 1] : sorted[0];
   return { title: p.title, author: p.author, lines: p.lines };
 }
