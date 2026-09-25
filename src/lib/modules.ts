@@ -33,6 +33,7 @@ export const MODULE_CATALOG: ModuleMeta[] = [
   { id: "dots", name: "Connect the Dots", blurb: "Funny numbered dots + a silly caption.", category: "play", defaultOn: false, size: "double" },
   { id: "riddle", name: "Riddle", blurb: "Think first — answer shows in the app, never on paper.", category: "play", defaultOn: false, size: "half" },
   { id: "sudoku", name: "Sudoku", blurb: "4×4 for little kids, 6×6, then easy 9×9 — always one unique solution. Answer key stays off the paper.", category: "play", defaultOn: false, size: "full" },
+  { id: "battleship", name: "Battleship Solitaire", blurb: "Place the fleet using the row/column counts — ships never touch. One unique solution; answer shows in the app.", category: "play", defaultOn: false, size: "full" },
   { id: "sequence", name: "Number Sequence", blurb: "Spot the pattern and find the next number. Difficulty scales the trickiness; answer shows in the app.", category: "play", defaultOn: false, size: "half" },
   // Words & language
   { id: "word", name: "Word of the Day", blurb: "A real word, said out loud, used in a sentence — age-banded.", category: "words", defaultOn: true, size: "half" },

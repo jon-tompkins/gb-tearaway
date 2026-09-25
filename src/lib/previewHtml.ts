@@ -3,6 +3,7 @@ import { mazeToSvg } from "./puzzles/maze";
 import { sudokuToSvg } from "./puzzles/sudoku";
 import { wordFindToSvg } from "./puzzles/wordfind";
 import { dotsToSvg } from "./puzzles/dots";
+import { battleshipToSvg } from "./puzzles/battleship";
 
 function esc(s: string): string {
   return s
@@ -195,7 +196,9 @@ export function sectionHtml(section: StripSection): string {
           ? wordFindToSvg(section.wordfind)
           : section.kind === "dots" && section.dots
             ? dotsToSvg(section.dots)
-            : "");
+            : section.kind === "battleship" && section.battleship
+              ? battleshipToSvg(section.battleship, { showSolution: false })
+              : "");
 
   const pStyle = section.fontPt ? ` style="font-size:${section.fontPt}pt;line-height:1.15;margin:0"` : "";
   const lines = section.lines

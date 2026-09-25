@@ -5,6 +5,7 @@ export type ModuleId =
   | "fact"
   | "maze"
   | "sudoku"
+  | "battleship"
   | "history"
   | "weather"
   | "stocks"
@@ -216,6 +217,21 @@ export interface WordFindData {
   words: string[];
 }
 
+export interface BattleshipData {
+  /** Grid is n×n. */
+  n: number;
+  /** Solution grid: 1 = ship cell, 0 = water. The answer key (never printed). */
+  solution: number[][];
+  /** Ship-cells per row / column (the always-visible clues). */
+  rows: number[];
+  cols: number[];
+  /** Fleet as individual ship lengths, largest first. */
+  ships: number[];
+  /** Given cells: "r,c" → 'water' | 'sub' | 'mid' | 'end:L|R|U|D'. */
+  reveal: Record<string, string>;
+  label: string;
+}
+
 export interface DotPoint {
   n: number;
   x: number;
@@ -294,6 +310,7 @@ export interface StripSection {
     | "sudoku"
     | "wordfind"
     | "dots"
+    | "battleship"
     | "weather"
     | "stocks"
     | "calendar"
@@ -303,6 +320,7 @@ export interface StripSection {
   sudoku?: SudokuData;
   wordfind?: WordFindData;
   dots?: DotsData;
+  battleship?: BattleshipData;
   weather?: WeatherSnapshot;
   stocks?: StockQuote[];
   events?: CalendarEvent[];

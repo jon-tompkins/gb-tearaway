@@ -26,6 +26,7 @@ import { mockStocks } from "./stocks";
 import { mockWeather } from "./weather";
 import { generateMaze, mazeToSvg } from "./puzzles/maze";
 import { generateSudoku, sudokuToSvg } from "./puzzles/sudoku";
+import { generateBattleship, battleshipToSvg, battleshipSolutionText } from "./puzzles/battleship";
 import { generateWordFind, wordFindToSvg } from "./puzzles/wordfind";
 import { generateDots, dotsToSvg } from "./puzzles/dots";
 import { moduleById } from "./modules";
@@ -176,6 +177,27 @@ export function generateStrip(
         sudoku,
         svg,
       });
+      continue;
+    }
+    if (moduleId === "battleship") {
+      // Retry with fresh rng draws if a placement can't be made unique.
+      let bs;
+      for (let t = 0; t < 5 && !bs; t++) {
+        try { bs = generateBattleship(rng, difficulty); } catch { /* retry */ }
+      }
+      if (bs) {
+        sections.push({
+          id: `battleship-${bs.n}-${bs.rows.join("")}`,
+          moduleId,
+          title: bs.label,
+          kind: "battleship",
+          lines: [],
+          battleship: bs,
+          svg: battleshipToSvg(bs, { showSolution: false }),
+          // Solution shows only in the app (Parent key / QR) — never printed.
+          answer: battleshipSolutionText(bs),
+        });
+      }
       continue;
     }
     if (moduleId === "weather") {
