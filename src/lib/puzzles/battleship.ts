@@ -106,6 +106,12 @@ function partForPlacement(cells: Cell[], idx: number, horizontal: boolean): stri
  * Identical-length ships are placed in a canonical order so fleet permutations
  * aren't counted as distinct solutions.
  */
+/**
+ * `budget` caps DFS node expansions; if exceeded before `cap` solutions are
+ * found the search throws `bs-budget` (the caller treats that as "not yet
+ * verifiably unique" and adds another clue, which shrinks the search).
+ */
+export class BudgetExceeded extends Error {}
 export function countSolutions(
   n: number,
   rows: number[],
@@ -114,6 +120,7 @@ export function countSolutions(
   waterSet: Set<number>,
   shipReveal: Map<number, string>,
   cap: number,
+  budget = Infinity,
 ): number {
   const order = [...ships].sort((a, b) => b - a);
   const grid = Array.from({ length: n }, () => new Array<number>(n).fill(0));
@@ -162,7 +169,9 @@ export function countSolutions(
     return true;
   };
   let solutions = 0;
+  let nodes = 0;
   const dfs = (i: number, prevKey: number): void => {
+    if (++nodes > budget) throw new BudgetExceeded("bs-budget");
     if (solutions >= cap) return;
     if (i === order.length) {
       for (const [id] of shipReveal) if (grid[Math.floor(id / n)][id % n] !== 1) return;
@@ -193,35 +202,56 @@ export function generateBattleship(rng: RNG, difficulty: number): BattleshipData
     const rows = sol.map((row) => row.reduce((a, b) => a + b, 0));
     const cols = Array.from({ length: n }, (_, c) => sol.reduce((a, row) => a + row[c], 0));
 
-    // Every cell as a potential clue (ship part or water).
-    const all: { id: number; type: string }[] = [];
+    // Split cells into ship parts and water, each shuffled for variety.
+    const shipCells: { id: number; type: string }[] = [];
+    const waterCells: { id: number; type: string }[] = [];
     for (let r = 0; r < n; r++)
       for (let c = 0; c < n; c++) {
         const id = r * n + c;
-        all.push({ id, type: sol[r][c] === 1 ? partAt(sol, r, c) : "water" });
+        if (sol[r][c] === 1) shipCells.push({ id, type: partAt(sol, r, c) });
+        else waterCells.push({ id, type: "water" });
       }
-    // Shuffle, but bias ship parts before water (nicer, more "battleship" clues).
-    for (let i = all.length - 1; i > 0; i--) {
-      const j = Math.floor(rng() * (i + 1));
-      [all[i], all[j]] = [all[j], all[i]];
-    }
-    all.sort((a, b) => (a.type === "water" ? 1 : 0) - (b.type === "water" ? 1 : 0));
+    const shuffle = (arr: { id: number; type: string }[]) => {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(rng() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+    };
+    shuffle(shipCells);
+    shuffle(waterCells);
 
     const water = new Set<number>();
     const shipR = new Map<number, string>();
     const add = (e: { id: number; type: string }) =>
       e.type === "water" ? water.add(e.id) : shipR.set(e.id, e.type);
-    const remove = (e: { id: number; type: string }) =>
-      e.type === "water" ? water.delete(e.id) : shipR.delete(e.id);
 
-    // Reveal everything → unique by construction, then greedily strip clues while
-    // the puzzle stays unique. Leaves a small, solvable set of givens.
-    for (const e of all) add(e);
-    if (countSolutions(n, rows, cols, ships, water, shipR, 2) !== 1) continue; // shouldn't happen
-    for (const e of all) {
-      remove(e);
-      if (countSolutions(n, rows, cols, ships, water, shipR, 2) !== 1) add(e); // needed → keep
-    }
+    // Target clue mix: mostly ship parts (subs / ends / middles) with a few water
+    // easers. Kept fairly dense (bigger grid + fleet carry the difficulty, not a
+    // razor-sparse board) so the uniqueness check stays cheap and the puzzle is
+    // kid-friendly.
+    const d = clampD(difficulty);
+    const shipFrac = d <= 5 ? 0.55 : d <= 10 ? 0.5 : d <= 14 ? 0.45 : 0.42;
+    const waterFrac = d <= 5 ? 0.18 : d <= 10 ? 0.16 : d <= 14 ? 0.14 : 0.12;
+    const nShip = Math.min(shipCells.length, Math.max(2, Math.round(shipCells.length * shipFrac)));
+    const nWater = Math.min(waterCells.length, Math.round(waterCells.length * waterFrac));
+    for (let i = 0; i < nShip; i++) add(shipCells[i]);
+    for (let i = 0; i < nWater; i++) add(waterCells[i]);
+
+    // Verifiably unique WITHIN a node budget: if a clue set can't be confirmed
+    // unique cheaply, add another clue (prefer ship parts, then water) — more
+    // clues shrink the search. Terminates: revealing everything is trivially unique.
+    const BUDGET = 40000;
+    const uniqueNow = (): boolean => {
+      try {
+        return countSolutions(n, rows, cols, ships, water, shipR, 2, BUDGET) === 1;
+      } catch {
+        return false; // budget hit → not verifiably unique yet
+      }
+    };
+    const topup = [...shipCells.slice(nShip), ...waterCells.slice(nWater)];
+    let ti = 0;
+    while (!uniqueNow() && ti < topup.length) add(topup[ti++]);
+    if (!uniqueNow()) continue; // couldn't make it unique cheaply — retry placement
 
     const reveal: Record<string, string> = {};
     for (const id of water) reveal[`${Math.floor(id / n)},${id % n}`] = "water";
