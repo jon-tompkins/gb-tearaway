@@ -372,8 +372,9 @@ export function generateStrip(
       continue;
     }
     if (isNewsModule(moduleId)) {
-      // 2x (double) = 4 stories, 1x (full) = 2, half = 1 — each a short paragraph.
-      const count = cardSize === "double" ? 4 : cardSize === "half" ? 1 : 2;
+      // 2x (double) = 3 stories, 1x (full) = 2, half = 1 — bigger font, stretched
+      // to fill the card, so 3 roomy stories beat 4 cramped ones.
+      const count = cardSize === "double" ? 3 : cardSize === "half" ? 1 : 2;
       // Prefer today's real (kid-safe) headlines when available; else static bank.
       const livePool = opts.newsByFeed?.[moduleId];
       const items =

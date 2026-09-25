@@ -155,9 +155,9 @@ export function sectionHtml(section: StripSection): string {
     const items = section.news
       .map(
         (i) =>
-          `<div><div style="font-weight:700;font-size:8pt;line-height:1.12">${esc(
+          `<div><div style="font-weight:700;font-size:9pt;line-height:1.15">${esc(
             i.headline,
-          )}</div><div style="font-size:7pt;line-height:1.25">${
+          )}</div><div style="font-size:8.2pt;line-height:1.3">${
             i.location
               ? `<span style="font-weight:700;text-transform:uppercase;letter-spacing:.02em">${esc(
                   i.location,
@@ -166,9 +166,11 @@ export function sectionHtml(section: StripSection): string {
           }${esc(i.blurb)}</div></div>`,
       )
       .join("");
-    return `<section class="sec${sizeClass}">
+    // Stretch stories to fill the card — 3 in a 4-slot card spread out instead
+    // of leaving a gap at the bottom.
+    return `<section class="sec${sizeClass} mod-${section.moduleId}">
     <h3>${esc(section.title)}</h3>
-    <div style="display:flex;flex-direction:column;gap:1.8mm">${items}</div>
+    <div style="flex:1;min-height:0;display:flex;flex-direction:column;justify-content:space-between;gap:1.6mm">${items}</div>
   </section>`;
   }
 
