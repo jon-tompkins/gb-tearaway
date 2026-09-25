@@ -26,7 +26,7 @@ export function AuthButton({ compact = false }: { compact?: boolean }) {
         <button
           type="button"
           onClick={() => void signOut()}
-          className="rounded-full px-3 py-1.5 text-sm text-ink-soft transition hover:bg-paper hover:text-ink"
+          className="cursor-pointer rounded-full px-3 py-1.5 text-sm text-ink-soft transition hover:bg-paper hover:text-ink"
         >
           Sign out
         </button>
@@ -38,7 +38,7 @@ export function AuthButton({ compact = false }: { compact?: boolean }) {
     <button
       type="button"
       onClick={() => void signIn("google", { callbackUrl: "/app" })}
-      className="flex shrink-0 items-center gap-2 whitespace-nowrap rounded-full border border-rule bg-paper px-3 py-1.5 text-sm font-semibold text-ink transition hover:border-ink/30"
+      className="flex shrink-0 cursor-pointer items-center gap-2 whitespace-nowrap rounded-full border border-rule bg-paper px-3 py-1.5 text-sm font-semibold text-ink transition hover:border-ink/30"
     >
       <GoogleGlyph />
       Sign in

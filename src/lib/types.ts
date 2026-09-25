@@ -248,12 +248,16 @@ export interface WeatherPeriod {
   label: string; // Morning / Afternoon / Evening
   code: number; // WMO weather code
   tempF: number | null;
+  /** Precipitation probability 0–100. */
+  precip?: number | null;
 }
 export interface WeatherDay {
   day: string; // Mon, Tue…
   code: number;
   hi: number | null;
   lo: number | null;
+  /** Precipitation probability 0–100. */
+  precip?: number | null;
 }
 export interface WeatherSnapshot {
   label: string;

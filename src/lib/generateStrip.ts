@@ -330,13 +330,13 @@ export function generateStrip(
       continue;
     }
     if (moduleId === "poem") {
-      const poem = pickPoem(band, rng);
+      const poem = pickPoem(band, rng, cardSize);
       sections.push({
         id: `poem-${hashish(poem.title)}`,
         moduleId,
         title: meta.name,
         kind: "text",
-        lines: [poem.title, ...poem.lines],
+        lines: [poem.title, ...poem.lines, `— ${poem.author}`],
       });
       continue;
     }

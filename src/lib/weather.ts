@@ -72,7 +72,9 @@ function weekdayShort(dateStr: string): string {
 }
 
 function buildPeriods(
-  hourly: { time?: string[]; temperature_2m?: number[]; weather_code?: number[] } | undefined,
+  hourly:
+    | { time?: string[]; temperature_2m?: number[]; weather_code?: number[]; precipitation_probability?: number[] }
+    | undefined,
   today: string | undefined,
 ): WeatherPeriod[] | undefined {
   if (!hourly?.time || !today) return undefined;
@@ -81,7 +83,13 @@ function buildPeriods(
     const i = hourly.time.indexOf(`${today}T${hh}`);
     if (i < 0) continue;
     const t = hourly.temperature_2m?.[i];
-    out.push({ label, code: hourly.weather_code?.[i] ?? 1, tempF: t != null ? Math.round(t) : null });
+    const pp = hourly.precipitation_probability?.[i];
+    out.push({
+      label,
+      code: hourly.weather_code?.[i] ?? 1,
+      tempF: t != null ? Math.round(t) : null,
+      precip: pp != null ? Math.round(pp) : null,
+    });
   }
   return out.length ? out : undefined;
 }
@@ -91,6 +99,7 @@ function buildDaily(daily: {
   weather_code?: number[];
   temperature_2m_max?: number[];
   temperature_2m_min?: number[];
+  precipitation_probability_max?: number[];
 }): WeatherDay[] | undefined {
   if (!daily?.time) return undefined;
   const out = daily.time.slice(0, 7).map((d, i) => ({
@@ -98,27 +107,44 @@ function buildDaily(daily: {
     code: daily.weather_code?.[i] ?? 1,
     hi: daily.temperature_2m_max?.[i] != null ? Math.round(daily.temperature_2m_max![i]) : null,
     lo: daily.temperature_2m_min?.[i] != null ? Math.round(daily.temperature_2m_min![i]) : null,
+    precip: daily.precipitation_probability_max?.[i] != null
+      ? Math.round(daily.precipitation_probability_max![i])
+      : null,
   }));
   return out.length ? out : undefined;
 }
 
+/** Plausible precip% for a WMO code (drizzle/rain/snow/storm → higher). */
+function mockPrecip(code: number, salt: number): number {
+  if (code >= 95) return 70 + (salt % 25);
+  if ((code >= 51 && code <= 67) || (code >= 80 && code <= 82)) return 55 + (salt % 35);
+  if ((code >= 71 && code <= 77) || code === 85 || code === 86) return 50 + (salt % 30);
+  if (code === 3) return 20 + (salt % 20);
+  if (code === 2) return 10 + (salt % 15);
+  return salt % 10;
+}
+
 function mockPeriods(base: number, code: number): WeatherPeriod[] {
   return [
-    { label: "Morning", code, tempF: base - 5 },
-    { label: "Afternoon", code, tempF: base + 4 },
-    { label: "Evening", code, tempF: base - 2 },
+    { label: "Morning", code, tempF: base - 5, precip: mockPrecip(code, 3) },
+    { label: "Afternoon", code, tempF: base + 4, precip: mockPrecip(code, 7) },
+    { label: "Evening", code, tempF: base - 2, precip: mockPrecip(code, 5) },
   ];
 }
 function mockDaily(h: number, base: number): WeatherDay[] {
   const names = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   const codes = [0, 1, 2, 3, 61, 80, 2];
   const start = new Date().getDay();
-  return Array.from({ length: 7 }, (_, i) => ({
-    day: names[(start + i) % 7],
-    code: codes[(h + i) % codes.length],
-    hi: base + 4 + ((h >> i) % 6),
-    lo: base - 6 - ((h >> (i + 1)) % 4),
-  }));
+  return Array.from({ length: 7 }, (_, i) => {
+    const code = codes[(h + i) % codes.length];
+    return {
+      day: names[(start + i) % 7],
+      code,
+      hi: base + 4 + ((h >> i) % 6),
+      lo: base - 6 - ((h >> (i + 1)) % 4),
+      precip: mockPrecip(code, (h >> i) & 31),
+    };
+  });
 }
 
 /**
@@ -236,8 +262,8 @@ export async function fetchWeather(opts: {
       latitude: String(geo.latitude),
       longitude: String(geo.longitude),
       current: "temperature_2m,weather_code",
-      hourly: "temperature_2m,weather_code",
-      daily: "weather_code,temperature_2m_max,temperature_2m_min",
+      hourly: "temperature_2m,weather_code,precipitation_probability",
+      daily: "weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max",
       temperature_unit: "fahrenheit",
       timezone: opts.timezone || "America/New_York",
       forecast_days: "7",
@@ -249,12 +275,18 @@ export async function fetchWeather(opts: {
     if (!res.ok) return mockWeather(age, geo.name);
     const json = (await res.json()) as {
       current?: { temperature_2m?: number; weather_code?: number };
-      hourly?: { time?: string[]; temperature_2m?: number[]; weather_code?: number[] };
+      hourly?: {
+        time?: string[];
+        temperature_2m?: number[];
+        weather_code?: number[];
+        precipitation_probability?: number[];
+      };
       daily?: {
         time?: string[];
         weather_code?: number[];
         temperature_2m_max?: number[];
         temperature_2m_min?: number[];
+        precipitation_probability_max?: number[];
       };
       error?: boolean;
     };

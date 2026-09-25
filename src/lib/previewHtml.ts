@@ -1,4 +1,4 @@
-import type { PrintJob, StripSection, WeatherSnapshot } from "./types";
+import type { PrintJob, StripSection, WeatherDay, WeatherSnapshot } from "./types";
 import { mazeToSvg } from "./puzzles/maze";
 import { sudokuToSvg } from "./puzzles/sudoku";
 import { wordFindToSvg } from "./puzzles/wordfind";
@@ -62,6 +62,22 @@ export function weatherHtml(w: WeatherSnapshot, opts: { compact?: boolean } = {}
     w.highF != null && w.lowF != null
       ? `<br><span style="font-size:7.5pt">H ${w.highF}° · L ${w.lowF}°</span>`
       : "";
+  // temp with precip% beside it (M/A/E)
+  const tempPct = (p: { tempF: number | null; precip?: number | null }) =>
+    `${p.tempF != null ? `${p.tempF}°` : "—"}${
+      p.precip != null ? ` <span style="font-weight:400">${p.precip}%</span>` : ""
+    }`;
+  // one day column: [Day + icon] on one line, then [precip%/Low/High]
+  const dayCol = (d: WeatherDay, iconPx: number, fs: number) =>
+    `<div style="flex:1;text-align:center">
+      <div style="display:flex;align-items:center;justify-content:center;gap:1px;font-size:${fs}pt;font-weight:700;text-transform:uppercase">${esc(
+        d.day,
+      )} ${weatherIcon(d.code, iconPx)}</div>
+      <div style="font-size:${fs}pt;font-weight:700;white-space:nowrap;margin-top:.4mm">${
+        d.precip != null ? `${d.precip}%/` : ""
+      }${d.lo != null ? d.lo : "—"}°/${d.hi != null ? d.hi : "—"}°</div>
+    </div>`;
+
   // Morning/Afternoon/Evening mini-forecast (M / A / E) for the compact header.
   const periodsMini = w.periods?.length
     ? `<div style="display:flex;gap:6px;flex-shrink:0">${w.periods
@@ -69,7 +85,7 @@ export function weatherHtml(w: WeatherSnapshot, opts: { compact?: boolean } = {}
           (p) => `<div style="text-align:center">
         <div style="font-size:6pt;font-weight:700;text-transform:uppercase">${esc(p.label.charAt(0))}</div>
         <div style="line-height:0;margin:1px 0">${weatherIcon(p.code, 15)}</div>
-        <div style="font-size:8pt;font-weight:700">${p.tempF != null ? `${p.tempF}°` : "—"}</div>
+        <div style="font-size:7.5pt;font-weight:700">${tempPct(p)}</div>
       </div>`,
         )
         .join("")}</div>`
@@ -86,14 +102,7 @@ export function weatherHtml(w: WeatherSnapshot, opts: { compact?: boolean } = {}
     </div>`;
     if (w.daily?.length) {
       h += `<div style="display:flex;gap:2px;border-top:1px solid #000;padding-top:1.2mm;margin-top:0.5mm">${w.daily
-        .map(
-          (d) => `<div style="flex:1;text-align:center">
-        <div style="font-size:5.5pt;font-weight:700;text-transform:uppercase">${esc(d.day)}</div>
-        <div style="line-height:0;margin:1px 0">${weatherIcon(d.code, 12)}</div>
-        <div style="font-size:6pt;font-weight:700">${d.hi != null ? d.hi : "—"}°</div>
-        <div style="font-size:5.5pt">${d.lo != null ? d.lo : "—"}°</div>
-      </div>`,
-        )
+        .map((d) => dayCol(d, 10, 5.5))
         .join("")}</div>`;
     }
     h += `</div>`;
@@ -111,21 +120,14 @@ export function weatherHtml(w: WeatherSnapshot, opts: { compact?: boolean } = {}
         (p) => `<div style="flex:1;text-align:center">
         <div style="font-size:6.5pt;font-weight:700;letter-spacing:.04em;text-transform:uppercase">${esc(p.label)}</div>
         <div style="line-height:0;margin:1px 0">${weatherIcon(p.code, 18)}</div>
-        <div style="font-size:9pt;font-weight:700">${p.tempF != null ? `${p.tempF}°` : "—"}</div>
+        <div style="font-size:8.5pt;font-weight:700">${tempPct(p)}</div>
       </div>`,
       )
       .join("")}</div>`;
   }
   if (w.daily?.length) {
     h += `<div style="display:flex;gap:2px;border-top:1px solid #000;padding-top:1.5mm">${w.daily
-      .map(
-        (d) => `<div style="flex:1;text-align:center">
-        <div style="font-size:6pt;font-weight:700;text-transform:uppercase">${esc(d.day)}</div>
-        <div style="line-height:0;margin:1px 0">${weatherIcon(d.code, 13)}</div>
-        <div style="font-size:6.5pt;font-weight:700">${d.hi != null ? d.hi : "—"}°</div>
-        <div style="font-size:6pt">${d.lo != null ? d.lo : "—"}°</div>
-      </div>`,
-      )
+      .map((d) => dayCol(d, 12, 6))
       .join("")}</div>`;
   }
   h += `</div>`;

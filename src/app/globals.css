@@ -82,6 +82,10 @@ body {
   pointer-events: none;
 }
 
+/* Tailwind v4 preflight no longer sets this — restore the pointer on controls. */
+button:not(:disabled), [role="button"]:not([aria-disabled="true"]), label:has(> input[type="checkbox"]) { cursor: pointer; }
+button:disabled { cursor: not-allowed; }
+
 .rule-double { border-bottom: 3px double var(--rule); }
 .perf-line { height: 0; border-top: 2px dashed var(--rule); }
 

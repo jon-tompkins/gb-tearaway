@@ -1,130 +1,190 @@
-import type { AgeBand } from "../types";
+import type { AgeBand, SlotSize } from "../types";
 import { pick } from "../rng";
 
 export interface PoemItem {
   title: string;
+  author: string;
   lines: string[];
 }
 
 interface PoemEntry extends PoemItem {
   bands: AgeBand[];
+  /** Card sizes this poem's length suits. */
+  sizes: SlotSize[];
 }
 
+/**
+ * Real, **public-domain** poems (safe to print) — kid-appropriate classics with
+ * attribution. Tagged by the card size their length fits: short → ½/1×,
+ * medium → 1×/2×, long → 2×.
+ */
 const POEMS: PoemEntry[] = [
+  // --- Short (½ / 1×) ---
   {
-    bands: ["4-6"],
-    title: "Toast Song",
-    lines: ["Butter melts,", "jam goes drip,", "I take a bite —", "crunch! slip! sip!"],
-  },
-  {
-    bands: ["4-6"],
-    title: "Sock Mystery",
-    lines: ["One sock here,", "one sock… where?", "Maybe dancing", "under the chair."],
-  },
-  {
-    bands: ["4-6"],
-    title: "Moon Hug",
-    lines: ["The moon is round,", "the moon is bright,", "it hugs the dark", "and says good night."],
-  },
-  {
-    bands: ["4-6", "7-9"],
-    title: "Puddle Boots",
-    lines: ["Splash left,", "splash right,", "boots make circles", "of silver light."],
-  },
-  {
-    bands: ["4-6"],
-    title: "Tiny Ant",
-    lines: ["Tiny ant,", "heavy crumb,", "you’re stronger", "than you look — yum."],
+    bands: ["4-6", "7-9", "10-12"],
+    sizes: ["half", "full"],
+    title: "The Purple Cow",
+    author: "Gelett Burgess",
+    lines: [
+      "I never saw a Purple Cow,",
+      "I never hope to see one;",
+      "But I can tell you, anyhow,",
+      "I’d rather see than be one!",
+    ],
   },
   {
     bands: ["4-6", "7-9"],
-    title: "Cloud Zoo",
-    lines: ["A dragon cloud,", "a sheep cloud too,", "I name them all —", "my sky-day zoo."],
-  },
-  {
-    bands: ["4-6"],
-    title: "Banana Phone",
-    lines: ["Hello? Hello?", "It’s me, the fruit.", "I’m yellow,", "and a little cute."],
-  },
-  {
-    bands: ["7-9"],
-    title: "Pencil Forest",
-    lines: ["Graphite trees", "on paper ground,", "I draw a path", "without a sound."],
-  },
-  {
-    bands: ["7-9"],
-    title: "Bus Window",
-    lines: ["Houses blur,", "the trees go by,", "my backpack hums", "a sleepy sigh."],
+    sizes: ["half", "full"],
+    title: "Mix a Pancake",
+    author: "Christina Rossetti",
+    lines: [
+      "Mix a pancake,",
+      "Stir a pancake,",
+      "Pop it in the pan;",
+      "Fry the pancake,",
+      "Toss the pancake,",
+      "Catch it if you can.",
+    ],
   },
   {
     bands: ["7-9", "10-12"],
-    title: "Quiet Library",
-    lines: ["Books lean close", "like friendly walls,", "stories wait", "in careful halls."],
-  },
-  {
-    bands: ["7-9"],
-    title: "Shadow Tag",
-    lines: ["My shadow runs", "when I run too —", "we never win,", "we never lose."],
+    sizes: ["half", "full"],
+    title: "Fog",
+    author: "Carl Sandburg",
+    lines: [
+      "The fog comes",
+      "on little cat feet.",
+      "It sits looking",
+      "over harbor and city",
+      "on silent haunches",
+      "and then moves on.",
+    ],
   },
   {
     bands: ["7-9", "10-12"],
-    title: "Kitchen Orbit",
-    lines: ["Spoons circle bowls,", "steam lifts slow,", "breakfast is", "a tiny show."],
-  },
-  {
-    bands: ["7-9"],
-    title: "Lost Button",
-    lines: ["A button rolled", "beneath the couch —", "tonight it dreams", "it’s still a pouch."],
-  },
-  {
-    bands: ["10-12"],
-    title: "First Light",
-    lines: ["The window holds", "a silver seam,", "day stitches in", "a careful dream."],
-  },
-  {
-    bands: ["10-12"],
-    title: "Map Fold",
-    lines: ["Crease the paper,", "name the creek,", "adventure fits", "inside a week."],
-  },
-  {
-    bands: ["10-12"],
-    title: "After Rain",
-    lines: ["Pavement shines", "like borrowed glass,", "we walk through puddles", "of the past."],
-  },
-  {
-    bands: ["10-12"],
-    title: "Homework Moon",
-    lines: ["Problems wait", "in quiet rows,", "the moon keeps score", "of what we know."],
-  },
-  {
-    bands: ["10-12"],
-    title: "Bridge of Notes",
-    lines: ["A song can span", "from here to there —", "one held note,", "one shared air."],
+    sizes: ["half", "full"],
+    title: "The Eagle",
+    author: "Alfred, Lord Tennyson",
+    lines: [
+      "He clasps the crag with crooked hands;",
+      "Close to the sun in lonely lands,",
+      "Ring’d with the azure world, he stands.",
+      "The wrinkled sea beneath him crawls;",
+      "He watches from his mountain walls,",
+      "And like a thunderbolt he falls.",
+    ],
   },
   {
     bands: ["4-6", "7-9"],
-    title: "Crayon Sun",
-    lines: ["Yellow circle,", "orange rays,", "I color warmth", "into the days."],
+    sizes: ["half", "full"],
+    title: "Whole Duty of Children",
+    author: "Robert Louis Stevenson",
+    lines: [
+      "A child should always say what’s true",
+      "And speak when he is spoken to,",
+      "And behave mannerly at table;",
+      "At least as far as he is able.",
+    ],
+  },
+
+  // --- Medium (1× / 2×) ---
+  {
+    bands: ["4-6", "7-9", "10-12"],
+    sizes: ["full", "double"],
+    title: "The Swing",
+    author: "Robert Louis Stevenson",
+    lines: [
+      "How do you like to go up in a swing,",
+      "Up in the air so blue?",
+      "Oh, I do think it the pleasantest thing",
+      "Ever a child can do!",
+      "",
+      "Up in the air and over the wall,",
+      "Till I can see so wide,",
+      "Rivers and trees and cattle and all",
+      "Over the countryside—",
+    ],
   },
   {
-    bands: ["7-9", "10-12"],
-    title: "Pocket Stone",
-    lines: ["Smooth and cool,", "a secret keep —", "the river lent it", "while asleep."],
-  },
-  {
-    bands: ["4-6"],
-    title: "Good Morning Cat",
-    lines: ["Stretch,", "yawn,", "purr,", "then — done.", "Cat says hello", "to everyone."],
+    bands: ["4-6", "7-9"],
+    sizes: ["full", "double"],
+    title: "The Star",
+    author: "Jane Taylor",
+    lines: [
+      "Twinkle, twinkle, little star,",
+      "How I wonder what you are!",
+      "Up above the world so high,",
+      "Like a diamond in the sky.",
+      "",
+      "When the blazing sun is gone,",
+      "When he nothing shines upon,",
+      "Then you show your little light,",
+      "Twinkle, twinkle, all the night.",
+    ],
   },
   {
     bands: ["10-12"],
-    title: "Signal Firefly",
-    lines: ["One blink means", "I’m almost near;", "two blinks mean", "summer’s here."],
+    sizes: ["full", "double"],
+    title: "Hope is the thing with feathers",
+    author: "Emily Dickinson",
+    lines: [
+      "“Hope” is the thing with feathers—",
+      "That perches in the soul—",
+      "And sings the tune without the words—",
+      "And never stops—at all—",
+      "",
+      "And sweetest—in the Gale—is heard—",
+      "And sore must be the storm—",
+      "That could abash the little Bird",
+      "That kept so many warm—",
+    ],
+  },
+
+  // --- Long (2×) ---
+  {
+    bands: ["4-6", "7-9", "10-12"],
+    sizes: ["double"],
+    title: "My Shadow",
+    author: "Robert Louis Stevenson",
+    lines: [
+      "I have a little shadow that goes in and out with me,",
+      "And what can be the use of him is more than I can see.",
+      "He is very, very like me from the heels up to the head;",
+      "And I see him jump before me, when I jump into my bed.",
+      "",
+      "The funniest thing about him is the way he likes to grow—",
+      "Not at all like proper children, which is always very slow;",
+      "For he sometimes shoots up taller like an india-rubber ball,",
+      "And he sometimes gets so little that there’s none of him at all.",
+    ],
+  },
+  {
+    bands: ["4-6", "7-9", "10-12"],
+    sizes: ["double"],
+    title: "The Owl and the Pussy-Cat",
+    author: "Edward Lear",
+    lines: [
+      "The Owl and the Pussy-cat went to sea",
+      "In a beautiful pea-green boat,",
+      "They took some honey, and plenty of money,",
+      "Wrapped up in a five-pound note.",
+      "The Owl looked up to the stars above,",
+      "And sang to a small guitar,",
+      "“O lovely Pussy! O Pussy, my love,",
+      "What a beautiful Pussy you are,",
+      "You are,",
+      "You are!",
+      "What a beautiful Pussy you are!”",
+    ],
   },
 ];
 
-export function pickPoem(band: AgeBand, rng: () => number): PoemItem {
-  const pool = POEMS.filter((p) => p.bands.includes(band));
-  const p = pick(rng, pool.length ? pool : POEMS);
-  return { title: p.title, lines: [...p.lines] };
+/** Pick a public-domain poem that fits the card size (falls back gracefully). */
+export function pickPoem(band: AgeBand, rng: () => number, size: SlotSize = "full"): PoemItem {
+  const bySize = POEMS.filter((p) => p.sizes.includes(size));
+  const pool = bySize.length ? bySize : POEMS;
+  const byBand = pool.filter((p) => p.bands.includes(band));
+  const src = byBand.length ? byBand : pool;
+  const p = pick(rng, src);
+  return { title: p.title, author: p.author, lines: p.lines };
 }
