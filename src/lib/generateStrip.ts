@@ -27,6 +27,7 @@ import { mockWeather } from "./weather";
 import { generateMaze, mazeToSvg } from "./puzzles/maze";
 import { generateSudoku, sudokuToSvg } from "./puzzles/sudoku";
 import { generateBattleship, battleshipToSvg, battleshipSolutionText } from "./puzzles/battleship";
+import { generateStateQuiz } from "./puzzles/states";
 import { generateWordFind, wordFindToSvg } from "./puzzles/wordfind";
 import { generateDots, dotsToSvg } from "./puzzles/dots";
 import { moduleById } from "./modules";
@@ -198,6 +199,22 @@ export function generateStrip(
           answer: battleshipSolutionText(bs),
         });
       }
+      continue;
+    }
+    if (moduleId === "usstate") {
+      const q = generateStateQuiz(rng, difficulty);
+      sections.push({
+        id: `usstate-${q.name}`,
+        moduleId,
+        title: q.easy ? "State & Capital" : "Name the State",
+        kind: "text",
+        lines: q.easy
+          ? [`${q.name}  ·  Capital: ${q.capital}  ★`]
+          : ["What state is this? Name it and its capital."],
+        svg: q.svg,
+        // Easy shows the answer on the card; hard keeps it in the app (Parent key / QR).
+        answer: q.easy ? undefined : q.answer,
+      });
       continue;
     }
     if (moduleId === "weather") {

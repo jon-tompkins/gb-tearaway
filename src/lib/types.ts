@@ -6,6 +6,7 @@ export type ModuleId =
   | "maze"
   | "sudoku"
   | "battleship"
+  | "usstate"
   | "history"
   | "weather"
   | "stocks"
