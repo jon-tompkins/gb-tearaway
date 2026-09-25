@@ -4,9 +4,11 @@ import { listUserStates } from "@/lib/persist";
 import { partsInZone, dateISOInZone, formatStripDate } from "@/lib/dates";
 import { saveDispatchRef } from "@/lib/deliver";
 import { sendEmail, dispatchEmailHtml } from "@/lib/email";
+import { renderPdfFromUrl } from "@/lib/pdf";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+export const maxDuration = 60;
 
 const SITE = process.env.EMAIL_SITE_URL || "https://www.backofthebox.xyz";
 
@@ -34,6 +36,7 @@ export async function GET(req: Request) {
 
   let sent = 0;
   let skipped = 0;
+  let withPdf = 0;
   const errors: string[] = [];
 
   const users = await listUserStates();
@@ -61,15 +64,29 @@ export async function GET(req: Request) {
         const token = await saveDispatchRef({ userKey, kidId: kid.id, date: localDate });
         const openUrl = `${SITE}/api/render?token=${token}&format=print&auto=1`;
         const { weekday, dateLabel } = formatStripDate(localDate);
+
+        // Attach the actual PDF (headless-Chromium render of the print page).
+        const pdf = await renderPdfFromUrl(`${SITE}/api/render?token=${token}&format=print`);
+        const attachments = pdf
+          ? [
+              {
+                filename: `back-of-the-box-${kid.name.toLowerCase()}-${localDate}.pdf`,
+                content: pdf.toString("base64"),
+              },
+            ]
+          : undefined;
+
         const ok = await sendEmail({
           to,
           subject: `${kid.name}'s Back of the Box — ${weekday}`,
           html: dispatchEmailHtml({ kidName: kid.name, dateLabel: `${weekday} · ${dateLabel}`, openUrl }),
+          attachments,
         });
         if (ok) {
           kid.lastEmailedDate = localDate;
           dirty = true;
           sent++;
+          if (attachments) withPdf++;
         } else {
           errors.push(`${userKey}/${kid.id}: send failed`);
         }
@@ -80,5 +97,5 @@ export async function GET(req: Request) {
     if (dirty) await writeStore(userKey, state);
   }
 
-  return NextResponse.json({ sent, skipped, errors });
+  return NextResponse.json({ sent, withPdf, skipped, errors });
 }

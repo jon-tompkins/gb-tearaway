@@ -6,6 +6,8 @@ export async function sendEmail(opts: {
   to: string;
   subject: string;
   html: string;
+  /** Resend attachments: base64 `content`. */
+  attachments?: Array<{ filename: string; content: string }>;
 }): Promise<boolean> {
   if (!RESEND_KEY) return false;
   try {
@@ -15,7 +17,13 @@ export async function sendEmail(opts: {
         Authorization: `Bearer ${RESEND_KEY}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ from: FROM, to: opts.to, subject: opts.subject, html: opts.html }),
+      body: JSON.stringify({
+        from: FROM,
+        to: opts.to,
+        subject: opts.subject,
+        html: opts.html,
+        ...(opts.attachments?.length ? { attachments: opts.attachments } : {}),
+      }),
     });
     return res.ok;
   } catch {
@@ -47,7 +55,7 @@ export function dispatchEmailHtml(opts: {
           </a>
         </td></tr>
         <tr><td align="center" style="padding-top:10px;font-size:12px;color:#8a7d63;line-height:1.5">
-          Opens a print-ready page — choose &ldquo;Save as PDF&rdquo; or print it.<br/>
+          Today&rsquo;s paper is attached as a PDF — or tap above for a print-ready page.<br/>
           Kids get paper only. Scan the QR on the page for answers.
         </td></tr>
       </table>
