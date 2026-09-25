@@ -393,8 +393,14 @@ export function battleshipToSvg(d: BattleshipData, opts: { showSolution?: boolea
     const m = INS * CS;
     return `<rect x="${(x0 + m).toFixed(1)}" y="${(y0 + m).toFixed(1)}" width="${(CS - 2 * m).toFixed(1)}" height="${(CS - 2 * m).toFixed(1)}" rx="3" fill="#111"/>`;
   };
-  const water = (x0: number, y0: number): string =>
-    `<circle cx="${(x0 + CS / 2).toFixed(1)}" cy="${(y0 + CS / 2).toFixed(1)}" r="2.6" fill="#9a9a9a"/>`;
+  // Water = a couple of short wavy lines (traditional Bimaru "sea" mark).
+  const water = (x0: number, y0: number): string => {
+    const cy = y0 + CS / 2;
+    const x1 = x0 + CS * 0.26, seg = CS * 0.12;
+    const wave = (yy: number): string =>
+      `<path d="M ${x1.toFixed(1)} ${yy.toFixed(1)} q ${(seg / 2).toFixed(1)} -${(seg * 0.7).toFixed(1)} ${seg.toFixed(1)} 0 q ${(seg / 2).toFixed(1)} ${(seg * 0.7).toFixed(1)} ${seg.toFixed(1)} 0 q ${(seg / 2).toFixed(1)} -${(seg * 0.7).toFixed(1)} ${seg.toFixed(1)} 0" fill="none" stroke="#9aa0a6" stroke-width="${Math.max(1.2, CS * 0.05).toFixed(1)}" stroke-linecap="round"/>`;
+    return wave(cy - CS * 0.09) + wave(cy + CS * 0.09);
+  };
 
   // ship fills
   if (opts.showSolution) {
@@ -433,21 +439,31 @@ export function battleshipToSvg(d: BattleshipData, opts: { showSolution?: boolea
   for (let c = 0; c < n; c++)
     p.push(`<text x="${(ox + c * CS + CS / 2).toFixed(0)}" y="${(oy + gridPx + gut / 2 + fs * 0.35).toFixed(0)}" font-size="${fs}" font-weight="700" text-anchor="middle" font-family="ui-monospace,monospace" fill="#111">${d.cols[c]}</text>`);
 
-  // fleet: vertical stack on the right, each ship in its own crossable slot
+  // fleet: vertical stack on the right, each ship in its own crossable slot.
+  // Ships are drawn as connected cell-segments (rounded ends + divider lines) so
+  // the length is obvious at a glance.
   const fleetX = ox + gridPx + gut + gap;
-  const uu = Math.min(CS * 0.62, (gridPx / ships.length) * 0.5);
-  const maxLen = Math.max(...ships);
-  const fw = maxLen * uu + 12;
   const rowH = gridPx / ships.length;
+  const seg = Math.min(CS * 0.72, rowH * 0.66); // one ship-cell in the legend
+  const maxLen = Math.max(...ships);
+  const padL = 8;
+  const fw = maxLen * seg + padL * 2;
   ships.forEach((L, i) => {
     const y = oy + i * rowH;
     const cy = y + rowH / 2;
     p.push(`<rect x="${fleetX.toFixed(1)}" y="${(y + 2).toFixed(1)}" width="${fw.toFixed(1)}" height="${(rowH - 4).toFixed(1)}" rx="4" fill="#fafafa" stroke="#d8d8d8" stroke-width="1"/>`);
+    const x0 = fleetX + padL;
     if (L === 1) {
-      p.push(`<circle cx="${(fleetX + 8 + uu / 2).toFixed(1)}" cy="${cy.toFixed(1)}" r="${(uu * 0.42).toFixed(1)}" fill="#111"/>`);
+      p.push(`<circle cx="${(x0 + seg / 2).toFixed(1)}" cy="${cy.toFixed(1)}" r="${(seg * 0.4).toFixed(1)}" fill="#111"/>`);
     } else {
-      const h = uu * 0.82;
-      p.push(`<rect x="${(fleetX + 6).toFixed(1)}" y="${(cy - h / 2).toFixed(1)}" width="${(L * uu).toFixed(1)}" height="${h.toFixed(1)}" rx="${(h / 2).toFixed(1)}" fill="#111"/>`);
+      const h = seg * 0.82;
+      const top = cy - h / 2;
+      p.push(`<rect x="${x0.toFixed(1)}" y="${top.toFixed(1)}" width="${(L * seg).toFixed(1)}" height="${h.toFixed(1)}" rx="${(h / 2).toFixed(1)}" fill="#111"/>`);
+      // divider lines between cells so you can count the length
+      for (let k = 1; k < L; k++) {
+        const x = x0 + k * seg;
+        p.push(`<line x1="${x.toFixed(1)}" y1="${(top + 1.5).toFixed(1)}" x2="${x.toFixed(1)}" y2="${(top + h - 1.5).toFixed(1)}" stroke="#fff" stroke-width="1.5"/>`);
+      }
     }
   });
 
