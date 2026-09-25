@@ -19,7 +19,7 @@ import { pickScramble, scrambleWord } from "./content/scramble";
 import { generateSequence } from "./puzzles/sequence";
 import { pickSpanish } from "./content/spanish";
 import { pickWyr } from "./content/wyr";
-import { pickPoem } from "./content/poems";
+import { pickPoem, poemFontPt } from "./content/poems";
 import { isNewsModule, newsListFromPool, pickNewsList, type LiveNewsEntry, type NewsModuleId } from "./content/news";
 import { eventsForToday, formatEventLine } from "./content/stubs";
 import { mockStocks } from "./stocks";
@@ -331,12 +331,14 @@ export function generateStrip(
     }
     if (moduleId === "poem") {
       const poem = pickPoem(band, rng, cardSize);
+      const lines = [poem.title, ...poem.lines, `— ${poem.author}`];
       sections.push({
         id: `poem-${hashish(poem.title)}`,
         moduleId,
         title: meta.name,
         kind: "text",
-        lines: [poem.title, ...poem.lines, `— ${poem.author}`],
+        lines,
+        fontPt: poemFontPt(lines.length, cardSize),
       });
       continue;
     }

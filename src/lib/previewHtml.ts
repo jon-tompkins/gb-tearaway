@@ -70,12 +70,13 @@ export function weatherHtml(w: WeatherSnapshot, opts: { compact?: boolean } = {}
   // one day column: [Day + icon] on one line, then [precip%/Low/High]
   const dayCol = (d: WeatherDay, iconPx: number, fs: number) =>
     `<div style="flex:1;text-align:center">
-      <div style="display:flex;align-items:center;justify-content:center;gap:1px;font-size:${fs}pt;font-weight:700;text-transform:uppercase">${esc(
-        d.day,
-      )} ${weatherIcon(d.code, iconPx)}</div>
+      <div style="display:flex;align-items:center;justify-content:center;gap:2px;font-size:${fs}pt;font-weight:700;white-space:nowrap">
+        <span style="text-transform:uppercase">${esc(d.day)}</span>${weatherIcon(d.code, iconPx)}${
+          d.precip != null ? `<span>${d.precip}%</span>` : ""
+        }</div>
       <div style="font-size:${fs}pt;font-weight:700;white-space:nowrap;margin-top:.4mm">${
-        d.precip != null ? `${d.precip}%/` : ""
-      }${d.lo != null ? d.lo : "—"}°/${d.hi != null ? d.hi : "—"}°</div>
+        d.lo != null ? d.lo : "—"
+      }°/${d.hi != null ? d.hi : "—"}°</div>
     </div>`;
 
   // Morning/Afternoon/Evening mini-forecast (M / A / E) for the compact header.
@@ -196,7 +197,8 @@ export function sectionHtml(section: StripSection): string {
             ? dotsToSvg(section.dots)
             : "");
 
-  const lines = section.lines.map((l) => `<p>${esc(l)}</p>`).join("");
+  const pStyle = section.fontPt ? ` style="font-size:${section.fontPt}pt;line-height:1.15;margin:0"` : "";
+  const lines = section.lines.map((l) => `<p${pStyle}>${esc(l)}</p>`).join("");
   const sizeClass = section.size ? ` size-${section.size}` : "";
   // Figure cards (maze/sudoku/etc.) grow to fill the column's leftover space so
   // there's no wasted gap; text cards stay at their natural height.

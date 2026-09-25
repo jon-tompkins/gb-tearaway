@@ -316,6 +316,8 @@ export interface StripSection {
   news?: { headline: string; blurb: string; location?: string }[];
   /** Solution shown in the app under the Parent key toggle — never printed. */
   answer?: string;
+  /** Optional per-card body font size in pt (e.g. poems sized to fill the card). */
+  fontPt?: number;
 }
 
 /** Firmware-ready job. Today: preview payload. Later: ESC/POS or a raster. */

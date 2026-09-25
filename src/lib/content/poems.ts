@@ -179,10 +179,32 @@ const POEMS: PoemEntry[] = [
   },
 ];
 
-/** Pick a public-domain poem that fits the card size (falls back gracefully). */
+/**
+ * Max printable lines per card size — title + body + attribution, measured at
+ * the smallest (news-sized ~8pt) body font. A poem longer than this belongs in
+ * the next card size up.
+ */
+export const POEM_MAX_LINES: Record<SlotSize, number> = { half: 6, full: 13, double: 26 };
+
+/** Total printed lines for a poem (title + body + attribution). */
+export function poemLineCount(p: PoemItem): number {
+  return 1 + p.lines.length + 1;
+}
+
+/**
+ * Body font (pt) so the poem roughly fills the card: bigger for short poems,
+ * shrinking toward the news size (8pt) for long ones, never past a standard cap.
+ */
+export function poemFontPt(lineCount: number, size: SlotSize): number {
+  const contentMm = size === "half" ? 19 : size === "full" ? 47 : 103;
+  const ideal = (contentMm * 2.1) / Math.max(1, lineCount); // ~pt that fills the height
+  return Math.max(8, Math.min(11, Math.round(ideal * 2) / 2));
+}
+
+/** Pick a public-domain poem short enough for the card size (falls back gracefully). */
 export function pickPoem(band: AgeBand, rng: () => number, size: SlotSize = "full"): PoemItem {
-  const bySize = POEMS.filter((p) => p.sizes.includes(size));
-  const pool = bySize.length ? bySize : POEMS;
+  const fits = POEMS.filter((p) => poemLineCount(p) <= POEM_MAX_LINES[size]);
+  const pool = fits.length ? fits : POEMS;
   const byBand = pool.filter((p) => p.bands.includes(band));
   const src = byBand.length ? byBand : pool;
   const p = pick(rng, src);
