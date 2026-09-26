@@ -38,7 +38,7 @@ export async function POST() {
     });
   }
 
-  const newsByFeed = await gatherDailyNews(pool);
+  const newsByFeed = await gatherDailyNews(pool, { city: settings.weatherCity });
   const historyLive = await gatherDailyHistory(pool, dateISOInZone(kid.timezone || settings.timezone));
   const sports = pool.includes("sports") ? await gatherSports(kid.sportsTeams ?? []) : undefined;
   // Print uses current cursors (matches what you're looking at)

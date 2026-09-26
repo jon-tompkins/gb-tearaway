@@ -41,7 +41,7 @@ export async function buildJobForKid(
     });
   }
 
-  const newsByFeed = await gatherDailyNews(pool);
+  const newsByFeed = await gatherDailyNews(pool, { city: settings.weatherCity });
   const historyLive = await gatherDailyHistory(
     pool,
     opts.dateISO ?? dateISOInZone(kid.timezone || settings.timezone),

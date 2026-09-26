@@ -52,6 +52,7 @@ export const MODULE_CATALOG: ModuleMeta[] = [
   // Kid-friendly news
   { id: "news_world", name: "World News", blurb: "Wonder from far away — animals, space, discoveries.", category: "news", defaultOn: false, size: "double" },
   { id: "news_national", name: "National News", blurb: "Real kind, kid-safe US stories: parks, science fairs, community wins.", category: "news", defaultOn: false, size: "double" },
+  { id: "news_city", name: "Hometown News", blurb: "Real kid-safe local stories from your town (set the city in Settings).", category: "news", defaultOn: false, size: "double" },
   { id: "news_tech", name: "Tech News", blurb: "Real robots, code, and gadgets news — curiosity, not hype.", category: "news", defaultOn: false, size: "double" },
   { id: "news_gamer", name: "Gamer News", blurb: "Real gaming news: new releases, updates, and esports results.", category: "news", defaultOn: false, size: "double" },
   // Today’s world
