@@ -341,10 +341,6 @@ export function SlotEditor({
     const multi = n >= 2;
     const shuffleOn = slot.mode === "random";
     const size = slot.size ?? "full";
-    // Proportional row-spans so 4×½ = 2×full = 1×double, aligned on a shared grid.
-    // Each tier is roomy enough to hold a 2×2 module grid and its controls.
-    const spanClass = size === "double" ? "row-span-8" : size === "half" ? "row-span-2" : "row-span-4";
-    const tileGridClass = "grid-cols-2 grid-rows-2";
     return (
       <div
         key={slot.id}
@@ -361,7 +357,7 @@ export function SlotEditor({
             setPickerSlotId(slot.id);
           }
         }}
-        className={`flex h-full cursor-pointer flex-col overflow-hidden rounded-xl border bg-cream/50 px-2.5 py-2 transition ${spanClass} ${
+        className={`flex cursor-pointer flex-col rounded-xl border bg-cream/50 px-2.5 py-2 transition ${
           selected ? "border-ink ring-2 ring-ink/20" : "border-rule hover:border-ink/30"
         }`}
       >
@@ -397,61 +393,55 @@ export function SlotEditor({
           </button>
         </div>
 
-        <div className={`grid flex-1 min-h-0 gap-1.5 ${tileGridClass}`}>
-          {Array.from({ length: MAX_PER_SLOT }).map((_, idx) => {
-            const id = slot.moduleIds[idx];
-            if (id) {
-              return (
-                <div
-                  key={id}
-                  title={moduleById(id).name}
-                  className="flex h-full min-h-0 items-center rounded-lg border border-rule bg-paper px-2 py-1"
-                >
-                  {multi && !shuffleOn ? (
-                    <span className="mr-1 text-[0.6rem] font-bold text-ink-soft">{idx + 1}.</span>
-                  ) : null}
-                  <span className="flex-1 truncate text-xs font-semibold text-ink">
-                    {moduleById(id).name}
-                  </span>
-                  <span className="ml-1 flex shrink-0 items-center gap-1">
-                    <DifficultyDial
-                      value={slot.moduleDifficulty?.[id] ?? defaultDifficulty}
-                      onChange={(v) => setModuleDifficulty(slot.id, id, v)}
-                      compact
-                    />
-                    <button
-                      type="button"
-                      aria-label={`Remove ${moduleById(id).name}`}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        removeFromCard(slot.id, id);
-                      }}
-                      className="rounded px-1 text-sm font-bold text-ink-soft hover:text-stamp"
-                    >
-                      ×
-                    </button>
-                  </span>
-                </div>
-              );
-            }
-            return (
+        {/* Modules stacked as small labels so you can read what's in a card at a
+            glance, even in a short ½ card. */}
+        <div className="flex flex-col gap-1">
+          {slot.moduleIds.map((id, idx) => (
+            <div
+              key={id}
+              title={moduleById(id).name}
+              className="flex items-center gap-1 rounded-md border border-rule bg-paper px-1.5 py-0.5"
+            >
+              {multi && !shuffleOn ? (
+                <span className="text-[0.55rem] font-bold text-ink-soft">{idx + 1}.</span>
+              ) : null}
+              <span className="flex-1 truncate text-[0.7rem] font-semibold leading-tight text-ink">
+                {moduleById(id).name}
+              </span>
+              <DifficultyDial
+                value={slot.moduleDifficulty?.[id] ?? defaultDifficulty}
+                onChange={(v) => setModuleDifficulty(slot.id, id, v)}
+                compact
+              />
               <button
-                key={`empty-${idx}`}
                 type="button"
-                aria-label="Add a module to this card"
+                aria-label={`Remove ${moduleById(id).name}`}
                 onClick={(e) => {
                   e.stopPropagation();
-                  onSelectSlot(slot.id);
-                  setPickerSlotId(slot.id);
+                  removeFromCard(slot.id, id);
                 }}
-                className={`flex h-full min-h-0 items-center justify-center rounded-lg border border-dashed text-lg transition hover:border-ink hover:text-ink ${
-                  selected ? "border-ink/40 bg-paper/50 text-ink/60" : "border-rule bg-paper/30 text-ink-soft"
-                }`}
+                className="rounded px-0.5 text-xs font-bold text-ink-soft hover:text-stamp"
               >
-                +
+                ×
               </button>
-            );
-          })}
+            </div>
+          ))}
+          {slot.moduleIds.length < MAX_PER_SLOT ? (
+            <button
+              type="button"
+              aria-label="Add a module to this card"
+              onClick={(e) => {
+                e.stopPropagation();
+                onSelectSlot(slot.id);
+                setPickerSlotId(slot.id);
+              }}
+              className={`flex items-center justify-center gap-1 rounded-md border border-dashed px-1.5 py-0.5 text-[0.65rem] font-semibold transition hover:border-ink hover:text-ink ${
+                selected ? "border-ink/40 text-ink/60" : "border-rule text-ink-soft"
+              }`}
+            >
+              + add
+            </button>
+          ) : null}
         </div>
       </div>
     );
@@ -510,20 +500,20 @@ export function SlotEditor({
           </div>
 
           {isStrip ? (
-            <div className="grid grid-cols-1 gap-3 [grid-auto-rows:52px]">
+            <div className="flex flex-col gap-3">
               {slots.filter((s) => (s.column ?? 0) === 0).map((slot) => renderCard(slot))}
-              <div className="row-span-1">{addCardBtn(0)}</div>
+              {addCardBtn(0)}
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-x-6 gap-y-3">
+            <div className="grid grid-cols-2 items-start gap-x-6 gap-y-3">
               {[0, 1].map((col) => (
                 <div key={col} className="flex flex-col">
                   <div className="mb-2 text-center text-[0.55rem] font-bold uppercase tracking-widest text-ink-soft">
                     Column {col + 1}
                   </div>
-                  <div className="grid grid-cols-1 gap-3 [grid-auto-rows:52px]">
+                  <div className="flex flex-col gap-3">
                     {slots.filter((s) => (s.column ?? 0) === col).map((slot) => renderCard(slot))}
-                    <div className="row-span-1">{addCardBtn(col)}</div>
+                    {addCardBtn(col)}
                   </div>
                 </div>
               ))}
@@ -706,6 +696,43 @@ export function SlotEditor({
                         {shuffleOn ? "Shuffle" : "In order"}
                       </button>
                     ) : null}
+                  </div>
+
+                  {/* in this card — a small view of what the card holds, in order */}
+                  <div className="border-b border-rule px-5 py-3">
+                    <div className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-ink-soft">
+                      In this card
+                    </div>
+                    {pickerSlot.moduleIds.length === 0 ? (
+                      <p className="text-xs text-ink-soft">Nothing yet — tap a module below to add it.</p>
+                    ) : (
+                      <div className="flex flex-col gap-1">
+                        {pickerSlot.moduleIds.map((id, idx) => (
+                          <div
+                            key={id}
+                            className="flex items-center gap-2 rounded-md border border-rule bg-paper px-2 py-1"
+                          >
+                            {multi && !shuffleOn ? (
+                              <span className="text-[0.6rem] font-bold text-ink-soft">{idx + 1}.</span>
+                            ) : null}
+                            <span className="flex-1 truncate text-sm font-semibold text-ink">
+                              {moduleById(id).name}
+                            </span>
+                            <span className="rounded bg-cream px-1.5 py-px text-[0.6rem] font-bold text-ink-soft">
+                              {sizeLabel(moduleSize(id))}
+                            </span>
+                            <button
+                              type="button"
+                              aria-label={`Remove ${moduleById(id).name}`}
+                              onClick={() => removeFromCard(pickerSlot.id, id)}
+                              className="rounded px-1 text-sm font-bold text-ink-soft hover:text-stamp"
+                            >
+                              ×
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
 
                   {/* type filter */}
