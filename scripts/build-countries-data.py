@@ -46,6 +46,11 @@ for f in ne['features']:
     if not cc:
         skipped.append(disp); continue
     capname,clon,clat=cc
+    # Manual capital overrides (name, lon, lat) where NE's admin-0 pick differs
+    # from the one we want to teach.
+    OVERRIDE={'South Africa':('Pretoria',28.2293,-25.7479)}
+    ov=OVERRIDE.get(disp) or OVERRIDE.get(p.get('NAME'))
+    if ov: capname,clon,clat=ov
     rs=rings(f['geometry']); areas=[area(r) for r in rs]; maxA=max(areas)
     # Keep the main landmass + nearby islands; drop distant overseas territories
     # (e.g. French Guiana with metropolitan France, Alaska/Hawaii with the US).
