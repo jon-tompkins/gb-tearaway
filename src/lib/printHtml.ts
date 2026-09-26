@@ -176,27 +176,9 @@ export function buildPrintHtml(
   .fig svg [stroke="#c45c26"]{stroke:#000}
   .fig svg [fill="#c45c26"]{fill:#000}
   .fig svg{max-width:100%;height:auto}
-  ${
-    embed
-      ? "body{padding-top:0}"
-      : `/* screen-only toolbar (hidden in the actual print/PDF) */
-  .bar{position:fixed;top:0;left:0;right:0;display:flex;gap:8px;justify-content:center;align-items:center;
-    padding:10px;background:#111;color:#fff;font:600 13px ui-monospace,monospace;z-index:9}
-  .bar button{border:0;border-radius:8px;background:#fff;color:#111;font:inherit;padding:8px 14px;cursor:pointer}
-  .bar span{opacity:.75;font-weight:500}
-  body{padding-top:52px}
-  @media print{.bar{display:none}body{padding-top:0}}`
-  }
+  body{padding-top:0}
 </style></head>
 <body>
-  ${
-    embed
-      ? ""
-      : `<div class="bar">
-    <span>${isLetter ? "US Letter" : "58mm strip"} · ${job.kidName} · ${job.date}</span>
-    <button type="button" onclick="window.print()">Save as PDF / Print</button>
-  </div>`
-  }
   <div class="sheet">${inner}</div>
   ${auto}
 </body></html>`;
