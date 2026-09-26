@@ -58,7 +58,10 @@ function parseItems(text: string): LiveNewsEntry[] {
  * failure (missing key, API error, bad JSON) so callers fall back to the
  * static bank. Never throws.
  */
-export async function rewriteKidSafe(headlines: RawHeadline[]): Promise<LiveNewsEntry[]> {
+export async function rewriteKidSafe(
+  headlines: RawHeadline[],
+  hint?: string,
+): Promise<LiveNewsEntry[]> {
   if (!process.env.ANTHROPIC_API_KEY || headlines.length === 0) return [];
   try {
     const client = new Anthropic();
@@ -68,7 +71,7 @@ export async function rewriteKidSafe(headlines: RawHeadline[]): Promise<LiveNews
     const res = await client.messages.create({
       model: MODEL,
       max_tokens: 2000,
-      system: SYSTEM,
+      system: hint ? `${SYSTEM}\n\nFEED NOTE: ${hint}` : SYSTEM,
       messages: [
         {
           role: "user",

@@ -6,6 +6,8 @@ import { currentUserKey } from "@/lib/userKey";
 import { fetchWeather } from "@/lib/weather";
 import { fetchGoogleCalendarEvents } from "@/lib/googleCalendar";
 import { gatherDailyNews } from "@/lib/news/daily";
+import { gatherDailyHistory } from "@/lib/news/history-live";
+import { dateISOInZone } from "@/lib/dates";
 import { ensureKidSlots, flattenSlotModules } from "@/lib/slots";
 import type { CalendarEvent } from "@/lib/types";
 
@@ -51,6 +53,7 @@ export async function GET() {
   }
 
   const newsByFeed = await gatherDailyNews(pool);
-  const job = generateStrip(kidNorm, settings, { nonce, weather, events, newsByFeed });
+  const historyLive = await gatherDailyHistory(pool, dateISOInZone(kid.timezone || settings.timezone));
+  const job = generateStrip(kidNorm, settings, { nonce, weather, events, newsByFeed, historyLive });
   return NextResponse.json(job);
 }

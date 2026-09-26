@@ -4,6 +4,8 @@ import { getActiveKid, getSettings, readStore, savePrintJob, writeStore } from "
 import { currentUserKey } from "@/lib/userKey";
 import { fetchWeather } from "@/lib/weather";
 import { gatherDailyNews } from "@/lib/news/daily";
+import { gatherDailyHistory } from "@/lib/news/history-live";
+import { dateISOInZone } from "@/lib/dates";
 import {
   advanceInOrderCursors,
   ensureKidSlots,
@@ -36,8 +38,9 @@ export async function POST() {
   }
 
   const newsByFeed = await gatherDailyNews(pool);
+  const historyLive = await gatherDailyHistory(pool, dateISOInZone(kid.timezone || settings.timezone));
   // Print uses current cursors (matches what you're looking at)
-  const job = generateStrip(kidNorm, settings, { nonce, weather, newsByFeed });
+  const job = generateStrip(kidNorm, settings, { nonce, weather, newsByFeed, historyLive });
   job.status = "queued";
   await savePrintJob(userKey, job);
 

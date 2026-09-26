@@ -30,7 +30,7 @@ export async function getDailyNews(feed: NewsModuleId): Promise<LiveNewsEntry[] 
   if (cached?.date === date) return cached.items.length ? cached.items : null;
 
   const headlines = await fetchHeadlines(source.url);
-  const items = await rewriteKidSafe(headlines);
+  const items = await rewriteKidSafe(headlines, source.hint);
   // Cache even an empty result to avoid re-hitting RSS/LLM all day.
   await savePayload(key, { date, items } satisfies DailyNewsPayload);
   return items.length ? items : null;

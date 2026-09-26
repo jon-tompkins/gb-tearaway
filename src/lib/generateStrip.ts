@@ -21,6 +21,7 @@ import { pickSpanish } from "./content/spanish";
 import { pickWyr } from "./content/wyr";
 import { pickPoem, poemFontPt, poemLines } from "./content/poems";
 import { isNewsModule, newsListFromPool, pickNewsList, type LiveNewsEntry, type NewsModuleId } from "./content/news";
+import type { LiveHistoryEntry } from "./news/history-live";
 import { eventsForToday, formatEventLine } from "./content/stubs";
 import { mockStocks } from "./stocks";
 import { mockWeather } from "./weather";
@@ -45,6 +46,8 @@ export interface GenerateOptions {
   events?: CalendarEvent[];
   /** Today's real (kid-safe) news per feed; falls back to the static bank. */
   newsByFeed?: Partial<Record<NewsModuleId, LiveNewsEntry[]>>;
+  /** Today's real (kid-safe) "on this day" events; falls back to the static bank. */
+  historyLive?: LiveHistoryEntry[];
 }
 
 /**
@@ -140,12 +143,27 @@ export function generateStrip(
       continue;
     }
     if (moduleId === "history") {
-      const hist = pickHistory(date, band, rng);
+      // Prefer real, kid-safe "on this day" events (Wikimedia → Haiku), gathered
+      // by the route; fall back to the static bank if unavailable.
+      const livePool = (opts.historyLive ?? []).filter(
+        (h) => !h.bands.length || h.bands.includes(band),
+      );
+      let year: string;
+      let text: string;
+      if (livePool.length) {
+        const chosen = livePool[Math.floor(rng() * livePool.length) % livePool.length];
+        year = chosen.year;
+        text = chosen.text;
+      } else {
+        const hist = pickHistory(date, band, rng);
+        year = hist.year;
+        text = hist.text;
+      }
       // Year only as the lead — the month/day is redundant (it's today). Entries
       // without a year drop the lead entirely rather than print the date.
-      const lines = hist.year ? [String(hist.year), hist.text] : [hist.text];
+      const lines = year ? [String(year), text] : [text];
       sections.push({
-        id: `hist-${hist.year || "x"}`,
+        id: `hist-${year || "x"}`,
         moduleId,
         title: meta.name,
         kind: "text",
