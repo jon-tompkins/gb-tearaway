@@ -22,6 +22,7 @@ import { pickWyr } from "./content/wyr";
 import { pickPoem, poemFontPt, poemLines } from "./content/poems";
 import { isNewsModule, newsListFromPool, type LiveNewsEntry, type NewsModuleId } from "./content/news";
 import type { LiveHistoryEntry } from "./news/history-live";
+import type { SportsTeamResult } from "./sports";
 import { eventsForToday, formatEventLine } from "./content/stubs";
 import { mockStocks } from "./stocks";
 import { mockWeather } from "./weather";
@@ -48,6 +49,8 @@ export interface GenerateOptions {
   newsByFeed?: Partial<Record<NewsModuleId, LiveNewsEntry[]>>;
   /** Today's real (kid-safe) "on this day" events; falls back to the static bank. */
   historyLive?: LiveHistoryEntry[];
+  /** Live favorite-team sports results (fetched by the route). */
+  sports?: SportsTeamResult[];
 }
 
 /**
@@ -306,6 +309,29 @@ export function generateStrip(
       });
       lines.push("Demo prices — not live market data.");
       sections.push({ id: "stocks", moduleId, title: meta.name, kind: "stocks", lines, stocks });
+      continue;
+    }
+    if (moduleId === "sports") {
+      // Real results (fetched by the route). No teams / no data → honest note.
+      const teams = opts.sports ?? [];
+      if (teams.length) {
+        const lines: string[] = [];
+        for (const t of teams) {
+          lines.push(`${t.team}${t.league ? ` · ${t.league}` : ""}`);
+          if (t.last) lines.push(`Last: ${t.last}`);
+          if (t.next) lines.push(`Next: ${t.next}`);
+          if (!t.last && !t.next) lines.push("No recent games.");
+        }
+        sections.push({ id: `sports-${hashish(teams.map((t) => t.team).join())}`, moduleId, title: meta.name, kind: "text", lines });
+      } else {
+        sections.push({
+          id: "sports-none",
+          moduleId,
+          title: meta.name,
+          kind: "text",
+          lines: ["Add a favorite team in Settings to see real scores here."],
+        });
+      }
       continue;
     }
     if (moduleId === "calendar") {

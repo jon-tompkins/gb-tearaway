@@ -20,6 +20,7 @@ export default function SettingsPage() {
   const [weatherCity, setWeatherCity] = useState(DEFAULT_SETTINGS.weatherCity);
   const [weatherZip, setWeatherZip] = useState(DEFAULT_SETTINGS.weatherZip);
   const [watchlist, setWatchlist] = useState("AAPL, DIS, NKE");
+  const [teams, setTeams] = useState("");
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [calendarId, setCalendarId] = useState("");
   const [calendars, setCalendars] = useState<{ id: string; summary: string; primary: boolean }[]>([]);
@@ -43,6 +44,7 @@ export default function SettingsPage() {
     setWeatherCity(store.settings.weatherCity || "");
     setWeatherZip(store.settings.weatherZip || "");
     setWatchlist((activeKid.watchlist || []).join(", "));
+    setTeams((activeKid.sportsTeams || []).join(", "));
     setEvents([...(activeKid.events || [])]);
     setCalendarId(activeKid.calendarId ?? "");
   }, [hydrated, store, activeKid, router]);
@@ -73,6 +75,12 @@ export default function SettingsPage() {
         .map((t) => t.trim().toUpperCase())
         .filter(Boolean)
         .slice(0, 8);
+      // Team names can contain spaces, so split on commas only.
+      const teamList = teams
+        .split(",")
+        .map((t) => t.trim())
+        .filter(Boolean)
+        .slice(0, 3);
       await save({
         settings: {
           timezone,
@@ -85,6 +93,7 @@ export default function SettingsPage() {
           timezone,
           printTime,
           watchlist: list,
+          sportsTeams: teamList,
           events,
           calendarId: calendarId || undefined,
         },
@@ -225,6 +234,23 @@ export default function SettingsPage() {
               value={watchlist}
               onChange={(e) => setWatchlist(e.target.value)}
               placeholder="AAPL, DIS, NKE"
+            />
+          </div>
+        </section>
+
+        <section className="card space-y-4">
+          <h2 className="font-display text-lg">Favorite teams</h2>
+          <p className="text-sm text-ink-soft">
+            Up to 3 teams for the Sports Scores module — real last result and next game.
+            Use full team names, comma-separated (e.g. Arsenal, Los Angeles Lakers, New York Yankees).
+          </p>
+          <div className="field">
+            <label htmlFor="teams">Teams</label>
+            <input
+              id="teams"
+              value={teams}
+              onChange={(e) => setTeams(e.target.value)}
+              placeholder="Arsenal, Los Angeles Lakers, New York Yankees"
             />
           </div>
         </section>

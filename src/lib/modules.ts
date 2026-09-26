@@ -57,6 +57,7 @@ export const MODULE_CATALOG: ModuleMeta[] = [
   // Today’s world
   { id: "weather", name: "Weather", blurb: "Today’s sky and a jacket tip, plus the week ahead.", category: "today", defaultOn: true, size: "half" },
   { id: "stocks", name: "Stock Watchlist", blurb: "Parent-picked tickers — a simple up-or-down check.", category: "today", defaultOn: false, size: "double" },
+  { id: "sports", name: "Sports Scores", blurb: "Pick your favorite teams — last result and next game, real scores.", category: "today", defaultOn: false, size: "full" },
   { id: "calendar", name: "Calendar", blurb: "A short list of today’s events. Stub list you can edit.", category: "today", defaultOn: false, size: "half" },
   // Create
   { id: "doodle", name: "Tiny Doodle", blurb: "A 30-second drawing prompt that fits the strip.", category: "create", defaultOn: false, size: "half" },

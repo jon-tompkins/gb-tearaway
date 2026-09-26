@@ -70,6 +70,7 @@ export function seedKid(overrides: Partial<KidProfile> = {}): KidProfile {
       return Array.from(new Set([...a, ...base]));
     })(),
     watchlist: overrides.watchlist ? [...overrides.watchlist] : [...DEFAULT_WATCHLIST],
+    sportsTeams: overrides.sportsTeams ? [...overrides.sportsTeams] : [],
     events: overrides.events ?? defaultDemoEvents(timezone, name),
     createdAt: overrides.createdAt || new Date().toISOString(),
   };
@@ -134,6 +135,7 @@ function normalize(raw: Partial<AppState> | null | undefined, allowEmpty = false
         slots: seeded.slots,
         modules: seeded.modules,
         watchlist: Array.isArray(k.watchlist) ? k.watchlist : [...DEFAULT_WATCHLIST],
+        sportsTeams: Array.isArray(k.sportsTeams) ? k.sportsTeams : [],
         events: Array.isArray(k.events) ? k.events : [],
       });
     }),

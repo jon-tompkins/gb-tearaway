@@ -14,6 +14,7 @@ export type ModuleId =
   | "history"
   | "weather"
   | "stocks"
+  | "sports"
   | "calendar"
   | "joke"
   | "doodle"
@@ -158,6 +159,8 @@ export interface KidProfile {
   /** The palette the user has chosen to have available. Cards can only pull from this. */
   accessModules: ModuleId[];
   watchlist: string[];
+  /** Favorite sports teams (names) for the Sports module. */
+  sportsTeams?: string[];
   events: CalendarEvent[];
   /**
    * Google Calendar id the parent chose for this dispatch's calendar module.
