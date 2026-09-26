@@ -232,6 +232,7 @@ export function SlotEditor({
   const groups = modulesByCategory();
   const [exploreType, setExploreType] = useState<ModuleCategoryId | "all">("all");
   const [exploreSize, setExploreSize] = useState<SlotSize | "all">("all");
+  const [pickerType, setPickerType] = useState<ModuleCategoryId | "all">("all");
 
   // "+" on a card opens a module picker modal for that card.
   const [pickerSlotId, setPickerSlotId] = useState<string | null>(null);
@@ -344,17 +345,20 @@ export function SlotEditor({
     // Each tier is roomy enough to hold a 2×2 module grid and its controls.
     const spanClass = size === "double" ? "row-span-8" : size === "half" ? "row-span-2" : "row-span-4";
     const tileGridClass = "grid-cols-2 grid-rows-2";
-    const usedExcl = usedUnits(slot.column ?? 0, slot.id);
     return (
       <div
         key={slot.id}
         role="button"
         tabIndex={0}
-        onClick={() => onSelectSlot(slot.id)}
+        onClick={() => {
+          onSelectSlot(slot.id);
+          setPickerSlotId(slot.id);
+        }}
         onKeyDown={(e) => {
           if (e.key === "Enter" || e.key === " ") {
             e.preventDefault();
             onSelectSlot(slot.id);
+            setPickerSlotId(slot.id);
           }
         }}
         className={`flex h-full cursor-pointer flex-col overflow-hidden rounded-xl border bg-cream/50 px-2.5 py-2 transition ${spanClass} ${
@@ -365,67 +369,32 @@ export function SlotEditor({
           <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-ink text-[0.65rem] font-bold text-cream">
             {i + 1}
           </span>
-          <div className="flex gap-0.5" onClick={(e) => e.stopPropagation()}>
-            {(["half", "full", "double"] as const).map((sz) => {
-              const fits = usedExcl + slotSizeUnits(sz) <= COLUMN_CAPACITY_UNITS;
-              const disabled = !fits && size !== sz;
-              return (
-                <button
-                  key={sz}
-                  type="button"
-                  disabled={disabled}
-                  title={
-                    disabled
-                      ? "Not enough room left in this column"
-                      : sz === "half"
-                        ? "Half card"
-                        : sz === "full"
-                          ? "One card"
-                          : "Double (tall)"
-                  }
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setSize(slot.id, sz);
-                  }}
-                  className={`rounded px-1.5 py-0.5 text-[0.55rem] font-bold uppercase transition ${
-                    size === sz ? "bg-ink text-cream" : "border border-rule bg-paper text-ink-soft"
-                  } ${disabled ? "opacity-30" : ""}`}
-                >
-                  {sizeLabel(sz)}
-                </button>
-              );
-            })}
-          </div>
-          <span className="ml-auto flex items-center gap-1">
-            {multi ? (
-              <button
-                type="button"
-                aria-pressed={shuffleOn}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShuffle(slot.id, !shuffleOn);
-                }}
-                title={shuffleOn ? "Shuffle on — random each print" : "Shuffle off — in order"}
-                className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-[0.6rem] font-bold uppercase tracking-wider transition ${
-                  shuffleOn ? "bg-stamp text-cream" : "border border-rule bg-paper text-ink-soft"
-                }`}
-              >
-                <span aria-hidden>🔀</span>
-                {shuffleOn ? "Shuffle" : "In order"}
-              </button>
-            ) : null}
-            <button
-              type="button"
-              title="Delete this card"
-              onClick={(e) => {
-                e.stopPropagation();
-                removeCard(slot.id);
-              }}
-              className="rounded px-1 text-sm font-bold text-ink-soft hover:text-stamp"
-            >
-              ×
-            </button>
+          <span
+            className="rounded bg-ink/10 px-1.5 py-0.5 text-[0.55rem] font-bold uppercase text-ink-soft"
+            title={`${sizeLabel(size)} card — tap to edit`}
+          >
+            {sizeLabel(size)}
           </span>
+          {multi ? (
+            <span
+              className="rounded-full border border-rule bg-paper px-1.5 py-0.5 text-[0.55rem] font-bold text-ink-soft"
+              title={shuffleOn ? "Random each print" : "Printed in order"}
+              aria-hidden
+            >
+              {shuffleOn ? "🔀" : "1·2"}
+            </span>
+          ) : null}
+          <button
+            type="button"
+            title="Delete this card"
+            onClick={(e) => {
+              e.stopPropagation();
+              removeCard(slot.id);
+            }}
+            className="ml-auto rounded px-1 text-sm font-bold text-ink-soft hover:text-stamp"
+          >
+            ×
+          </button>
         </div>
 
         <div className={`grid flex-1 min-h-0 gap-1.5 ${tileGridClass}`}>
@@ -527,8 +496,8 @@ export function SlotEditor({
           </h2>
           <p className="mt-1 text-sm text-ink-soft">
             {isStrip
-              ? "One stacked column. Tap a card to fill it; set its size with ½ / 1× / 2×."
-              : "Two print columns. Add cards to either side and set each card's size with ½ / 1× / 2×."}
+              ? "One stacked column. Tap a card to open it — set its size, order, and modules."
+              : "Two print columns. Add cards to either side, then tap a card to open it — set its size, order, and modules."}
           </p>
         </div>
 
@@ -647,18 +616,30 @@ export function SlotEditor({
         );
       })()}
 
-      {/* MODULE PICKER MODAL — opened from a card's "+" tile */}
+      {/* CARD EDITOR MODAL — opens when you tap a card (or its + tile) */}
       {pickerSlot
         ? (() => {
             const cardSize = pickerSlot.size ?? "full";
             const cardIndex = slots.indexOf(pickerSlot);
             const cardFull = pickerSlot.moduleIds.length >= MAX_PER_SLOT;
+            const multi = pickerSlot.moduleIds.length >= 2;
+            const shuffleOn = pickerSlot.mode === "random";
+            const usedExcl = usedUnits(pickerSlot.column ?? 0, pickerSlot.id);
+            const chip = (active: boolean) =>
+              `rounded-full border px-3 py-1 text-xs font-semibold transition ${
+                active ? "border-ink bg-ink text-cream" : "border-rule bg-paper text-ink-soft hover:border-ink/30"
+              }`;
+            const fitCats = groups.filter((g) => g.modules.some((m) => moduleFitsCard(m.id, cardSize)));
+            const typeChips: { id: ModuleCategoryId | "all"; name: string }[] = [
+              { id: "all", name: "All" },
+              ...fitCats.map((g) => ({ id: g.category.id, name: g.category.name })),
+            ];
             const fitGroups = groups
               .map((g) => ({
                 category: g.category,
                 modules: g.modules.filter((m) => moduleFitsCard(m.id, cardSize)),
               }))
-              .filter((g) => g.modules.length > 0);
+              .filter((g) => g.modules.length > 0 && (pickerType === "all" || g.category.id === pickerType));
             return (
               <div
                 className="fixed inset-0 z-50 flex items-end justify-center bg-ink/40 backdrop-blur-sm sm:items-center sm:p-4"
@@ -668,15 +649,15 @@ export function SlotEditor({
                   role="dialog"
                   aria-modal="true"
                   onClick={(e) => e.stopPropagation()}
-                  className="flex max-h-[85vh] w-full max-w-2xl flex-col rounded-t-2xl border border-rule bg-cream shadow-xl sm:rounded-2xl"
+                  className="flex max-h-[88vh] w-full max-w-2xl flex-col rounded-t-2xl border border-rule bg-cream shadow-xl sm:rounded-2xl"
                 >
+                  {/* header: title + card size + order + close */}
                   <div className="flex items-start justify-between gap-3 border-b border-rule px-5 py-4">
-                    <div>
-                      <h3 className="font-display text-lg text-ink">Add to Card {cardIndex + 1}</h3>
+                    <div className="min-w-0">
+                      <h3 className="font-display text-lg text-ink">Card {cardIndex + 1}</h3>
                       <p className="mt-0.5 text-xs text-ink-soft">
-                        Modules that fit a{" "}
-                        <span className="font-semibold text-ink">{sizeLabel(cardSize)}</span> card ·{" "}
-                        {pickerSlot.moduleIds.length}/{MAX_PER_SLOT} chosen
+                        {pickerSlot.moduleIds.length}/{MAX_PER_SLOT} chosen ·{" "}
+                        {multi ? (shuffleOn ? "random each print" : "printed in order") : "one module"}
                       </p>
                     </div>
                     <button
@@ -689,7 +670,62 @@ export function SlotEditor({
                     </button>
                   </div>
 
+                  {/* controls: card size + shuffle */}
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-rule px-5 py-3">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-xs font-semibold uppercase tracking-wide text-ink-soft">Size</span>
+                      {(["half", "full", "double"] as const).map((sz) => {
+                        const fits = usedExcl + slotSizeUnits(sz) <= COLUMN_CAPACITY_UNITS;
+                        const disabled = !fits && cardSize !== sz;
+                        return (
+                          <button
+                            key={sz}
+                            type="button"
+                            disabled={disabled}
+                            title={disabled ? "Not enough room left in this column" : undefined}
+                            onClick={() => setSize(pickerSlot.id, sz)}
+                            className={`rounded-full px-3 py-1 text-xs font-bold transition ${
+                              cardSize === sz ? "bg-ink text-cream" : "border border-rule bg-paper text-ink-soft"
+                            } ${disabled ? "opacity-30" : ""}`}
+                          >
+                            {sizeLabel(sz)}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {multi ? (
+                      <button
+                        type="button"
+                        aria-pressed={shuffleOn}
+                        onClick={() => setShuffle(pickerSlot.id, !shuffleOn)}
+                        className={`flex items-center gap-1 rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wider transition ${
+                          shuffleOn ? "bg-stamp text-cream" : "border border-rule bg-paper text-ink-soft"
+                        }`}
+                      >
+                        <span aria-hidden>🔀</span>
+                        {shuffleOn ? "Shuffle" : "In order"}
+                      </button>
+                    ) : null}
+                  </div>
+
+                  {/* type filter */}
+                  {typeChips.length > 2 ? (
+                    <div className="flex flex-wrap gap-1.5 border-b border-rule px-5 py-3">
+                      {typeChips.map((f) => (
+                        <button key={f.id} type="button" onClick={() => setPickerType(f.id)} className={chip(pickerType === f.id)}>
+                          {f.name}
+                        </button>
+                      ))}
+                    </div>
+                  ) : null}
+
+                  {/* module list (only modules that fit this card size) */}
                   <div className="flex-1 space-y-5 overflow-y-auto px-5 py-4">
+                    <p className="text-xs text-ink-soft">
+                      Showing modules that fit a{" "}
+                      <span className="font-semibold text-ink">{sizeLabel(cardSize)}</span> card. Tap to add or
+                      remove.
+                    </p>
                     {fitGroups.map(({ category, modules }) => (
                       <div key={category.id}>
                         <h4 className="mb-2 text-xs font-bold uppercase tracking-wider text-ink-soft">
