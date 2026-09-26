@@ -70,8 +70,12 @@ export function buildPrintHtml(
   // margin:0 suppresses the browser's own print header/footer (the page URL,
   // date, and title it injects into the margins). We reinstate a safe print
   // margin as padding inside .sheet instead.
+  // Use EXPLICIT millimetre dimensions, not the `Letter` keyword: mobile Safari /
+  // Brave ignore the keyword and fall back to their own page size + margins, which
+  // overflows the fixed-height sheet onto a blank second page. Explicit mm + a
+  // matching sheet works cross-device (same trick the 58mm strip uses).
   const page = isLetter
-    ? "@page{size:Letter;margin:0}"
+    ? "@page{size:215.9mm 279.4mm;margin:0}"
     : "@page{size:58mm 200mm;margin:0}";
 
   // 58mm paper, ~3mm side margins → ~52mm printable column.
