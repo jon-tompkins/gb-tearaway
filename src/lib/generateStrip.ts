@@ -28,6 +28,7 @@ import { generateMaze, mazeToSvg } from "./puzzles/maze";
 import { generateSudoku, sudokuToSvg } from "./puzzles/sudoku";
 import { generateBattleship, battleshipToSvg, battleshipSolutionText } from "./puzzles/battleship";
 import { generateStateQuiz } from "./puzzles/states";
+import { generateCountryQuiz, type Continent } from "./puzzles/countries";
 import { generateWordFind, wordFindToSvg } from "./puzzles/wordfind";
 import { generateDots, dotsToSvg } from "./puzzles/dots";
 import { moduleById } from "./modules";
@@ -213,6 +214,34 @@ export function generateStrip(
           : ["What state is this? Name it and its capital."],
         svg: q.svg,
         // Easy shows the answer on the card; hard keeps it in the app (Parent key / QR).
+        answer: q.easy ? undefined : q.answer,
+      });
+      continue;
+    }
+    if (
+      moduleId === "country_eu" ||
+      moduleId === "country_af" ||
+      moduleId === "country_asia_oce" ||
+      moduleId === "country_americas"
+    ) {
+      const cont: Continent =
+        moduleId === "country_eu"
+          ? "europe"
+          : moduleId === "country_af"
+            ? "africa"
+            : moduleId === "country_asia_oce"
+              ? "asia_oceania"
+              : "americas";
+      const q = generateCountryQuiz(rng, difficulty, cont);
+      sections.push({
+        id: `${moduleId}-${q.name}`,
+        moduleId,
+        title: q.easy ? "Country & Capital" : "Name the Country",
+        kind: "text",
+        lines: q.easy
+          ? [`${q.name}  ·  Capital: ${q.capital}  ★`]
+          : ["What country is this? Name it and its capital."],
+        svg: q.svg,
         answer: q.easy ? undefined : q.answer,
       });
       continue;

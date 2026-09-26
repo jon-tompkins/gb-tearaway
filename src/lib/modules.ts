@@ -43,6 +43,10 @@ export const MODULE_CATALOG: ModuleMeta[] = [
   { id: "scramble", name: "Word Scramble", blurb: "Unscramble the letters with a hint — answer shows in the app, never on paper.", category: "words", defaultOn: false, size: "half" },
   // Curious facts
   { id: "usstate", name: "Name the State", blurb: "A US state outline. Easy names the state + marks its capital with a star; harder shows just the outline (answer in the app).", category: "facts", defaultOn: false, size: "full" },
+  { id: "country_eu", name: "Countries: Europe", blurb: "A European country outline. Easy names it + stars the capital; harder is outline-only (answer in the app).", category: "facts", defaultOn: false, size: "full" },
+  { id: "country_af", name: "Countries: Africa", blurb: "An African country outline. Easy names it + stars the capital; harder is outline-only (answer in the app).", category: "facts", defaultOn: false, size: "full" },
+  { id: "country_asia_oce", name: "Countries: Asia & Oceania", blurb: "An Asian or Oceanian country outline. Easy names it + stars the capital; harder is outline-only.", category: "facts", defaultOn: false, size: "full" },
+  { id: "country_americas", name: "Countries: Americas", blurb: "A country of the Americas (N or S). Easy names it + stars the capital; harder is outline-only.", category: "facts", defaultOn: false, size: "full" },
   { id: "history", name: "This Day in History", blurb: "Something that really happened on this date — kid-appropriate.", category: "facts", defaultOn: true, size: "half" },
   { id: "fact", name: "Fun Fact", blurb: "One true thing worth knowing before cereal.", category: "facts", defaultOn: true, size: "half" },
   // Kid-friendly news
