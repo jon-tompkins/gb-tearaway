@@ -22,6 +22,6 @@ export const NEWS_FEEDS: Partial<
   news_gamer: {
     url: "https://www.nintendolife.com/feeds/latest",
     label: "Gaming",
-    hint: "These are video-game headlines. In ADDITION to the usual wholesome topics, KEEP kid-appropriate gaming news: new family-friendly games and updates, fun features, Nintendo/console news, esports sportsmanship, speedruns, and cool game-making tech. STILL DROP mature/violent/scary games (shooters, horror, anything rated Teen+), in-game purchases/gambling, leaks, and any non-kid-safe topic. Rewrite as a fun, factual gaming tidbit.",
+    hint: "These are video-game headlines. Kids want REAL game news, so KEEP and report factually (name the game / date / result): new game announcements and RELEASE DATES, game updates and new features, ESPORTS and tournament RESULTS, speedrun records, and Nintendo/console news. This overrides the 'wholesome only' rule for gaming — a normal game release or tournament score is fine. STILL DROP mature/violent/scary titles (shooters, horror, anything rated Teen+), gambling/loot-box topics, unconfirmed leaks/rumors, and anything not kid-safe. For 'wonder', give a fun true fact about the game or series.",
   },
 };

@@ -20,7 +20,7 @@ import { generateSequence } from "./puzzles/sequence";
 import { pickSpanish } from "./content/spanish";
 import { pickWyr } from "./content/wyr";
 import { pickPoem, poemFontPt, poemLines } from "./content/poems";
-import { isNewsModule, newsListFromPool, pickNewsList, type LiveNewsEntry, type NewsModuleId } from "./content/news";
+import { isNewsModule, newsListFromPool, type LiveNewsEntry, type NewsModuleId } from "./content/news";
 import type { LiveHistoryEntry } from "./news/history-live";
 import { eventsForToday, formatEventLine } from "./content/stubs";
 import { mockStocks } from "./stocks";
@@ -465,24 +465,32 @@ export function generateStrip(
       // 2x (double) = 3 stories, 1x (full) = 2, half = 1 — bigger font, stretched
       // to fill the card, so 3 roomy stories beat 4 cramped ones.
       const count = cardSize === "double" ? 3 : cardSize === "half" ? 1 : 2;
-      // Prefer today's real (kid-safe) headlines when available; else static bank.
+      // Real (kid-safe) headlines only. If there are none today, print an honest
+      // note — never a fabricated story (kids can tell).
       const livePool = opts.newsByFeed?.[moduleId];
-      const items =
-        livePool && livePool.length
-          ? newsListFromPool(livePool, band, rng, count)
-          : pickNewsList(moduleId, band, rng, count);
-      sections.push({
-        id: `${moduleId}-${hashish(items[0]?.headline ?? moduleId)}`,
-        moduleId,
-        title: meta.name,
-        kind: "text",
-        lines: [],
-        news: items.map((i) => ({
-          headline: i.headline,
-          location: i.location,
-          blurb: `${i.blurb} ${i.wonder}`,
-        })),
-      });
+      const items = livePool && livePool.length ? newsListFromPool(livePool, band, rng, count) : [];
+      if (items.length) {
+        sections.push({
+          id: `${moduleId}-${hashish(items[0]?.headline ?? moduleId)}`,
+          moduleId,
+          title: meta.name,
+          kind: "text",
+          lines: [],
+          news: items.map((i) => ({
+            headline: i.headline,
+            location: i.location,
+            blurb: `${i.blurb} ${i.wonder}`,
+          })),
+        });
+      } else {
+        sections.push({
+          id: `${moduleId}-none`,
+          moduleId,
+          title: meta.name,
+          kind: "text",
+          lines: [`No fresh ${meta.name.toLowerCase()} today — new stories tomorrow.`],
+        });
+      }
       continue;
     }
   }

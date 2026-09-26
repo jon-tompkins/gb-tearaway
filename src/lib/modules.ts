@@ -51,10 +51,9 @@ export const MODULE_CATALOG: ModuleMeta[] = [
   { id: "fact", name: "Fun Fact", blurb: "One true thing worth knowing before cereal.", category: "facts", defaultOn: true, size: "half" },
   // Kid-friendly news
   { id: "news_world", name: "World News", blurb: "Wonder from far away — animals, space, discoveries.", category: "news", defaultOn: false, size: "double" },
-  { id: "news_national", name: "National News", blurb: "Kid-safe US blurbs: parks, science fairs, kindness.", category: "news", defaultOn: false, size: "double" },
-  { id: "news_city", name: "Hometown News", blurb: "Generic hometown vibes — library, playground, neighbors.", category: "news", defaultOn: false, size: "double" },
-  { id: "news_tech", name: "Tech News", blurb: "Robots, code, and gadgets — curiosity, not hype.", category: "news", defaultOn: false, size: "double" },
-  { id: "news_gamer", name: "Gamer News", blurb: "Games, makers, and fair play — age-banded.", category: "news", defaultOn: false, size: "double" },
+  { id: "news_national", name: "National News", blurb: "Real kind, kid-safe US stories: parks, science fairs, community wins.", category: "news", defaultOn: false, size: "double" },
+  { id: "news_tech", name: "Tech News", blurb: "Real robots, code, and gadgets news — curiosity, not hype.", category: "news", defaultOn: false, size: "double" },
+  { id: "news_gamer", name: "Gamer News", blurb: "Real gaming news: new releases, updates, and esports results.", category: "news", defaultOn: false, size: "double" },
   // Today’s world
   { id: "weather", name: "Weather", blurb: "Today’s sky and a jacket tip, plus the week ahead.", category: "today", defaultOn: true, size: "half" },
   { id: "stocks", name: "Stock Watchlist", blurb: "Parent-picked tickers — a simple up-or-down check.", category: "today", defaultOn: false, size: "double" },
