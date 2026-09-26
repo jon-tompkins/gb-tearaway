@@ -280,7 +280,7 @@ export default function EditDispatchPage() {
               </button>
               <a
                 className="btn-secondary text-sm"
-                href={`/api/render?kid=${activeKid.id}&format=print&auto=1`}
+                href={`/api/render?kid=${activeKid.id}&format=pdf`}
                 target="_blank"
                 rel="noreferrer"
               >

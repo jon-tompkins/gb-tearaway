@@ -10,7 +10,8 @@ import { currentUserKey } from "@/lib/userKey";
 import { savePayload } from "@/lib/persist";
 import { answersToken, collectAnswers } from "@/lib/answers";
 import { qrSvg } from "@/lib/qr";
-import { loadDispatchRef } from "@/lib/deliver";
+import { renderPdfFromUrl } from "@/lib/pdf";
+import { saveDispatchRef, loadDispatchRef } from "@/lib/deliver";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -79,6 +80,28 @@ export async function GET(req: Request) {
     // Drop bulky HTML for JSON consumers; keep sections + meta
     const { previewHtml: _html, ...rest } = job;
     return NextResponse.json(rest);
+  }
+
+  // One-tap PDF download: mint a public token, headless-render the print page to
+  // a real PDF, and return it as an attachment (great on mobile — no manual
+  // "share → save as PDF"). Falls back to the print HTML if the render fails.
+  if (format === "pdf") {
+    const host = req.headers.get("x-forwarded-host") ?? req.headers.get("host") ?? url.host;
+    const proto = req.headers.get("x-forwarded-proto") ?? url.protocol.replace(":", "");
+    const dlToken = await saveDispatchRef({ userKey, kidId: kid.id, date: job.date });
+    const pdf = await renderPdfFromUrl(`${proto}://${host}/api/render?token=${dlToken}&format=print`);
+    if (pdf) {
+      const fname = `back-of-the-box-${kid.name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${job.date}.pdf`;
+      return new NextResponse(new Uint8Array(pdf), {
+        status: 200,
+        headers: {
+          "Content-Type": "application/pdf",
+          "Content-Disposition": `attachment; filename="${fname}"`,
+          "Cache-Control": "no-store",
+        },
+      });
+    }
+    // else: fall through to serving the print HTML below.
   }
 
   if (format === "print" || format === "pdf") {

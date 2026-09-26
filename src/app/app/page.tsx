@@ -119,7 +119,7 @@ export default function DashboardPage() {
                 </button>
                 <a
                   className="btn-secondary text-sm"
-                  href={`/api/render?kid=${kid.id}&format=print&auto=1`}
+                  href={`/api/render?kid=${kid.id}&format=pdf`}
                   target="_blank"
                   rel="noreferrer"
                   title="Opens a print-ready page — choose “Save as PDF”."
