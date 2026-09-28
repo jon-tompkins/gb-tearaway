@@ -439,12 +439,12 @@ export function SlotEditor({
                 setPickerSlotId(slot.id);
               }}
               className={`flex ${
-                slot.moduleIds.length === 0 ? "flex-1" : "flex-none"
-              } min-h-0 items-center justify-center gap-1 rounded-md border border-dashed px-1.5 py-0.5 text-[0.65rem] font-semibold transition hover:border-ink hover:text-ink ${
+                slot.moduleIds.length === 0 ? "flex-1" : "h-3.5 flex-none"
+              } min-h-0 items-center justify-center rounded border border-dashed text-[0.55rem] font-semibold leading-none transition hover:border-ink hover:text-ink ${
                 selected ? "border-ink/40 text-ink/60" : "border-rule text-ink-soft"
               }`}
             >
-              + add
+              +
             </button>
           ) : null}
         </div>
@@ -505,7 +505,7 @@ export function SlotEditor({
           </div>
 
           {isStrip ? (
-            <div className="grid grid-cols-1 gap-3 [grid-auto-rows:46px]">
+            <div className="grid grid-cols-1 gap-2 [grid-auto-rows:46px]">
               {slots.filter((s) => (s.column ?? 0) === 0).map((slot) => renderCard(slot))}
               <div className="row-span-1">{addCardBtn(0)}</div>
             </div>
@@ -516,7 +516,7 @@ export function SlotEditor({
                   <div className="mb-2 text-center text-[0.55rem] font-bold uppercase tracking-widest text-ink-soft">
                     Column {col + 1}
                   </div>
-                  <div className="grid grid-cols-1 gap-3 [grid-auto-rows:46px]">
+                  <div className="grid grid-cols-1 gap-2 [grid-auto-rows:46px]">
                     {slots.filter((s) => (s.column ?? 0) === col).map((slot) => renderCard(slot))}
                     <div className="row-span-1">{addCardBtn(col)}</div>
                   </div>
