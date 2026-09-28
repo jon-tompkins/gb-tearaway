@@ -341,6 +341,8 @@ export function SlotEditor({
     const multi = n >= 2;
     const shuffleOn = slot.mode === "random";
     const size = slot.size ?? "full";
+    // Proportional height so ½ : 1× : 2× = 1 : 2 : 4 units (a 2× is 4× a ½).
+    const spanClass = size === "double" ? "row-span-8" : size === "half" ? "row-span-2" : "row-span-4";
     return (
       <div
         key={slot.id}
@@ -357,7 +359,7 @@ export function SlotEditor({
             setPickerSlotId(slot.id);
           }
         }}
-        className={`flex cursor-pointer flex-col rounded-xl border bg-cream/50 px-2.5 py-2 transition ${
+        className={`flex h-full cursor-pointer flex-col overflow-hidden rounded-xl border bg-cream/50 px-2.5 py-2 transition ${spanClass} ${
           selected ? "border-ink ring-2 ring-ink/20" : "border-rule hover:border-ink/30"
         }`}
       >
@@ -393,14 +395,14 @@ export function SlotEditor({
           </button>
         </div>
 
-        {/* Modules stacked as small labels so you can read what's in a card at a
-            glance, even in a short ½ card. */}
-        <div className="flex flex-col gap-1">
+        {/* Modules stacked as small labels that fill the card's fixed height, so
+            the ½ : 1× : 2× proportions read true and there's no empty gap. */}
+        <div className="flex flex-1 min-h-0 flex-col gap-1">
           {slot.moduleIds.map((id, idx) => (
             <div
               key={id}
               title={moduleById(id).name}
-              className="flex items-center gap-1 rounded-md border border-rule bg-paper px-1.5 py-0.5"
+              className="flex flex-1 min-h-0 items-center gap-1 rounded-md border border-rule bg-paper px-1.5 py-0.5"
             >
               {multi && !shuffleOn ? (
                 <span className="text-[0.55rem] font-bold text-ink-soft">{idx + 1}.</span>
@@ -435,7 +437,9 @@ export function SlotEditor({
                 onSelectSlot(slot.id);
                 setPickerSlotId(slot.id);
               }}
-              className={`flex items-center justify-center gap-1 rounded-md border border-dashed px-1.5 py-0.5 text-[0.65rem] font-semibold transition hover:border-ink hover:text-ink ${
+              className={`flex ${
+                slot.moduleIds.length === 0 ? "flex-1" : "flex-none"
+              } min-h-0 items-center justify-center gap-1 rounded-md border border-dashed px-1.5 py-0.5 text-[0.65rem] font-semibold transition hover:border-ink hover:text-ink ${
                 selected ? "border-ink/40 text-ink/60" : "border-rule text-ink-soft"
               }`}
             >
@@ -500,9 +504,9 @@ export function SlotEditor({
           </div>
 
           {isStrip ? (
-            <div className="flex flex-col gap-3">
+            <div className="grid grid-cols-1 gap-3 [grid-auto-rows:46px]">
               {slots.filter((s) => (s.column ?? 0) === 0).map((slot) => renderCard(slot))}
-              {addCardBtn(0)}
+              <div className="row-span-1">{addCardBtn(0)}</div>
             </div>
           ) : (
             <div className="grid grid-cols-2 items-start gap-x-6 gap-y-3">
@@ -511,9 +515,9 @@ export function SlotEditor({
                   <div className="mb-2 text-center text-[0.55rem] font-bold uppercase tracking-widest text-ink-soft">
                     Column {col + 1}
                   </div>
-                  <div className="flex flex-col gap-3">
+                  <div className="grid grid-cols-1 gap-3 [grid-auto-rows:46px]">
                     {slots.filter((s) => (s.column ?? 0) === col).map((slot) => renderCard(slot))}
-                    {addCardBtn(col)}
+                    <div className="row-span-1">{addCardBtn(col)}</div>
                   </div>
                 </div>
               ))}
