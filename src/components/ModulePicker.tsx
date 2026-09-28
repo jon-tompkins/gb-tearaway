@@ -410,11 +410,12 @@ export function SlotEditor({
               <span className="flex-1 truncate text-[0.7rem] font-semibold leading-tight text-ink">
                 {moduleById(id).name}
               </span>
-              <DifficultyDial
-                value={slot.moduleDifficulty?.[id] ?? defaultDifficulty}
-                onChange={(v) => setModuleDifficulty(slot.id, id, v)}
-                compact
-              />
+              <span
+                className="shrink-0 text-[0.55rem] font-bold tabular-nums text-ink-soft"
+                title="Appropriateness — edit in the card view"
+              >
+                {slot.moduleDifficulty?.[id] ?? defaultDifficulty}
+              </span>
               <button
                 type="button"
                 aria-label={`Remove ${moduleById(id).name}`}
@@ -422,7 +423,7 @@ export function SlotEditor({
                   e.stopPropagation();
                   removeFromCard(slot.id, id);
                 }}
-                className="rounded px-0.5 text-xs font-bold text-ink-soft hover:text-stamp"
+                className="shrink-0 rounded px-0.5 text-xs font-bold text-ink-soft hover:text-stamp"
               >
                 ×
               </button>
