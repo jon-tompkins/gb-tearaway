@@ -33,6 +33,12 @@ export default function HomePage() {
           <span className="masthead-display text-xl">Back of the Box</span>
         </div>
         <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+          <Link
+            href="/modules"
+            className="whitespace-nowrap text-sm font-semibold text-ink-soft hover:text-ink"
+          >
+            Modules
+          </Link>
           <AuthButton compact />
           <Link
             href="/app"
