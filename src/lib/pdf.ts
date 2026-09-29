@@ -11,6 +11,9 @@ export async function renderPdfFromUrl(url: string): Promise<Buffer | null> {
     const chromium = (await import("@sparticuz/chromium")).default;
     const puppeteer = (await import("puppeteer-core")).default;
 
+    // Serverless-friendly: skip GPU/WebGL to cut memory + launch time.
+    chromium.setGraphicsMode = false;
+
     const executablePath =
       process.env.PUPPETEER_EXECUTABLE_PATH || (await chromium.executablePath());
 
@@ -22,14 +25,19 @@ export async function renderPdfFromUrl(url: string): Promise<Buffer | null> {
     });
     try {
       const page = await browser.newPage();
-      await page.goto(url, { waitUntil: "networkidle0", timeout: 25000 });
+      // "load" is far more reliable than networkidle0 for a static print page —
+      // networkidle0 can hang for the full timeout if any connection lingers.
+      await page.goto(url, { waitUntil: "load", timeout: 25000 });
       await page.emulateMediaType("print");
       const pdf = await page.pdf({ preferCSSPageSize: true, printBackground: true });
       return Buffer.from(pdf);
     } finally {
       await browser.close();
     }
-  } catch {
+  } catch (e) {
+    // Don't crash the caller (email still sends link-only), but leave a trail in
+    // the Vercel logs so a missing PDF attachment is diagnosable.
+    console.error("[pdf] renderPdfFromUrl failed:", e instanceof Error ? e.stack || e.message : e);
     return null;
   }
 }
