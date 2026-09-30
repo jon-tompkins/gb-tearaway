@@ -60,7 +60,8 @@ export const MODULE_INFO: Record<ModuleId, ModuleInfo> = {
     config: [DIAL + " Picks the age band.", "Card size sets how long a poem fits."],
   },
   joke: {
-    source: "A curated, age-checked joke bank. One groaner a day, nothing mean.",
+    source:
+      "A fresh joke written each morning by an AI, kept clean and age-checked (with a hand-curated backup bank). One groaner a day, nothing mean.",
     config: [DIAL + " Picks the age band."],
   },
   spanish: {
@@ -104,7 +105,8 @@ export const MODULE_INFO: Record<ModuleId, ModuleInfo> = {
     config: [DIAL + " Picks the age band."],
   },
   fact: {
-    source: "A curated fun-fact bank — one true thing worth knowing before cereal.",
+    source:
+      "A fresh, true fun fact generated each morning by an AI (with a hand-curated backup bank) — one thing worth knowing before cereal.",
     config: [DIAL + " Picks the age band."],
   },
   // Kid-friendly news — live RSS + AI kid-safe rewrite, no fabricated fallback

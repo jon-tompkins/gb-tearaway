@@ -6,6 +6,7 @@ import { fetchWeather } from "@/lib/weather";
 import { gatherDailyNews } from "@/lib/news/daily";
 import { gatherDailyHistory } from "@/lib/news/history-live";
 import { gatherSports } from "@/lib/sports";
+import { gatherDailyExtras } from "@/lib/content/live-extras";
 import { dateISOInZone } from "@/lib/dates";
 import {
   advanceInOrderCursors,
@@ -47,8 +48,9 @@ export async function POST() {
   const newsByFeed = await gatherDailyNews(pool, { city: settings.weatherCity });
   const historyLive = await gatherDailyHistory(pool, dateISOInZone(kid.timezone || settings.timezone));
   const sports = pool.includes("sports") ? await gatherSports(kid.sportsTeams ?? []) : undefined;
+  const extras = await gatherDailyExtras(pool);
   // Generate with current cursors (matches prior preview's slot picks + new nonce)
-  const job = generateStrip(kidNorm, settings, { nonce, weather, newsByFeed, historyLive, sports });
+  const job = generateStrip(kidNorm, settings, { nonce, weather, newsByFeed, historyLive, sports, extras });
 
   // Persist nonce + advanced in_order cursors
   const idx = store.kids.findIndex((k) => k.id === kid.id);

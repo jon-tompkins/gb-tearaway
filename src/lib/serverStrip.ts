@@ -2,6 +2,7 @@ import { generateStrip } from "./generateStrip";
 import { DEMO_KEY, getSettings, readStore, writeStore } from "./store";
 import { fetchWeather } from "./weather";
 import { gatherDailyNews } from "./news/daily";
+import { gatherDailyExtras } from "./content/live-extras";
 import { gatherDailyHistory } from "./news/history-live";
 import { gatherSports } from "./sports";
 import { dateISOInZone } from "./dates";
@@ -47,6 +48,7 @@ export async function buildJobForKid(
     opts.dateISO ?? dateISOInZone(kid.timezone || settings.timezone),
   );
   const sports = pool.includes("sports") ? await gatherSports(kid.sportsTeams ?? []) : undefined;
+  const extras = await gatherDailyExtras(pool);
 
   const job = generateStrip(kidNorm, settings, {
     nonce,
@@ -55,6 +57,7 @@ export async function buildJobForKid(
     newsByFeed,
     historyLive,
     sports,
+    extras,
   });
   if (opts.persistStatus) job.status = opts.persistStatus;
 

@@ -13,6 +13,7 @@ import { pickWord } from "./content/words";
 import { pickFact } from "./content/facts";
 import { pickHistory } from "./content/history";
 import { pickJoke } from "./content/jokes";
+import { pickLiveJoke, pickLiveFact, type DailyExtras } from "./content/live-extras";
 import { pickDoodle } from "./content/doodles";
 import { pickRiddle } from "./content/riddles";
 import { pickScramble, scrambleWord } from "./content/scramble";
@@ -51,6 +52,8 @@ export interface GenerateOptions {
   historyLive?: LiveHistoryEntry[];
   /** Live favorite-team sports results (fetched by the route). */
   sports?: SportsTeamResult[];
+  /** Today's fresh Haiku-generated jokes/facts; falls back to the static bank. */
+  extras?: DailyExtras;
 }
 
 /**
@@ -135,7 +138,8 @@ export function generateStrip(
       continue;
     }
     if (moduleId === "fact") {
-      const fact = pickFact(band, rng);
+      const fact =
+        (opts.extras?.facts && pickLiveFact(opts.extras.facts, band, rng)) || pickFact(band, rng);
       sections.push({
         id: `fact-${hashish(fact.fact)}`,
         moduleId,
@@ -352,7 +356,8 @@ export function generateStrip(
       continue;
     }
     if (moduleId === "joke") {
-      const joke = pickJoke(band, rng);
+      const joke =
+        (opts.extras?.jokes && pickLiveJoke(opts.extras.jokes, band, rng)) || pickJoke(band, rng);
       sections.push({
         id: `joke-${hashish(joke.setup)}`,
         moduleId,

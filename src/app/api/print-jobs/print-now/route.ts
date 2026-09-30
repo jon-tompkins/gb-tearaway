@@ -6,6 +6,7 @@ import { fetchWeather } from "@/lib/weather";
 import { gatherDailyNews } from "@/lib/news/daily";
 import { gatherDailyHistory } from "@/lib/news/history-live";
 import { gatherSports } from "@/lib/sports";
+import { gatherDailyExtras } from "@/lib/content/live-extras";
 import { dateISOInZone } from "@/lib/dates";
 import {
   advanceInOrderCursors,
@@ -41,8 +42,9 @@ export async function POST() {
   const newsByFeed = await gatherDailyNews(pool, { city: settings.weatherCity });
   const historyLive = await gatherDailyHistory(pool, dateISOInZone(kid.timezone || settings.timezone));
   const sports = pool.includes("sports") ? await gatherSports(kid.sportsTeams ?? []) : undefined;
+  const extras = await gatherDailyExtras(pool);
   // Print uses current cursors (matches what you're looking at)
-  const job = generateStrip(kidNorm, settings, { nonce, weather, newsByFeed, historyLive, sports });
+  const job = generateStrip(kidNorm, settings, { nonce, weather, newsByFeed, historyLive, sports, extras });
   job.status = "queued";
   await savePrintJob(userKey, job);
 
