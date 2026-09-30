@@ -40,7 +40,7 @@ export const MODULE_INFO: Record<ModuleId, ModuleInfo> = {
   },
   sequence: {
     source:
-      "Fully procedural number pattern (arithmetic, geometric, triangular, Fibonacci, squares…). Infinite variety, no content bank.",
+      "Fully procedural number pattern (add/subtract, multiply, alternating steps, triangular, Fibonacci, squares, cubes, primes, and double-and-add). Infinite variety, no content bank.",
     config: [DIAL + " Picks the pattern pool and trickiness."],
     answerInApp: true,
   },
