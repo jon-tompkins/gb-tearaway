@@ -27,7 +27,9 @@ export async function renderPdfFromUrl(url: string): Promise<Buffer | null> {
       const page = await browser.newPage();
       // "load" is far more reliable than networkidle0 for a static print page —
       // networkidle0 can hang for the full timeout if any connection lingers.
-      await page.goto(url, { waitUntil: "load", timeout: 25000 });
+      // Timeout is generous: the target render may do uncached live work
+      // (news/history/Haiku) on the first request of the day.
+      await page.goto(url, { waitUntil: "load", timeout: 50000 });
       await page.emulateMediaType("print");
       const pdf = await page.pdf({ preferCSSPageSize: true, printBackground: true });
       return Buffer.from(pdf);

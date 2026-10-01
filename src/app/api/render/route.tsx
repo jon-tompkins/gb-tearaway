@@ -15,6 +15,10 @@ import { saveDispatchRef, loadDispatchRef } from "@/lib/deliver";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
+// Uncached renders do live work (news RSS, Wikimedia history, Haiku content) and
+// may also headless-render a PDF. Give it room — the default (~10s) was timing
+// out the cron's self-fetch and dropping the emailed PDF attachment.
+export const maxDuration = 60;
 
 /**
  * Firmware / printer bridge contract:

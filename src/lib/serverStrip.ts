@@ -32,23 +32,24 @@ export async function buildJobForKid(
   const kidNorm = ensureKidSlots(kid);
   const pool = flattenSlotModules(kidNorm.slots);
 
-  let weather;
-  if (pool.includes("weather")) {
-    weather = await fetchWeather({
-      city: settings.weatherCity,
-      zip: settings.weatherZip,
-      timezone: kid.timezone || settings.timezone,
-      ageBand: kid.ageBand,
-    });
-  }
-
-  const newsByFeed = await gatherDailyNews(pool, { city: settings.weatherCity });
-  const historyLive = await gatherDailyHistory(
-    pool,
-    opts.dateISO ?? dateISOInZone(kid.timezone || settings.timezone),
-  );
-  const sports = pool.includes("sports") ? await gatherSports(kid.sportsTeams ?? []) : undefined;
-  const extras = await gatherDailyExtras(pool);
+  // Fetch every live source in parallel — these are independent and otherwise
+  // add up (weather + news RSS + Wikimedia history + sports + 6 Haiku content
+  // calls). Serial awaits here pushed the uncached morning render past the PDF
+  // render timeout, dropping the emailed attachment.
+  const [weather, newsByFeed, historyLive, sports, extras] = await Promise.all([
+    pool.includes("weather")
+      ? fetchWeather({
+          city: settings.weatherCity,
+          zip: settings.weatherZip,
+          timezone: kid.timezone || settings.timezone,
+          ageBand: kid.ageBand,
+        })
+      : Promise.resolve(undefined),
+    gatherDailyNews(pool, { city: settings.weatherCity }),
+    gatherDailyHistory(pool, opts.dateISO ?? dateISOInZone(kid.timezone || settings.timezone)),
+    pool.includes("sports") ? gatherSports(kid.sportsTeams ?? []) : Promise.resolve(undefined),
+    gatherDailyExtras(pool),
+  ]);
 
   const job = generateStrip(kidNorm, settings, {
     nonce,
