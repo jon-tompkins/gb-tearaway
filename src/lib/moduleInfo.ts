@@ -28,7 +28,7 @@ export const MODULE_INFO: Record<ModuleId, ModuleInfo> = {
     config: [DIAL + " Sets how many dots."],
   },
   riddle: {
-    source: "A curated, age-checked riddle bank.",
+    source: "A fresh riddle written each morning by an AI, age-checked (with a hand-curated backup bank of 100+).",
     config: [DIAL + " Picks the age band."],
     answerInApp: true,
   },
@@ -52,7 +52,7 @@ export const MODULE_INFO: Record<ModuleId, ModuleInfo> = {
   },
   // Words & language — curated banks
   word: {
-    source: "A curated 'word of the day' bank — a real word with pronunciation, part of speech, and a sentence.",
+    source: "A real word chosen fresh each morning by an AI — with pronunciation, part of speech, and a sentence (hand-curated backup bank of 100+).",
     config: [DIAL + " Picks the age band's vocabulary."],
   },
   poem: {
@@ -65,11 +65,11 @@ export const MODULE_INFO: Record<ModuleId, ModuleInfo> = {
     config: [DIAL + " Picks the age band."],
   },
   spanish: {
-    source: "A curated Spanish word-a-day bank with pronunciation and a sentence.",
+    source: "A Spanish word chosen fresh each morning by an AI, with pronunciation and a sentence (hand-curated backup bank of 100+).",
     config: [DIAL + " Picks the age band."],
   },
   scramble: {
-    source: "A curated word bank; the letters are shuffled and a hint is given.",
+    source: "A word chosen fresh each morning by an AI; the letters are shuffled and a hint is given (hand-curated backup bank of 100+).",
     config: [DIAL + " Picks difficulty."],
     answerInApp: true,
   },
@@ -150,14 +150,5 @@ export const MODULE_INFO: Record<ModuleId, ModuleInfo> = {
   calendar: {
     source: "Your family's day — pulled from a Google Calendar you connect, or events you type in.",
     config: ["Connect a Google Calendar, or add events by hand, in Settings."],
-  },
-  // Create
-  doodle: {
-    source: "A curated 30-second drawing-prompt bank.",
-    config: [DIAL + " Picks the age band."],
-  },
-  wyr: {
-    source: "A curated 'would you rather' bank — two silly choices to debate.",
-    config: [DIAL + " Picks the age band."],
   },
 };

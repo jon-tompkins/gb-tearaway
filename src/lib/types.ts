@@ -17,12 +17,10 @@ export type ModuleId =
   | "sports"
   | "calendar"
   | "joke"
-  | "doodle"
   | "riddle"
   | "sequence"
   | "scramble"
   | "spanish"
-  | "wyr"
   | "poem"
   | "wordfind"
   | "dots"
@@ -124,8 +122,7 @@ export type ModuleCategoryId =
   | "words"
   | "facts"
   | "news"
-  | "today"
-  | "create";
+  | "today";
 
 export interface CalendarEvent {
   id: string;

@@ -13,13 +13,19 @@ import { pickWord } from "./content/words";
 import { pickFact } from "./content/facts";
 import { pickHistory } from "./content/history";
 import { pickJoke } from "./content/jokes";
-import { pickLiveJoke, pickLiveFact, type DailyExtras } from "./content/live-extras";
-import { pickDoodle } from "./content/doodles";
+import {
+  pickLiveJoke,
+  pickLiveFact,
+  pickLiveWord,
+  pickLiveSpanish,
+  pickLiveScramble,
+  pickLiveRiddle,
+  type DailyExtras,
+} from "./content/live-extras";
 import { pickRiddle } from "./content/riddles";
 import { pickScramble, scrambleWord } from "./content/scramble";
 import { generateSequence } from "./puzzles/sequence";
 import { pickSpanish } from "./content/spanish";
-import { pickWyr } from "./content/wyr";
 import { pickPoem, poemFontPt, poemLines } from "./content/poems";
 import { isNewsModule, newsListFromPool, type LiveNewsEntry, type NewsModuleId } from "./content/news";
 import type { LiveHistoryEntry } from "./news/history-live";
@@ -124,7 +130,8 @@ export function generateStrip(
     const band = bandFromDifficulty(difficulty);
     const meta = moduleById(moduleId);
     if (moduleId === "word") {
-      const word = pickWord(band, rng);
+      const word =
+        (opts.extras?.words && pickLiveWord(opts.extras.words, band, rng)) || pickWord(band, rng);
       const lines = [
         `${word.word.toUpperCase()}  ·  ${word.phonetic}  ·  ${word.pos}`,
         word.definition,
@@ -367,19 +374,9 @@ export function generateStrip(
       });
       continue;
     }
-    if (moduleId === "doodle") {
-      const doodle = pickDoodle(band, rng);
-      sections.push({
-        id: `doodle-${hashish(doodle.prompt)}`,
-        moduleId,
-        title: meta.name,
-        kind: "text",
-        lines: [doodle.prompt, doodle.tip, "Draw in the margin or on the back."],
-      });
-      continue;
-    }
     if (moduleId === "riddle") {
-      const riddle = pickRiddle(band, rng);
+      const riddle =
+        (opts.extras?.riddles && pickLiveRiddle(opts.extras.riddles, band, rng)) || pickRiddle(band, rng);
       sections.push({
         id: `riddle-${hashish(riddle.question)}`,
         moduleId,
@@ -405,7 +402,8 @@ export function generateStrip(
       continue;
     }
     if (moduleId === "scramble") {
-      const item = pickScramble(band, rng);
+      const item =
+        (opts.extras?.scramble && pickLiveScramble(opts.extras.scramble, band, rng)) || pickScramble(band, rng);
       const scrambled = scrambleWord(item.word, rng);
       sections.push({
         id: `scramble-${hashish(item.word)}`,
@@ -423,7 +421,8 @@ export function generateStrip(
       continue;
     }
     if (moduleId === "spanish") {
-      const word = pickSpanish(band, rng);
+      const word =
+        (opts.extras?.spanish && pickLiveSpanish(opts.extras.spanish, band, rng)) || pickSpanish(band, rng);
       sections.push({
         id: `spanish-${word.spanish}`,
         moduleId,
@@ -434,17 +433,6 @@ export function generateStrip(
           `Means: ${word.english}`,
           word.example,
         ],
-      });
-      continue;
-    }
-    if (moduleId === "wyr") {
-      const wyr = pickWyr(band, rng);
-      sections.push({
-        id: `wyr-${hashish(wyr.a + wyr.b)}`,
-        moduleId,
-        title: meta.name,
-        kind: "text",
-        lines: [`A) ${wyr.a}`, `B) ${wyr.b}`, wyr.nudge],
       });
       continue;
     }

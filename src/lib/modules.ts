@@ -23,7 +23,6 @@ export const MODULE_CATEGORIES: ModuleCategoryMeta[] = [
   { id: "facts", name: "Curious facts", blurb: "True things and this-day history." },
   { id: "news", name: "Kid-friendly news", blurb: "Curated wonder blurbs — not live scrapes." },
   { id: "today", name: "Today’s world", blurb: "Weather, watchlist, calendar." },
-  { id: "create", name: "Create", blurb: "Draw and debate." },
 ];
 
 export const MODULE_CATALOG: ModuleMeta[] = [
@@ -60,9 +59,6 @@ export const MODULE_CATALOG: ModuleMeta[] = [
   { id: "stocks", name: "Stock Watchlist", blurb: "Parent-picked tickers — a simple up-or-down check.", category: "today", defaultOn: false, size: "double" },
   { id: "sports", name: "Sports Scores", blurb: "Pick your favorite teams — last result and next game, real scores.", category: "today", defaultOn: false, size: "full" },
   { id: "calendar", name: "Calendar", blurb: "A short list of today’s events. Stub list you can edit.", category: "today", defaultOn: false, size: "half" },
-  // Create
-  { id: "doodle", name: "Tiny Doodle", blurb: "A 30-second drawing prompt that fits the strip.", category: "create", defaultOn: false, size: "half" },
-  { id: "wyr", name: "Would You Rather", blurb: "Two silly choices. Debate over cereal.", category: "create", defaultOn: false, size: "half" },
 ];
 
 /** Natural size for a module (used as the card default). */
@@ -93,14 +89,14 @@ export const TEMPLATES: Template[] = [
   {
     id: "puzzle-morning",
     name: "Puzzle Morning",
-    blurb: "Maze + word find, word, fact, doodle",
+    blurb: "Maze + word find, word, fact, riddle",
     slots: [
       { moduleIds: ["maze"], size: "full" },
       { moduleIds: ["wordfind"], size: "full" },
       { moduleIds: ["word"], size: "half" },
       { moduleIds: ["fact"], size: "half" },
       { moduleIds: ["joke"], size: "half" },
-      { moduleIds: ["doodle"], size: "half" },
+      { moduleIds: ["riddle"], size: "half" },
     ],
   },
   {
@@ -119,12 +115,12 @@ export const TEMPLATES: Template[] = [
   {
     id: "explorer",
     name: "Explorer",
-    blurb: "News + fun fact | maze + spanish + doodle",
+    blurb: "News + fun fact | maze + spanish + scramble",
     slots: [
       { moduleIds: ["news_national"], size: "double" },
       { moduleIds: ["maze"], size: "full" },
       { moduleIds: ["spanish"], size: "half" },
-      { moduleIds: ["doodle"], size: "half" },
+      { moduleIds: ["scramble"], size: "half" },
     ],
   },
 ];

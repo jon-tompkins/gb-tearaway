@@ -225,7 +225,7 @@ export function demoSlotsStrip58(): ModuleSlot[] {
   return [
     { id: "slot-0", moduleIds: ["word"], mode: "single", cursor: 0 },
     { id: "slot-1", moduleIds: ["joke", "riddle"], mode: "in_order", cursor: 0 },
-    { id: "slot-2", moduleIds: ["doodle", "wyr", "poem"], mode: "random", cursor: 0 },
+    { id: "slot-2", moduleIds: ["riddle", "scramble", "poem"], mode: "random", cursor: 0 },
     { id: "slot-3", moduleIds: ["maze", "spanish"], mode: "in_order", cursor: 0 },
   ];
 }
@@ -272,7 +272,7 @@ export function defaultSlotsForNewKid(paperSize: PaperSize = "strip58"): ModuleS
   // gets a balanced second column.
   const defaults: ModuleId[] =
     paperSize === "letter"
-      ? ["maze", "wordfind", "word", "joke", "weather", "fact", "history", "doodle"]
+      ? ["maze", "wordfind", "word", "joke", "weather", "fact", "history", "riddle"]
       : ["maze", "word", "joke", "weather", "fact"];
   return packModulesIntoSlots(defaults, paperSize);
 }

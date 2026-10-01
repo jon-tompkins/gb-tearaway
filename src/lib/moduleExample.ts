@@ -12,8 +12,6 @@ import { pickWord } from "./content/words";
 import { pickFact } from "./content/facts";
 import { pickJoke } from "./content/jokes";
 import { pickRiddle } from "./content/riddles";
-import { pickDoodle } from "./content/doodles";
-import { pickWyr } from "./content/wyr";
 import { pickSpanish } from "./content/spanish";
 import { pickPoem, poemLines } from "./content/poems";
 import { pickScramble, scrambleWord } from "./content/scramble";
@@ -88,14 +86,6 @@ export function moduleExample(id: ModuleId): ModuleExample {
     case "riddle": {
       const r = pickRiddle(BAND, rng);
       return { text: [r.question, "Think… then check the app."], note: `Answer (in the app): ${r.answer}` };
-    }
-    case "doodle": {
-      const d = pickDoodle(BAND, rng);
-      return { text: [d.prompt, d.tip] };
-    }
-    case "wyr": {
-      const w = pickWyr(BAND, rng);
-      return { text: [`A) ${w.a}`, `B) ${w.b}`, w.nudge] };
     }
     case "spanish": {
       const s = pickSpanish(BAND, rng);

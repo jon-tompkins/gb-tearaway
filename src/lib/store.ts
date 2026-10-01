@@ -79,7 +79,7 @@ export function seedKid(overrides: Partial<KidProfile> = {}): KidProfile {
 export function emptyState(): AppState {
   const kid = seedKid({
     slots: defaultSlotsForNewKid("strip58"),
-    modules: ["word", "joke", "doodle", "maze"],
+    modules: ["word", "joke", "riddle", "maze"],
     paperSize: "strip58",
   });
   return {
