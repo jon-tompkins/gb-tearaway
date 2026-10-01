@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import type { AgeBand, ModuleCategoryId, ModuleId, ModuleSlot, PaperSize, SlotMode, SlotSize } from "@/lib/types";
 import { COLUMN_CAPACITY_UNITS, PAPER_SIZE_META, slotSizeUnits } from "@/lib/types";
 import { moduleById, moduleSize, modulesByCategory, MODULE_CATALOG, MODULE_CATEGORIES } from "@/lib/modules";
@@ -219,6 +219,7 @@ export function SlotEditor({
   onSelectSlot,
   onChangeSlots,
   onChangePaperSize,
+  actions,
 }: {
   paperSize: PaperSize;
   ageBand: AgeBand;
@@ -227,6 +228,8 @@ export function SlotEditor({
   onSelectSlot: (id: string) => void;
   onChangeSlots: (next: ModuleSlot[]) => void;
   onChangePaperSize: (size: PaperSize) => void;
+  /** Rendered right under the template (above “Explore modules”). */
+  actions?: ReactNode;
 }) {
   const isStrip = paperSize !== "letter";
   const groups = modulesByCategory();
@@ -536,6 +539,8 @@ export function SlotEditor({
           </div>
         </div>
       </section>
+
+      {actions ? <div>{actions}</div> : null}
 
       {/* EXPLORE MODULES — browse the full catalog; add by tapping a card slot above */}
       {(() => {

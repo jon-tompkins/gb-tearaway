@@ -243,22 +243,23 @@ export default function EditDispatchPage() {
         onSelectSlot={setSelectedSlotId}
         onChangeSlots={setSlots}
         onChangePaperSize={onPaperSize}
+        actions={
+          <div className="mt-6 flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              className="btn-primary"
+              disabled={busy}
+              onClick={() => void onSave().then((ok) => ok && router.push("/app"))}
+            >
+              {busy ? "Saving…" : "Save & back to dashboard"}
+            </button>
+            <button type="button" className="btn-secondary" disabled={busy} onClick={() => void onSave()}>
+              {busy ? "Saving…" : "Save"}
+            </button>
+            {status ? <span className="text-sm text-ink-soft">{status}</span> : null}
+          </div>
+        }
       />
-
-      <div className="mt-8 flex flex-wrap items-center gap-3">
-        <button
-          type="button"
-          className="btn-primary"
-          disabled={busy}
-          onClick={() => void onSave().then((ok) => ok && router.push("/app"))}
-        >
-          {busy ? "Saving…" : "Save & back to dashboard"}
-        </button>
-        <button type="button" className="btn-secondary" disabled={busy} onClick={() => void onSave()}>
-          {busy ? "Saving…" : "Save"}
-        </button>
-        {status ? <span className="text-sm text-ink-soft">{status}</span> : null}
-      </div>
 
       {/* PREVIEW — opt-in */}
       <div className="mt-10 border-t border-rule/60 pt-6">
