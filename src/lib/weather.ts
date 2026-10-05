@@ -185,6 +185,32 @@ export function mockWeather(age: AgeBand, place: string): WeatherSnapshot {
   };
 }
 
+/**
+ * fetch with an abort timeout + one retry. The morning email render fires ~9
+ * Haiku calls + 4 news feeds + Wikipedia alongside this, so a transient slow/
+ * failed weather call used to silently fall back to MOCK (fake) temps — which
+ * is how a "high in the 50s" printed on a 70° day. Retrying a live call beats
+ * fabricating a forecast.
+ */
+async function fetchJsonResilient(
+  url: string,
+  revalidate: number,
+  timeoutMs = 7000,
+): Promise<Response | null> {
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const ctl = new AbortController();
+    const timer = setTimeout(() => ctl.abort(), timeoutMs);
+    try {
+      const res = await fetch(url, { next: { revalidate }, signal: ctl.signal });
+      clearTimeout(timer);
+      if (res.ok) return res;
+    } catch {
+      clearTimeout(timer);
+    }
+  }
+  return null;
+}
+
 interface Geo {
   name: string;
   latitude: number;
@@ -195,10 +221,11 @@ async function geocodeZip(zip: string): Promise<Geo | null> {
   const clean = zip.trim().slice(0, 10);
   if (!/^\d{5}(-\d{4})?$/.test(clean)) return null;
   try {
-    const res = await fetch(`https://api.zippopotam.us/us/${clean.slice(0, 5)}`, {
-      next: { revalidate: 86400 * 30 },
-    });
-    if (!res.ok) return null;
+    const res = await fetchJsonResilient(
+      `https://api.zippopotam.us/us/${clean.slice(0, 5)}`,
+      86400 * 30,
+    );
+    if (!res) return null;
     const json = (await res.json()) as {
       places?: {
         latitude: string;
@@ -224,8 +251,8 @@ async function geocodeCity(city: string): Promise<Geo | null> {
   if (q.length < 2) return null;
   try {
     const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=1&language=en&format=json`;
-    const res = await fetch(url, { next: { revalidate: 86400 * 7 } });
-    if (!res.ok) return null;
+    const res = await fetchJsonResilient(url, 86400 * 7);
+    if (!res) return null;
     const json = (await res.json()) as {
       results?: {
         name: string;
@@ -269,10 +296,10 @@ export async function fetchWeather(opts: {
       forecast_days: "7",
     });
     // Cache ~30m so parent preview refreshes don't burn Open-Meteo quota.
-    const res = await fetch(`https://api.open-meteo.com/v1/forecast?${params}`, {
-      next: { revalidate: 1800 },
-    });
-    if (!res.ok) return mockWeather(age, geo.name);
+    // Resilient (timeout + retry) so a transient blip during the heavy morning
+    // render doesn't drop a real location to fabricated mock temps.
+    const res = await fetchJsonResilient(`https://api.open-meteo.com/v1/forecast?${params}`, 1800);
+    if (!res) return mockWeather(age, geo.name);
     const json = (await res.json()) as {
       current?: { temperature_2m?: number; weather_code?: number };
       hourly?: {
