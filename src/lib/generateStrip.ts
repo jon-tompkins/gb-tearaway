@@ -32,7 +32,6 @@ import type { LiveHistoryEntry } from "./news/history-live";
 import type { SportsTeamResult } from "./sports";
 import { eventsForToday, formatEventLine } from "./content/stubs";
 import { mockStocks } from "./stocks";
-import { mockWeather } from "./weather";
 import { generateMaze, mazeToSvg } from "./puzzles/maze";
 import { generateSudoku, sudokuToSvg } from "./puzzles/sudoku";
 import { generateBattleship, battleshipToSvg, battleshipSolutionText } from "./puzzles/battleship";
@@ -48,7 +47,7 @@ import { bandFromDifficulty, clampDifficulty, defaultDifficultyForBand } from ".
 export interface GenerateOptions {
   nonce?: number;
   at?: Date;
-  weather?: WeatherSnapshot;
+  weather?: WeatherSnapshot | null;
   dateISO?: string;
   /** Live calendar events (from the parent's selected Google calendar). */
   events?: CalendarEvent[];
@@ -279,11 +278,19 @@ export function generateStrip(
       continue;
     }
     if (moduleId === "weather") {
-      const place =
-        settings.weatherCity || settings.weatherZip || "home";
-      const weather =
-        opts.weather ??
-        mockWeather(band, place);
+      const weather = opts.weather;
+      // No fabricated forecast: if the live fetch failed (null/absent), print an
+      // honest note rather than fake temps. The demo path still supplies mock.
+      if (!weather) {
+        sections.push({
+          id: "weather",
+          moduleId,
+          title: meta.name,
+          kind: "text",
+          lines: ["Forecast unavailable this morning.", "The live weather service couldn’t be reached."],
+        });
+        continue;
+      }
       const tempLine =
         weather.tempF != null
           ? `Now ${weather.tempF}°F${

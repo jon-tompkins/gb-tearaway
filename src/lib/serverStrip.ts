@@ -43,6 +43,8 @@ export async function buildJobForKid(
           zip: settings.weatherZip,
           timezone: kid.timezone || settings.timezone,
           ageBand: kid.ageBand,
+          // Only the signed-out marketing demo may show fabricated temps.
+          allowMock: userKey === DEMO_KEY,
         })
       : Promise.resolve(undefined),
     gatherDailyNews(pool, { city: settings.weatherCity }),

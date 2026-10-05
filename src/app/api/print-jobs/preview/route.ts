@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { generateStrip } from "@/lib/generateStrip";
-import { getActiveKid, getSettings, readStore } from "@/lib/store";
+import { DEMO_KEY, getActiveKid, getSettings, readStore } from "@/lib/store";
 import { currentUserKey } from "@/lib/userKey";
 import { fetchWeather } from "@/lib/weather";
 import { fetchGoogleCalendarEvents } from "@/lib/googleCalendar";
@@ -17,7 +17,8 @@ export const runtime = "nodejs";
 
 /** Generate today's strip for dashboard preview (does not persist / does not advance cursors). */
 export async function GET() {
-  const store = await readStore(await currentUserKey());
+  const userKey = await currentUserKey();
+  const store = await readStore(userKey);
   const kid = await getActiveKid(store);
   if (!kid) {
     return NextResponse.json({ error: "No kid profile" }, { status: 404 });
@@ -34,6 +35,7 @@ export async function GET() {
       zip: settings.weatherZip,
       timezone: kid.timezone || settings.timezone,
       ageBand: kid.ageBand,
+      allowMock: userKey === DEMO_KEY,
     });
   }
 

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { generateStrip } from "@/lib/generateStrip";
-import { getActiveKid, getSettings, readStore, savePrintJob, writeStore } from "@/lib/store";
+import { DEMO_KEY, getActiveKid, getSettings, readStore, savePrintJob, writeStore } from "@/lib/store";
 import { currentUserKey } from "@/lib/userKey";
 import { fetchWeather } from "@/lib/weather";
 import { gatherDailyNews } from "@/lib/news/daily";
@@ -36,6 +36,7 @@ export async function POST() {
       zip: settings.weatherZip,
       timezone: kid.timezone || settings.timezone,
       ageBand: kid.ageBand,
+      allowMock: userKey === DEMO_KEY,
     });
   }
 

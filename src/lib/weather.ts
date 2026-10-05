@@ -276,14 +276,22 @@ export async function fetchWeather(opts: {
   city?: string;
   timezone?: string;
   ageBand?: AgeBand;
-}): Promise<WeatherSnapshot> {
+  /**
+   * When live weather is unavailable, return fabricated "demo" temps instead of
+   * null. Only the signed-out marketing demo should allow this — a real dispatch
+   * must never print a fake forecast (returns null → caller prints "unavailable").
+   */
+  allowMock?: boolean;
+}): Promise<WeatherSnapshot | null> {
   const age = opts.ageBand ?? "7-9";
   const placeGuess = (opts.city || opts.zip || "home").trim();
+  const mockOr = (label: string): WeatherSnapshot | null =>
+    opts.allowMock ? mockWeather(age, label) : null;
   try {
     const geo =
       (opts.zip?.trim() ? await geocodeZip(opts.zip) : null) ||
       (opts.city?.trim() ? await geocodeCity(opts.city) : null);
-    if (!geo) return mockWeather(age, placeGuess);
+    if (!geo) return mockOr(placeGuess);
 
     const params = new URLSearchParams({
       latitude: String(geo.latitude),
@@ -299,7 +307,7 @@ export async function fetchWeather(opts: {
     // Resilient (timeout + retry) so a transient blip during the heavy morning
     // render doesn't drop a real location to fabricated mock temps.
     const res = await fetchJsonResilient(`https://api.open-meteo.com/v1/forecast?${params}`, 1800);
-    if (!res) return mockWeather(age, geo.name);
+    if (!res) return mockOr(geo.name);
     const json = (await res.json()) as {
       current?: { temperature_2m?: number; weather_code?: number };
       hourly?: {
@@ -317,7 +325,7 @@ export async function fetchWeather(opts: {
       };
       error?: boolean;
     };
-    if (json.error) return mockWeather(age, geo.name);
+    if (json.error) return mockOr(geo.name);
     const periods = buildPeriods(json.hourly, json.daily?.time?.[0]);
     const daily = buildDaily(json.daily ?? {});
 
@@ -349,6 +357,6 @@ export async function fetchWeather(opts: {
       daily,
     };
   } catch {
-    return mockWeather(age, placeGuess);
+    return mockOr(placeGuess);
   }
 }
