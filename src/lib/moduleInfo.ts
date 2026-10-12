@@ -112,7 +112,7 @@ export const MODULE_INFO: Record<ModuleId, ModuleInfo> = {
   // Kid-friendly news — live RSS + AI kid-safe rewrite, no fabricated fallback
   news_world: {
     source:
-      "Real headlines (BBC Science & Environment) rewritten kid-safe by AI and cached daily. If nothing is kid-safe today, the card simply doesn't print — never a made-up story.",
+      "Real headlines from around the world (Good News Network, Mongabay, Science News Explores, Smithsonian, NASA) rewritten kid-safe by AI and cached daily. If nothing is kid-safe today, the card simply doesn't print — never a made-up story.",
     config: ["No setup — always real and kid-safe."],
   },
   news_national: {

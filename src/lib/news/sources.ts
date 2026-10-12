@@ -11,9 +11,18 @@ export const NEWS_FEEDS: Partial<
 > = {
   // Feeds that skew to genuinely kid-appropriate real news (science, nature,
   // discovery, positive/community) so the kid-safe filter keeps plenty.
+  // Global mix rather than one outlet: BBC's world feed is almost all hard news
+  // (filtered out) and its science feed skews UK, so the card read as UK news.
   news_world: {
-    url: "https://feeds.bbci.co.uk/news/science_and_environment/rss.xml",
-    label: "Science & Environment",
+    url: [
+      "https://www.goodnewsnetwork.org/category/news/world/feed/",
+      "https://news.mongabay.com/feed/",
+      "https://www.snexplores.org/feed",
+      "https://www.smithsonianmag.com/rss/latest_articles/",
+      "https://www.nasa.gov/news-release/feed/",
+    ],
+    label: "Around the World",
+    hint: "This is the WORLD news card. Pick stories from as many DIFFERENT countries and continents as you can — no more than one or two from any single country, and do not let the US or UK dominate. Always name the country in the location. Return at most 10 items.",
   },
   news_national: { url: "https://www.goodnewsnetwork.org/feed/", label: "Good News" },
   news_tech: { url: "https://feeds.bbci.co.uk/news/technology/rss.xml", label: "Technology" },
