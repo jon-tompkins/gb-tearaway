@@ -101,10 +101,10 @@ A fact may list more than one band.
 
 Return ONLY minified JSON: {"facts":[{"fact","extra","bands"}]}. No prose, no markdown.`;
 
-async function generateJokes(): Promise<LiveJoke[]> {
+async function generateJokes(avoid: string[]): Promise<LiveJoke[]> {
   if (!process.env.ANTHROPIC_API_KEY) return [];
   try {
-    const obj = jsonObject(await haiku(JOKE_SYSTEM, "Write today's jokes."));
+    const obj = jsonObject(await haiku(JOKE_SYSTEM, userMessage("Write today's jokes.", avoid)));
     const arr = obj?.jokes;
     if (!Array.isArray(arr)) return [];
     const out: LiveJoke[] = [];
@@ -121,10 +121,10 @@ async function generateJokes(): Promise<LiveJoke[]> {
   }
 }
 
-async function generateFacts(): Promise<LiveFact[]> {
+async function generateFacts(avoid: string[]): Promise<LiveFact[]> {
   if (!process.env.ANTHROPIC_API_KEY) return [];
   try {
-    const obj = jsonObject(await haiku(FACT_SYSTEM, "Write today's fun facts."));
+    const obj = jsonObject(await haiku(FACT_SYSTEM, userMessage("Write today's fun facts.", avoid)));
     const arr = obj?.facts;
     if (!Array.isArray(arr)) return [];
     const out: LiveFact[] = [];
@@ -191,10 +191,10 @@ Spread across bands: "4-6" simple/obvious, "7-9" light wordplay, "10-12" clevere
 
 Return ONLY minified JSON: {"riddles":[{"question","answer","bands"}]}. No prose, no markdown.`;
 
-async function generateWords(): Promise<LiveWord[]> {
+async function generateWords(avoid: string[]): Promise<LiveWord[]> {
   if (!process.env.ANTHROPIC_API_KEY) return [];
   try {
-    const obj = jsonObject(await haiku(WORD_SYSTEM, "Choose today's words of the day."));
+    const obj = jsonObject(await haiku(WORD_SYSTEM, userMessage("Choose today's words of the day.", avoid)));
     const arr = obj?.words;
     if (!Array.isArray(arr)) return [];
     const out: LiveWord[] = [];
@@ -219,10 +219,10 @@ async function generateWords(): Promise<LiveWord[]> {
   }
 }
 
-async function generateSpanish(): Promise<LiveSpanish[]> {
+async function generateSpanish(avoid: string[]): Promise<LiveSpanish[]> {
   if (!process.env.ANTHROPIC_API_KEY) return [];
   try {
-    const obj = jsonObject(await haiku(SPANISH_SYSTEM, "Choose today's Spanish words."));
+    const obj = jsonObject(await haiku(SPANISH_SYSTEM, userMessage("Choose today's Spanish words.", avoid)));
     const arr = obj?.words;
     if (!Array.isArray(arr)) return [];
     const out: LiveSpanish[] = [];
@@ -245,10 +245,10 @@ async function generateSpanish(): Promise<LiveSpanish[]> {
   }
 }
 
-async function generateScramble(): Promise<LiveScramble[]> {
+async function generateScramble(avoid: string[]): Promise<LiveScramble[]> {
   if (!process.env.ANTHROPIC_API_KEY) return [];
   try {
-    const obj = jsonObject(await haiku(SCRAMBLE_SYSTEM, "Choose today's scramble words."));
+    const obj = jsonObject(await haiku(SCRAMBLE_SYSTEM, userMessage("Choose today's scramble words.", avoid)));
     const arr = obj?.words;
     if (!Array.isArray(arr)) return [];
     const out: LiveScramble[] = [];
@@ -266,10 +266,10 @@ async function generateScramble(): Promise<LiveScramble[]> {
   }
 }
 
-async function generateRiddles(): Promise<LiveRiddle[]> {
+async function generateRiddles(avoid: string[]): Promise<LiveRiddle[]> {
   if (!process.env.ANTHROPIC_API_KEY) return [];
   try {
-    const obj = jsonObject(await haiku(RIDDLE_SYSTEM, "Write today's riddles."));
+    const obj = jsonObject(await haiku(RIDDLE_SYSTEM, userMessage("Write today's riddles.", avoid)));
     const arr = obj?.riddles;
     if (!Array.isArray(arr)) return [];
     const out: LiveRiddle[] = [];
@@ -286,12 +286,56 @@ async function generateRiddles(): Promise<LiveRiddle[]> {
   }
 }
 
-async function getDaily<T>(key: string, gen: () => Promise<T[]>): Promise<T[]> {
+/** How many previous days of printed content a new batch must not repeat. */
+const NO_REPEAT_DAYS = 21;
+
+const norm = (t: string) => t.toLowerCase().replace(/[^a-z0-9áéíóúñü]+/g, " ").trim();
+
+/**
+ * The same prompt every morning gets nearly the same answers back (two weeks of
+ * "fresh" jokes were ~38 distinct ones). So each request carries the date and
+ * the recently printed items, and anything repeated anyway is dropped below.
+ */
+function userMessage(base: string, avoid: string[]): string {
+  const head = `${base} Today is ${utcDate()}. Make this batch different from other days — vary the topics and avoid the most famous, over-used examples.`;
+  if (!avoid.length) return head;
+  return `${head}\n\nAlready printed recently — do NOT reuse or lightly reword any of these:\n${avoid
+    .slice(0, 150)
+    .map((a) => `- ${a}`)
+    .join("\n")}`;
+}
+
+function priorDates(n: number): string[] {
+  const out: string[] = [];
+  const now = Date.now();
+  for (let i = 1; i <= n; i++) out.push(new Date(now - i * 86_400_000).toISOString().slice(0, 10));
+  return out;
+}
+
+async function getDaily<T>(
+  key: string,
+  gen: (avoid: string[]) => Promise<T[]>,
+  keyOf: (item: T) => string,
+): Promise<T[]> {
   const date = utcDate();
   const cacheKey = `${key}:${date}`;
   const cached = await loadPayload<{ date: string; items: T[] }>(cacheKey);
   if (cached?.date === date) return cached.items;
-  const items = await gen();
+
+  const prior = await Promise.all(
+    priorDates(NO_REPEAT_DAYS).map((d) => loadPayload<{ items?: T[] }>(`${key}:${d}`)),
+  );
+  const recent = prior.flatMap((p) => p?.items ?? []).map(keyOf);
+  const seen = new Set(recent.map(norm));
+
+  const generated = await gen(Array.from(new Set(recent)));
+  const items: T[] = [];
+  for (const item of generated) {
+    const k = norm(keyOf(item));
+    if (!k || seen.has(k)) continue; // repeated anyway → drop it
+    seen.add(k);
+    items.push(item);
+  }
   // Cache even an empty result so a bad model day doesn't retry all day; the
   // caller simply falls back to the static bank when items is empty.
   await savePayload(cacheKey, { date, items });
@@ -311,12 +355,12 @@ export async function gatherDailyExtras(pool: ModuleId[]): Promise<DailyExtras |
   if (!Object.values(want).some(Boolean)) return undefined;
 
   const [jokes, facts, words, spanish, scramble, riddles] = await Promise.all([
-    want.jokes ? getDaily("jokes", generateJokes) : Promise.resolve<LiveJoke[]>([]),
-    want.facts ? getDaily("facts", generateFacts) : Promise.resolve<LiveFact[]>([]),
-    want.words ? getDaily("words", generateWords) : Promise.resolve<LiveWord[]>([]),
-    want.spanish ? getDaily("spanish", generateSpanish) : Promise.resolve<LiveSpanish[]>([]),
-    want.scramble ? getDaily("scramble", generateScramble) : Promise.resolve<LiveScramble[]>([]),
-    want.riddles ? getDaily("riddles", generateRiddles) : Promise.resolve<LiveRiddle[]>([]),
+    want.jokes ? getDaily("jokes", generateJokes, (j) => `${j.setup} ${j.punchline}`) : Promise.resolve<LiveJoke[]>([]),
+    want.facts ? getDaily("facts", generateFacts, (f) => f.fact) : Promise.resolve<LiveFact[]>([]),
+    want.words ? getDaily("words", generateWords, (w) => w.word) : Promise.resolve<LiveWord[]>([]),
+    want.spanish ? getDaily("spanish", generateSpanish, (w) => w.spanish) : Promise.resolve<LiveSpanish[]>([]),
+    want.scramble ? getDaily("scramble", generateScramble, (w) => w.word) : Promise.resolve<LiveScramble[]>([]),
+    want.riddles ? getDaily("riddles", generateRiddles, (r) => r.question) : Promise.resolve<LiveRiddle[]>([]),
   ]);
 
   const out: DailyExtras = {};

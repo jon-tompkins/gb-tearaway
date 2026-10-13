@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { generateStrip } from "@/lib/generateStrip";
-import { DEMO_KEY, getActiveKid, getSettings, readStore, savePrintJob, writeStore } from "@/lib/store";
+import { DEMO_KEY, getActiveKid, getSettings, readStore, savePrintJob } from "@/lib/store";
 import { currentUserKey } from "@/lib/userKey";
 import { fetchWeather } from "@/lib/weather";
 import { gatherDailyNews } from "@/lib/news/daily";
@@ -9,7 +9,6 @@ import { gatherSports } from "@/lib/sports";
 import { gatherDailyExtras } from "@/lib/content/live-extras";
 import { dateISOInZone } from "@/lib/dates";
 import {
-  advanceInOrderCursors,
   ensureKidSlots,
   flattenSlotModules,
 } from "@/lib/slots";
@@ -49,16 +48,8 @@ export async function POST() {
   job.status = "queued";
   await savePrintJob(userKey, job);
 
-  // Then advance for the next run
-  const store2 = await readStore(userKey);
-  const idx = store2.kids.findIndex((k) => k.id === kid.id);
-  if (idx >= 0) {
-    store2.kids[idx] = {
-      ...ensureKidSlots(store2.kids[idx]),
-      slots: advanceInOrderCursors(ensureKidSlots(store2.kids[idx]).slots),
-    };
-    await writeStore(userKey, store2);
-  }
+  // In-order cards rotate by calendar day (see resolveSlotModule), so printing
+  // must not also bump the cursor — that would cancel tomorrow's step.
 
   return NextResponse.json(job);
 }

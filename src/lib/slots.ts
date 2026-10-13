@@ -186,9 +186,13 @@ export function resolveSlotModule(
     const rng = mulberry32(seed);
     return pick(rng, ids);
   }
-  // in_order
+  // in_order: rotate one step per calendar day. The stored cursor is only an
+  // offset (bumped by "Shuffle"); relying on it alone froze the rotation,
+  // because the scheduled morning email never advances it.
   const cursor = slot.cursor ?? 0;
-  return ids[cursor % ids.length];
+  const day = Math.floor(Date.parse(`${opts.dateISO}T00:00:00Z`) / 86_400_000);
+  const step = Number.isFinite(day) ? day : 0;
+  return ids[(((step + cursor) % ids.length) + ids.length) % ids.length];
 }
 
 /**
