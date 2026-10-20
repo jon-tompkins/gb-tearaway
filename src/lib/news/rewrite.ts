@@ -43,7 +43,7 @@ For each story:
 
 Never invent details that aren't in the text. Never pad with feel-good filler — banned: "amazing", "incredible", "magical", "super", "awesome", "Did you know", "forever", "helping everyone", "making the world a better place", and sentences that only say the story is good or exciting. If a story has too little real information to write 2 specific sentences, or turns out not to be kid-safe, leave it out.
 
-Return ONLY minified JSON: {"items":[{"story","headline","location","blurb","wonder","bands"}]} where "story" is the story number you wrote it from. No prose, no markdown. If nothing works, {"items":[]}.`;
+Return ONLY minified JSON: {"items":[{"story","headline","location","blurb","wonder","bands"}]} where "story" is the plain number (e.g. 3) of the story you wrote it from. No prose, no markdown. If nothing works, {"items":[]}.`;
 
 const CHECK_SYSTEM = `You are the fact-checker for a children's newspaper. For each numbered draft you get the source text it was written from. Check every claim in the draft's headline, location, blurb and wonder against that source text.
 
@@ -51,7 +51,7 @@ If a FEED NOTE is given below, apply its rules for what counts as kid-safe (it m
 
 A draft PASSES only if every specific (numbers, names, places, dates, what happened, and its status — proposed vs done, tested vs proven) is supported by the source text, and it is kid-safe. Minor simplification for children is fine; adding facts that aren't in the source is not.
 
-Return ONLY minified JSON: {"checks":[{"story":<number>,"pass":true|false,"problem":"<short reason if it fails, else empty>"}]}.`;
+Return ONLY minified JSON: {"checks":[{"story":<draft number, e.g. 3>,"pass":true|false,"problem":"<short reason if it fails, else empty>"}]}.`;
 
 async function ask(system: string, user: string, effort: "low" | "medium"): Promise<string> {
   // Opus 5.5 always thinks and that counts against max_tokens — stream with a
@@ -132,7 +132,8 @@ function parseItems(text: string): { story: number; item: LiveNewsEntry }[] {
       ? (o.bands.filter((b) => BANDS.includes(b as AgeBand)) as AgeBand[])
       : [];
     out.push({
-      story: Number(o.story),
+      // Accept 3, "3" or "Story 3" — a mislabeled number used to drop the story.
+      story: Number(String(o.story ?? "").match(/\d+/)?.[0] ?? NaN),
       item: {
         headline,
         location: tidyLocation(str(o.location)),
@@ -199,7 +200,8 @@ export async function rewriteKidSafe(
     const verdict = new Map<number, { pass: boolean; problem: string }>();
     if (Array.isArray(checks)) {
       for (const c of checks as Record<string, unknown>[]) {
-        verdict.set(Number(c.story), { pass: c.pass === true, problem: str(c.problem) });
+        const n = Number(String(c.story ?? "").match(/\d+/)?.[0] ?? NaN);
+        verdict.set(n, { pass: c.pass === true, problem: str(c.problem) });
       }
     }
     const dropped: DroppedStory[] = [];
