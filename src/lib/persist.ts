@@ -112,6 +112,26 @@ export async function deletePayload(key: string): Promise<void> {
   await fs.rm(filePath(key), { force: true }).catch(() => {});
 }
 
+/**
+ * Small fields of every payload whose key starts with `prefix` (no big bodies).
+ * `fields` are top-level keys of the stored JSON. Supabase only; [] otherwise.
+ */
+export async function listPayloadFields(
+  prefix: string,
+  fields: string[],
+  limit = 60,
+): Promise<Array<{ key: string } & Record<string, string | null>>> {
+  if (!(SUPA_URL && SUPA_KEY)) return [];
+  const sel = ["user_key", ...fields.map((f) => `${f}:state->>${f}`)].join(",");
+  const res = await fetch(
+    `${SUPA_URL}/rest/v1/${TABLE}?user_key=like.${encodeURIComponent(`${prefix}*`)}&select=${sel}&order=user_key.desc&limit=${limit}`,
+    { headers: { apikey: SUPA_KEY, Authorization: `Bearer ${SUPA_KEY}` }, cache: "no-store" },
+  );
+  if (!res.ok) return [];
+  const rows = (await res.json()) as Array<Record<string, string | null>>;
+  return rows.map(({ user_key, ...rest }) => ({ key: user_key ?? "", ...rest }));
+}
+
 /** Load a JSON payload previously stored with savePayload. */
 export async function loadPayload<T>(key: string): Promise<T | null> {
   return (await loadRaw(key)) as T | null;

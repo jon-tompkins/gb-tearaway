@@ -14,7 +14,8 @@ const CONCURRENCY = 20;
 const LAUNCH_BUDGET_MS = 200_000;
 
 /**
- * Delivery dispatcher — runs every 5 minutes. Finds every email dispatch whose
+ * Delivery dispatcher — runs every 5 minutes. Finds every dispatch (email or
+ * in-app) whose
  * local delivery hour has passed and that hasn't been sent today, and hands
  * each one to its own /api/cron/send-one invocation (PDF render + send), up to
  * CONCURRENCY at a time. One run used to send them all in a row inside a 60s
@@ -31,8 +32,8 @@ export async function GET(req: Request) {
   let skipped = 0;
   for (const { userKey, state } of await listUserStates()) {
     for (const kid of state.kids) {
-      const { emailable, due } = dueInfo(kid, state);
-      if (emailable && (due || force)) jobs.push({ userKey, kidId: kid.id });
+      const { delivery, due } = dueInfo(kid, state);
+      if (delivery && (due || force)) jobs.push({ userKey, kidId: kid.id });
       else skipped++;
     }
   }
@@ -77,6 +78,7 @@ export async function GET(req: Request) {
   return NextResponse.json({
     due: jobs.length,
     sent: sent.length,
+    savedInApp: results.filter((r) => r.result.status === "saved").length,
     withPdf: sent.filter((r) => r.result.status === "sent" && r.result.withPdf).length,
     skipped: skipped + results.filter((r) => r.result.status === "skipped").length,
     deferred,

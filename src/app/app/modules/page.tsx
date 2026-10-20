@@ -31,6 +31,7 @@ export default function EditDispatchPage() {
   const [ageBand, setAgeBand] = useState<AgeBand>("7-9");
   const [deliveryTime, setDeliveryTime] = useState("07:00");
   const [deliveryEmail, setDeliveryEmail] = useState("");
+  const [deliveryMethod, setDeliveryMethod] = useState<"email" | "app">("email");
 
   // Layout
   const [paperSize, setPaperSize] = useState<PaperSize>("strip58");
@@ -58,6 +59,7 @@ export default function EditDispatchPage() {
       setAgeBand(activeKid.ageBand);
       setDeliveryTime(activeKid.printTime || "07:00");
       setDeliveryEmail(activeKid.deliveryEmail || "");
+      setDeliveryMethod(activeKid.deliveryMethod === "app" ? "app" : "email");
       const size = activeKid.paperSize || "strip58";
       const nextSlots = resizeSlotsForPaper(activeKid.slots || [], size);
       setPaperSize(size);
@@ -115,6 +117,7 @@ export default function EditDispatchPage() {
           ageBand,
           printTime: deliveryTime,
           deliveryEmail: deliveryEmail.trim() || undefined,
+          deliveryMethod,
           paperSize,
           slots,
           modules: flattenSlotModules(slots),
@@ -221,16 +224,25 @@ export default function EditDispatchPage() {
             <input id="dt" type="time" value={deliveryTime} onChange={(e) => setDeliveryTime(e.target.value)} />
           </div>
           <div className="field">
-            <label htmlFor="de">Send to</label>
-            <input
-              id="de"
-              type="email"
-              value={deliveryEmail}
-              onChange={(e) => setDeliveryEmail(e.target.value)}
-              placeholder="account email"
-              autoComplete="email"
-            />
+            <label htmlFor="dmeth">Delivery</label>
+            <select id="dmeth" value={deliveryMethod} onChange={(e) => setDeliveryMethod(e.target.value as "email" | "app")}>
+              <option value="email">Email it each morning</option>
+              <option value="app">In the app — I’ll print from the dashboard</option>
+            </select>
           </div>
+          {deliveryMethod === "email" ? (
+            <div className="field">
+              <label htmlFor="de">Send to</label>
+              <input
+                id="de"
+                type="email"
+                value={deliveryEmail}
+                onChange={(e) => setDeliveryEmail(e.target.value)}
+                placeholder="account email"
+                autoComplete="email"
+              />
+            </div>
+          ) : null}
         </div>
       </div>
 

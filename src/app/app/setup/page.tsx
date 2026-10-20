@@ -23,7 +23,7 @@ export default function SetupPage() {
   const [name, setName] = useState("");
   const [ageBand, setAgeBand] = useState<AgeBand>("7-9");
   const [deliveryTime, setDeliveryTime] = useState(DEFAULT_SETTINGS.printTime);
-  const [deliveryMethod] = useState<DeliveryMethod>("email");
+  const [deliveryMethod, setDeliveryMethod] = useState<DeliveryMethod>("email");
   const [deliveryEmail, setDeliveryEmail] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -134,7 +134,7 @@ export default function SetupPage() {
             </div>
             <div className="field">
               <label htmlFor="dm">Delivery method</label>
-              <select id="dm" value={deliveryMethod} disabled>
+              <select id="dm" value={deliveryMethod} onChange={(e) => setDeliveryMethod(e.target.value as DeliveryMethod)}>
                 {DELIVERY_METHODS.map((m) => (
                   <option key={m.id} value={m.id} disabled={!m.enabled}>
                     {m.label}

@@ -48,10 +48,11 @@ export type SlotMode = "single" | "in_order" | "random";
  * Only "email" is wired for now (defaults to the account-holder email);
  * "print" (local thermal) and "sms" are reserved for later.
  */
-export type DeliveryMethod = "email" | "print" | "sms";
+export type DeliveryMethod = "email" | "app" | "print" | "sms";
 
 export const DELIVERY_METHODS: { id: DeliveryMethod; label: string; blurb: string; enabled: boolean }[] = [
   { id: "email", label: "Email", blurb: "Sent to the account-holder inbox each morning.", enabled: true },
+  { id: "app", label: "In the app", blurb: "Ready on your dashboard each morning to print — no email.", enabled: true },
   { id: "print", label: "Thermal print", blurb: "Print locally on a 58mm strip.", enabled: false },
   { id: "sms", label: "Text message", blurb: "A link by SMS.", enabled: false },
 ];

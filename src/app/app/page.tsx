@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AppShell } from "@/components/AppNav";
+import { RunsPanel } from "@/components/RunsPanel";
 import { useAppStore } from "@/lib/clientStore";
 import { formatTime12, nextPrintLabel } from "@/lib/dates";
 import { moduleById } from "@/lib/modules";
@@ -106,8 +107,12 @@ export default function DashboardPage() {
               <p className="text-xs text-ink-soft">
                 {(kid.deliveryMethod ?? "email") === "email"
                   ? `Email → ${kid.deliveryEmail || "account email"}`
-                  : kid.deliveryMethod}
+                  : kid.deliveryMethod === "app"
+                    ? "In the app — print it from here each morning"
+                    : kid.deliveryMethod}
               </p>
+
+              <RunsPanel kid={kid} timezone={store.settings.timezone} />
 
               <div className="mt-1 flex flex-wrap gap-2">
                 <button
@@ -117,15 +122,6 @@ export default function DashboardPage() {
                 >
                   Edit
                 </button>
-                <a
-                  className="btn-secondary text-sm"
-                  href={`/api/render?kid=${kid.id}&format=pdf`}
-                  target="_blank"
-                  rel="noreferrer"
-                  title="Opens a print-ready page — choose “Save as PDF”."
-                >
-                  Save as PDF
-                </a>
               </div>
             </div>
           );
