@@ -101,6 +101,10 @@ const OUTLETS: Record<string, string> = {
   "purexbox.com": "Pure Xbox",
   "gamesradar.com": "GamesRadar",
   "news.google.com": "Google News",
+  "sciencedaily.com": "ScienceDaily",
+  "spectrum.ieee.org": "IEEE Spectrum",
+  "popsci.com": "Popular Science",
+  "newatlas.com": "New Atlas",
 };
 
 function outletName(url?: string): string {
