@@ -36,7 +36,7 @@ ${SAFETY}
 
 For each story:
 - headline: at most 8 words, concrete and specific (who/what did what). No puns, no exclamation marks.
-- location: where it happened — "City, Country", "City, State", or just the country/region when no city is given. Never repeat a word ("Turkey, Turkey" is wrong — write "Turkey").
+- location: where it happened — "City, Country", "City, State", or just the country/region when no city is given; for online/game/global stories with no place, "Worldwide". Never repeat a word ("Turkey, Turkey" is wrong — write "Turkey").
 - blurb: 2-3 short sentences a 7-year-old can read. Lead with the most surprising concrete fact. Include at least two specific details FROM THE ARTICLE (a number, a name, a place, what exactly was found or built). State status accurately — if something was proposed, voted on, or is being tested, say so; don't present it as finished.
 - wonder: one extra true detail FROM THE ARTICLE that makes it more interesting, as a plain sentence. If the article has no extra detail worth adding, use "". Do NOT bring in general trivia from outside the article.
 - bands: which of "4-6","7-9","10-12" can follow it.
@@ -49,7 +49,9 @@ const CHECK_SYSTEM = `You are the fact-checker for a children's newspaper. For e
 
 If a FEED NOTE is given below, apply its rules for what counts as kid-safe (it may allow things the general rules would drop, e.g. ordinary video-game news).
 
-A draft PASSES only if every specific (numbers, names, places, dates, what happened, and its status — proposed vs done, tested vs proven) is supported by the source text, and it is kid-safe. Minor simplification for children is fine; adding facts that aren't in the source is not.
+FAIL a draft only for a real problem: a number, name, date or event that is wrong or not in the source; a claim that something is finished/proven when the source says it is proposed/being tested; an invented detail; or content that isn't kid-safe.
+
+Do NOT fail a draft for: simplified wording for children, paraphrase, a harmless choice of words, or a location that is obviously right but not spelled out (e.g. the home country of a well-known organization, "Worldwide" for an online game release). When in doubt about something cosmetic, pass it.
 
 Return ONLY minified JSON: {"checks":[{"story":<draft number, e.g. 3>,"pass":true|false,"problem":"<short reason if it fails, else empty>"}]}.`;
 
