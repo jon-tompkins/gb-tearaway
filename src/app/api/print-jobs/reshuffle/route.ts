@@ -30,7 +30,6 @@ export async function POST() {
   const settings = getSettings(store);
   const prev = store.nonceByKid[kid.id] ?? 0;
   const nonce = prev + 1;
-  store.nonceByKid = { ...store.nonceByKid, [kid.id]: nonce };
 
   const kidNorm = ensureKidSlots(kid);
   const pool = flattenSlotModules(kidNorm.slots);
@@ -53,15 +52,16 @@ export async function POST() {
   // Generate with current cursors (matches prior preview's slot picks + new nonce)
   const job = generateStrip(kidNorm, settings, { nonce, weather, newsByFeed, historyLive, sports, extras });
 
-  // Persist nonce + advanced in_order cursors
-  const idx = store.kids.findIndex((k) => k.id === kid.id);
+  // Persist nonce + advanced in_order cursors on a FRESH copy, so anything the
+  // parent saved while this was generating isn't overwritten.
+  const fresh = await readStore(userKey);
+  fresh.nonceByKid = { ...fresh.nonceByKid, [kid.id]: nonce };
+  const idx = fresh.kids.findIndex((k) => k.id === kid.id);
   if (idx >= 0) {
-    store.kids[idx] = {
-      ...kidNorm,
-      slots: advanceInOrderCursors(kidNorm.slots),
-    };
+    const fk = ensureKidSlots(fresh.kids[idx]);
+    fresh.kids[idx] = { ...fk, slots: advanceInOrderCursors(fk.slots) };
   }
-  await writeStore(userKey, store);
+  await writeStore(userKey, fresh);
 
   return NextResponse.json(job);
 }

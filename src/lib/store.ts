@@ -1,7 +1,7 @@
 import { promises as fs } from "fs";
 import path from "path";
 import type { AppSettings, AppState, KidProfile, PrintJob } from "./types";
-import { loadState, saveState } from "./persist";
+import { loadState, persistenceMode, saveState } from "./persist";
 import {
   DEFAULT_MODULES,
   DEFAULT_SETTINGS,
@@ -149,9 +149,11 @@ function normalize(raw: Partial<AppState> | null | undefined, allowEmpty = false
   };
 }
 
-// Per-user in-memory cache (source of truth within a warm instance). Durable
-// persistence is delegated to ./persist (Supabase when configured, else a
-// best-effort file). Signed-out visitors share the DEMO_KEY store.
+// Last-known state per user, per instance. With Supabase it is ONLY a fallback
+// for a failed read — every read goes to the database, because serverless
+// instances each kept their own copy and an old copy could be written back over
+// a newer save (how a saved ZIP code reverted). Without Supabase (local dev /
+// file mode) it stays the source of truth. Signed-out visitors share DEMO_KEY.
 const mem = new Map<string, AppState>();
 
 /** Demo store seed — the sample dispatch, so signed-out visitors see the app. */
@@ -166,9 +168,17 @@ async function seedState(): Promise<AppState> {
 
 export async function readStore(userKey: string = DEMO_KEY): Promise<AppState> {
   const cached = mem.get(userKey);
-  if (cached) return cached;
+  if (cached && persistenceMode !== "supabase") return cached;
   const allowEmpty = userKey !== DEMO_KEY;
-  const raw = await loadState(userKey);
+  let raw: AppState | null;
+  try {
+    raw = await loadState(userKey);
+  } catch (e) {
+    // Database unreachable: serve the last copy this instance saw, but never
+    // fall through to "new user" and save a blank state over the account.
+    if (cached) return cached;
+    throw e;
+  }
   let state: AppState;
   if (raw) {
     state = normalize(raw, allowEmpty);

@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
-import { writeStore } from "@/lib/store";
+import { readStore, writeStore } from "@/lib/store";
 import { listUserStates } from "@/lib/persist";
 import { partsInZone, dateISOInZone, formatStripDate } from "@/lib/dates";
 import { saveDispatchRef } from "@/lib/deliver";
 import { sendEmail, dispatchEmailHtml } from "@/lib/email";
 import { renderPdfFromUrl } from "@/lib/pdf";
+import { logEvent } from "@/lib/events";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -41,7 +42,6 @@ export async function GET(req: Request) {
 
   const users = await listUserStates();
   for (const { userKey, state } of users) {
-    let dirty = false;
     for (const kid of state.kids) {
       const method = kid.deliveryMethod ?? "email";
       const to = kid.deliveryEmail;
@@ -83,9 +83,22 @@ export async function GET(req: Request) {
           attachments,
         });
         if (ok) {
+          // Mark sent on a FRESH copy: sending takes a while (PDF render), and
+          // writing back the state loaded at the start would undo any settings
+          // the parent saved in the meantime.
+          const fresh = await readStore(userKey);
+          const fk = fresh.kids.find((k) => k.id === kid.id);
+          if (fk) {
+            fk.lastEmailedDate = localDate;
+            await writeStore(userKey, fresh);
+          }
           kid.lastEmailedDate = localDate;
-          dirty = true;
           sent++;
+          await logEvent({
+            type: "email_sent",
+            user_key: userKey,
+            meta: { kidId: kid.id, kidName: kid.name, withPdf: !!attachments, date: localDate },
+          });
           if (attachments) withPdf++;
         } else {
           errors.push(`${userKey}/${kid.id}: send failed`);
@@ -94,7 +107,6 @@ export async function GET(req: Request) {
         errors.push(`${userKey}/${kid.id}: ${e instanceof Error ? e.message : "error"}`);
       }
     }
-    if (dirty) await writeStore(userKey, state);
   }
 
   return NextResponse.json({ sent, withPdf, skipped, errors });

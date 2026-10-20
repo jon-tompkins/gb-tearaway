@@ -1,6 +1,16 @@
 import type { AgeBand, WordFindData } from "../types";
 import { mulberry32, pick, shuffle } from "../rng";
 import { wordFindConfigForDifficulty, bandFromDifficulty } from "../difficulty";
+import { WORDFIND_46 } from "../content/bank/wordfind-46";
+import { WORDFIND_79 } from "../content/bank/wordfind-79";
+import { WORDFIND_1012 } from "../content/bank/wordfind-1012";
+
+/** ~170 themed word lists (e.g. "Ocean Life"); one theme per puzzle. */
+export const WORDFIND_THEMES: { theme: string; bands: AgeBand[]; words: string[] }[] = [
+  ...WORDFIND_46,
+  ...WORDFIND_79,
+  ...WORDFIND_1012,
+];
 
 export const WORDS_46 = ["CAT", "SUN", "HAT", "DOG", "BUG", "MAP", "CUP", "BEE", "OWL", "PIG", "BAT", "EGG"];
 export const WORDS_79 = ["STAR", "FROG", "CAKE", "MOON", "BIRD", "SHIP", "TREE", "RAIN", "BOOK", "FISH", "KITE", "LEAF"];
@@ -53,7 +63,14 @@ export function generateWordFind(seed: number, band: AgeBand, difficulty?: numbe
     if (!cfg || cfg.diagonals) dirSet.push([1, -1], [-1, -1]);
   }
   const DIRS = dirSet;
-  const candidates = shuffle(rng, poolFor(poolBand));
+  // Pick today's theme, then hide words from it that fit the grid. The small
+  // fixed lists only top up a theme that runs short of placeable words.
+  const maxLen = Math.min(cols, rows);
+  const themes = WORDFIND_THEMES.filter((t) => t.bands.includes(poolBand));
+  const theme = themes.length ? pick(rng, themes) : null;
+  const themed = theme ? shuffle(rng, theme.words.filter((w) => w.length <= maxLen)) : [];
+  const candidates =
+    themed.length >= count ? themed : [...themed, ...shuffle(rng, poolFor(poolBand)).filter((w) => !themed.includes(w))];
   const grid: (string | null)[][] = Array.from({ length: rows }, () => Array.from({ length: cols }, () => null));
   const placed: string[] = [];
 
@@ -81,7 +98,7 @@ export function generateWordFind(seed: number, band: AgeBand, difficulty?: numbe
     placed.push(pick(rng, poolFor(poolBand)));
   }
 
-  return { cols, rows, grid: filled, words: placed };
+  return { cols, rows, grid: filled, words: placed, theme: themed.length >= count ? theme?.theme : undefined };
 }
 
 export function wordFindToSvg(data: WordFindData, maxWidth = 340): string {

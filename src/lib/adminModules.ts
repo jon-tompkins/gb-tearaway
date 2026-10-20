@@ -7,7 +7,7 @@ import { SCRAMBLES } from "./content/scramble";
 import { RIDDLES } from "./content/riddles";
 import { POEMS } from "./content/poems";
 import { HISTORY } from "./content/history";
-import { WORDS_46, WORDS_79, WORDS_1012 } from "./puzzles/wordfind";
+import { WORDFIND_THEMES } from "./puzzles/wordfind";
 import { US_STATES } from "./puzzles/states-data";
 import { COUNTRIES } from "./puzzles/countries-data";
 import { NEWS_FEEDS } from "./news/sources";
@@ -78,9 +78,24 @@ function cachedDays<T extends Bandish>(
     );
 }
 
-type NewsItem = { headline: string; location: string; blurb: string; wonder: string; bands: AgeBand[] };
-const newsColumns = ["Headline", "Where", "Story"];
-const newsCells = (i: NewsItem) => [i.headline, i.location, [i.blurb, i.wonder].filter(Boolean).join(" ")];
+type NewsItem = {
+  headline: string;
+  location: string;
+  blurb: string;
+  wonder: string;
+  bands: AgeBand[];
+  source?: { title: string; url?: string; outlet: string; fullText: boolean };
+};
+const newsColumns = ["Our headline", "Where", "Our story", "Original (source)", "Link"];
+const newsCells = (i: NewsItem) => [
+  i.headline,
+  i.location,
+  [i.blurb, i.wonder].filter(Boolean).join(" "),
+  i.source
+    ? `${i.source.outlet}: “${i.source.title}”${i.source.fullText ? "" : " (teaser only)"}`
+    : "(not recorded)",
+  i.source?.url ?? "",
+];
 
 function newsModule(feed: ModuleId, sourceNote: string): AdminModule {
   return {
@@ -151,17 +166,12 @@ export const ADMIN_MODULES: Record<ModuleId, AdminModule> = {
     ),
   },
   scramble: {
-    kind: "live+bank",
-    how: "Word chosen fresh each morning by AI (never repeating the last 3 weeks); the app shuffles the letters. The bank below is the backup.",
+    kind: "bank",
+    how: "Static bank. Each kid works through their age band's words one a day, in their own shuffled order; the app shuffles the letters.",
     bank: () => ({
       columns: ["Word", "Hint"],
       rows: SCRAMBLES.map((s) => ({ cells: [s.word, s.hint], bands: s.bands })),
     }),
-    recent: cachedDays<{ word: string; hint: string; bands: AgeBand[] }>(
-      (d) => `scramble:${d}`,
-      ["Word", "Hint"],
-      (s) => [s.word, s.hint],
-    ),
   },
   riddle: {
     kind: "live+bank",
@@ -252,14 +262,10 @@ export const ADMIN_MODULES: Record<ModuleId, AdminModule> = {
   dots: { kind: "generated", how: "Generated connect-the-dots shape with a caption." },
   wordfind: {
     kind: "generated",
-    how: "Grid is generated each day; the hidden words come from the small fixed lists below.",
+    how: "The grid is generated fresh each day from one theme's word list (the theme prints as the heading). Themes below; the appropriateness dial sets grid size and how many words hide.",
     bank: () => ({
-      columns: ["Word"],
-      rows: [
-        ...WORDS_46.map((w) => ({ cells: [w], bands: ["4-6"] as AgeBand[] })),
-        ...WORDS_79.map((w) => ({ cells: [w], bands: ["7-9"] as AgeBand[] })),
-        ...WORDS_1012.map((w) => ({ cells: [w], bands: ["10-12"] as AgeBand[] })),
-      ],
+      columns: ["Theme", "Words"],
+      rows: WORDFIND_THEMES.map((t) => ({ cells: [t.theme, `${t.words.length}: ${t.words.join(", ")}`], bands: t.bands })),
     }),
   },
 

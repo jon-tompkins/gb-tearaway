@@ -1,5 +1,10 @@
 import type { AgeBand } from "../types";
 import { pick } from "../rng";
+import { pickRotating, type RotateKey } from "./rotate";
+import { mergeBank } from "./mergeBank";
+import { SCRAMBLE_46 } from "./bank/scramble-46";
+import { SCRAMBLE_79 } from "./bank/scramble-79";
+import { SCRAMBLE_1012 } from "./bank/scramble-1012";
 
 export interface ScrambleItem {
   word: string;
@@ -11,7 +16,7 @@ interface ScrambleEntry extends ScrambleItem {
 }
 
 /** Age-banded word bank. Short/common for littles, longer/trickier for olders. */
-export const SCRAMBLES: ScrambleEntry[] = [
+const BASE_SCRAMBLES: ScrambleEntry[] = [
   // 4–6 — short, concrete, phonetic
   { bands: ["4-6"], word: "cat", hint: "A pet that says meow." },
   { bands: ["4-6"], word: "dog", hint: "A pet that says woof." },
@@ -141,6 +146,19 @@ export const SCRAMBLES: ScrambleEntry[] = [
   { bands: ["10-12"], word: "asteroid", hint: "A rocky object floating in space." },
   { bands: ["10-12"], word: "skeleton", hint: "All the bones in your body." },
 ];
+
+/** ~1,100 words; the same word in two files merges into one entry. */
+export const SCRAMBLES: ScrambleEntry[] = mergeBank(
+  [...BASE_SCRAMBLES, ...SCRAMBLE_46, ...SCRAMBLE_79, ...SCRAMBLE_1012],
+  (e) => e.word,
+);
+
+/** Today's scramble for a kid: walks the age band's whole bank before repeating. */
+export function pickScrambleForDay(band: AgeBand, key: RotateKey): ScrambleItem {
+  const pool = SCRAMBLES.filter((e) => e.bands.includes(band));
+  const { word, hint } = pickRotating(pool.length ? pool : SCRAMBLES, key, `scramble|${band}`);
+  return { word, hint };
+}
 
 export function pickScramble(band: AgeBand, rng: () => number): ScrambleItem {
   const pool = SCRAMBLES.filter((s) => s.bands.includes(band));

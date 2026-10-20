@@ -37,7 +37,15 @@ function DataTable({ table, band, q }: { table: Table; band?: AgeBand; q?: strin
               <tr key={i} className="border-b border-rule/50 align-top last:border-0">
                 <td className="px-3 py-2 text-right tabular-nums text-ink-soft">{i + 1}</td>
                 {r.cells.map((c, j) => (
-                  <td key={j} className="px-3 py-2 text-ink">{c}</td>
+                  <td key={j} className="px-3 py-2 text-ink">
+                    {/^https?:\/\//.test(c) ? (
+                      <a href={c} target="_blank" rel="noreferrer" className="font-semibold underline">
+                        open
+                      </a>
+                    ) : (
+                      c
+                    )}
+                  </td>
                 ))}
                 {showBands ? (
                   <td className="whitespace-nowrap px-3 py-2 text-xs text-ink-soft">{r.bands ? joinBands(r.bands) : ""}</td>

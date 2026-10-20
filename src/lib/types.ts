@@ -220,6 +220,8 @@ export interface WordFindData {
   rows: number;
   grid: string[][];
   words: string[];
+  /** The day's theme ("Ocean Life"), when the words all came from one. */
+  theme?: string;
 }
 
 export interface BattleshipData {

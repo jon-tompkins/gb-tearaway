@@ -16,12 +16,11 @@ import { pickJokeForDay } from "./content/jokes";
 import {
   pickLiveWord,
   pickLiveSpanish,
-  pickLiveScramble,
   pickLiveRiddle,
   type DailyExtras,
 } from "./content/live-extras";
 import { pickRiddle } from "./content/riddles";
-import { pickScramble, scrambleWord } from "./content/scramble";
+import { pickScrambleForDay, scrambleWord } from "./content/scramble";
 import { generateSequence } from "./puzzles/sequence";
 import { pickSpanish } from "./content/spanish";
 import { pickPoem, poemFontPt, poemLines } from "./content/poems";
@@ -405,8 +404,7 @@ export function generateStrip(
       continue;
     }
     if (moduleId === "scramble") {
-      const item =
-        (opts.extras?.scramble && pickLiveScramble(opts.extras.scramble, band, rng)) || pickScramble(band, rng);
+      const item = pickScrambleForDay(band, { dateISO: date, kid: firstName, nonce });
       const scrambled = scrambleWord(item.word, rng);
       sections.push({
         id: `scramble-${hashish(item.word)}`,
@@ -458,7 +456,7 @@ export function generateStrip(
       sections.push({
         id: `wordfind-${wordfind.cols}x${wordfind.rows}`,
         moduleId,
-        title: meta.name,
+        title: wordfind.theme ? `${meta.name}: ${wordfind.theme}` : meta.name,
         kind: "wordfind",
         lines: [
           `Find: ${wordfind.words.join(" · ")}`,

@@ -1,14 +1,13 @@
 import Anthropic from "@anthropic-ai/sdk";
 import type { AgeBand, ModuleId, WordItem } from "../types";
 import type { SpanishItem } from "./spanish";
-import type { ScrambleItem } from "./scramble";
 import type { RiddleItem } from "./riddles";
 import { loadPayload, savePayload } from "../persist";
 import { shuffle } from "../rng";
 
 /**
  * Fresh daily "content bites" — word of the day, Spanish word,
- * word scramble, riddle — generated kid-safe by Haiku and cached once per UTC
+ * riddle — generated kid-safe by Haiku and cached once per UTC
  * day (globally, like the news pipeline — one call per type per day for
  * everyone). Each DOES have a static fallback: if the model is unavailable the
  * caller uses the hand-written banks so a card always prints.
@@ -19,13 +18,11 @@ const BANDS: AgeBand[] = ["4-6", "7-9", "10-12"];
 
 export type LiveWord = WordItem & { bands: AgeBand[] };
 export type LiveSpanish = SpanishItem & { bands: AgeBand[] };
-export type LiveScramble = ScrambleItem & { bands: AgeBand[] };
 export type LiveRiddle = RiddleItem & { bands: AgeBand[] };
 
 export interface DailyExtras {
   words?: LiveWord[];
   spanish?: LiveSpanish[];
-  scramble?: LiveScramble[];
   riddles?: LiveRiddle[];
 }
 
@@ -93,17 +90,6 @@ Everything must be ACCURATE Spanish. Spread across bands: "4-6" concrete nouns/c
 
 Return ONLY minified JSON: {"words":[{"spanish","phonetic","english","example","bands"}]}. No prose, no markdown.`;
 
-const SCRAMBLE_SYSTEM = `You choose words for a "word scramble" in a printed children's morning paper (the app scrambles the letters; you just supply the word + a clue).
-
-Write 12 entries. For each give:
-- word: a single lowercase common word, letters only (no spaces/punctuation)
-- hint: a short kid-friendly clue that does NOT contain the word itself
-- bands: which of "4-6","7-9","10-12" it suits (array)
-
-Spread across bands: "4-6" 3-4 letters, "7-9" 4-6 letters, "10-12" 6-8 letters.
-
-Return ONLY minified JSON: {"words":[{"word","hint","bands"}]}. No prose, no markdown.`;
-
 const RIDDLE_SYSTEM = `You write riddles for a printed children's morning paper.
 
 Write 12 riddles. Each must be G-rated, kind, genuinely solvable, with a short correct answer. For each give:
@@ -162,27 +148,6 @@ async function generateSpanish(avoid: string[]): Promise<LiveSpanish[]> {
         example: typeof o.example === "string" ? o.example.trim() : "",
         bands: parseBands(o.bands),
       });
-    }
-    return out;
-  } catch {
-    return [];
-  }
-}
-
-async function generateScramble(avoid: string[]): Promise<LiveScramble[]> {
-  if (!process.env.ANTHROPIC_API_KEY) return [];
-  try {
-    const obj = jsonObject(await haiku(SCRAMBLE_SYSTEM, userMessage("Choose today's scramble words.", avoid)));
-    const arr = obj?.words;
-    if (!Array.isArray(arr)) return [];
-    const out: LiveScramble[] = [];
-    for (const raw of arr) {
-      const o = raw as Record<string, unknown>;
-      const word = typeof o.word === "string" ? o.word.trim().toLowerCase() : "";
-      const hint = typeof o.hint === "string" ? o.hint.trim() : "";
-      // Guard the app's contract: letters only, and the hint must not give it away.
-      if (!word || !hint || !/^[a-z]+$/.test(word) || hint.toLowerCase().includes(word)) continue;
-      out.push({ word, hint, bands: parseBands(o.bands) });
     }
     return out;
   } catch {
@@ -272,22 +237,19 @@ export async function gatherDailyExtras(pool: ModuleId[]): Promise<DailyExtras |
   const want = {
     words: pool.includes("word"),
     spanish: pool.includes("spanish"),
-    scramble: pool.includes("scramble"),
     riddles: pool.includes("riddle"),
   };
   if (!Object.values(want).some(Boolean)) return undefined;
 
-  const [words, spanish, scramble, riddles] = await Promise.all([
+  const [words, spanish, riddles] = await Promise.all([
     want.words ? getDaily("words", generateWords, (w) => w.word) : Promise.resolve<LiveWord[]>([]),
     want.spanish ? getDaily("spanish", generateSpanish, (w) => w.spanish) : Promise.resolve<LiveSpanish[]>([]),
-    want.scramble ? getDaily("scramble", generateScramble, (w) => w.word) : Promise.resolve<LiveScramble[]>([]),
     want.riddles ? getDaily("riddles", generateRiddles, (r) => r.question) : Promise.resolve<LiveRiddle[]>([]),
   ]);
 
   const out: DailyExtras = {};
   if (words.length) out.words = words;
   if (spanish.length) out.spanish = spanish;
-  if (scramble.length) out.scramble = scramble;
   if (riddles.length) out.riddles = riddles;
   return Object.keys(out).length ? out : undefined;
 }
@@ -312,11 +274,6 @@ export function pickLiveWord(pool: LiveWord[], band: AgeBand, rng: () => number)
 export function pickLiveSpanish(pool: LiveSpanish[], band: AgeBand, rng: () => number): SpanishItem | null {
   const s = pickLive(pool, band, rng);
   return s ? { spanish: s.spanish, phonetic: s.phonetic, english: s.english, example: s.example } : null;
-}
-
-export function pickLiveScramble(pool: LiveScramble[], band: AgeBand, rng: () => number): ScrambleItem | null {
-  const s = pickLive(pool, band, rng);
-  return s ? { word: s.word, hint: s.hint } : null;
 }
 
 export function pickLiveRiddle(pool: LiveRiddle[], band: AgeBand, rng: () => number): RiddleItem | null {

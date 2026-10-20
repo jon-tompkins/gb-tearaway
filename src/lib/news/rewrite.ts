@@ -43,7 +43,13 @@ For each story:
 
 Never invent details that aren't in the text. Never pad with feel-good filler — banned: "amazing", "incredible", "magical", "super", "awesome", "Did you know", "forever", "helping everyone", "making the world a better place", and sentences that only say the story is good or exciting. If a story has too little real information to write 2 specific sentences, or turns out not to be kid-safe, leave it out.
 
-Return ONLY minified JSON: {"items":[{"headline","location","blurb","wonder","bands"}]}. No prose, no markdown. If nothing works, {"items":[]}.`;
+Return ONLY minified JSON: {"items":[{"story","headline","location","blurb","wonder","bands"}]} where "story" is the story number you wrote it from. No prose, no markdown. If nothing works, {"items":[]}.`;
+
+const CHECK_SYSTEM = `You are the fact-checker for a children's newspaper. For each numbered draft you get the source text it was written from. Check every claim in the draft's headline, location, blurb and wonder against that source text.
+
+A draft PASSES only if every specific (numbers, names, places, dates, what happened, and its status — proposed vs done, tested vs proven) is supported by the source text, and it is kid-safe. Minor simplification for children is fine; adding facts that aren't in the source is not.
+
+Return ONLY minified JSON: {"checks":[{"story":<number>,"pass":true|false,"problem":"<short reason if it fails, else empty>"}]}.`;
 
 async function ask(system: string, user: string, effort: "low" | "medium"): Promise<string> {
   // Opus 5.5 always thinks and that counts against max_tokens — stream with a
@@ -75,6 +81,32 @@ function json(text: string): Record<string, unknown> | null {
   }
 }
 
+const OUTLETS: Record<string, string> = {
+  "goodnewsnetwork.org": "Good News Network",
+  "news.mongabay.com": "Mongabay",
+  "snexplores.org": "Science News Explores",
+  "smithsonianmag.com": "Smithsonian",
+  "nasa.gov": "NASA",
+  "bbc.co.uk": "BBC",
+  "bbc.com": "BBC",
+  "nintendolife.com": "Nintendo Life",
+  "pushsquare.com": "Push Square",
+  "purexbox.com": "Pure Xbox",
+  "gamesradar.com": "GamesRadar",
+  "news.google.com": "Google News",
+};
+
+function outletName(url?: string): string {
+  if (!url) return "";
+  try {
+    const host = new URL(url).hostname.replace(/^www\./, "");
+    const hit = Object.keys(OUTLETS).find((d) => host === d || host.endsWith(`.${d}`));
+    return hit ? OUTLETS[hit] : host;
+  } catch {
+    return "";
+  }
+}
+
 const str = (v: unknown) => (typeof v === "string" ? v.trim() : "");
 
 /** Drop "Turkey, Turkey" style repeats the model sometimes still writes. */
@@ -85,10 +117,10 @@ function tidyLocation(loc: string): string {
   return out.join(", ");
 }
 
-function parseItems(text: string): LiveNewsEntry[] {
+function parseItems(text: string): { story: number; item: LiveNewsEntry }[] {
   const items = json(text)?.items;
   if (!Array.isArray(items)) return [];
-  const out: LiveNewsEntry[] = [];
+  const out: { story: number; item: LiveNewsEntry }[] = [];
   for (const raw of items) {
     const o = raw as Record<string, unknown>;
     const headline = str(o.headline);
@@ -98,11 +130,14 @@ function parseItems(text: string): LiveNewsEntry[] {
       ? (o.bands.filter((b) => BANDS.includes(b as AgeBand)) as AgeBand[])
       : [];
     out.push({
-      headline,
-      location: tidyLocation(str(o.location)),
-      blurb,
-      wonder: str(o.wonder),
-      bands: bands.length ? bands : ["7-9", "10-12"],
+      story: Number(o.story),
+      item: {
+        headline,
+        location: tidyLocation(str(o.location)),
+        blurb,
+        wonder: str(o.wonder),
+        bands: bands.length ? bands : ["7-9", "10-12"],
+      },
     });
   }
   return out;
@@ -138,7 +173,40 @@ export async function rewriteKidSafe(
         ].join("\n"),
       )
       .join("\n\n");
-    return parseItems(await ask(WRITE_SYSTEM + note, stories, "medium"));
+    const written = parseItems(await ask(WRITE_SYSTEM + note, stories, "medium")).filter(
+      (w) => Number.isInteger(w.story) && w.story >= 1 && w.story <= chosen.length,
+    );
+    if (!written.length) return [];
+
+    // Fact-check every draft against the text it was written from; drop failures.
+    const drafts = written
+      .map((w) => {
+        const src = texts[w.story - 1] || chosen[w.story - 1].summary || "(none)";
+        return `### Draft ${w.story}\nDRAFT: ${JSON.stringify(w.item)}\nSOURCE TEXT:\n${src}`;
+      })
+      .join("\n\n");
+    const checks = json(await ask(CHECK_SYSTEM, drafts, "medium"))?.checks;
+    const verdict = new Map<number, boolean>();
+    if (Array.isArray(checks)) {
+      for (const c of checks as Record<string, unknown>[]) {
+        verdict.set(Number(c.story), c.pass === true);
+        if (c.pass !== true) console.warn("[news] fact-check dropped story", c.story, c.problem);
+      }
+    }
+    return written
+      .filter((w) => verdict.get(w.story) === true) // unchecked counts as failed
+      .map((w) => {
+        const h = chosen[w.story - 1];
+        return {
+          ...w.item,
+          source: {
+            title: h.title,
+            url: h.link,
+            outlet: outletName(h.link),
+            fullText: !!texts[w.story - 1],
+          },
+        };
+      });
   } catch (e) {
     console.error("[news] rewrite failed:", e instanceof Error ? e.message : e);
     return [];

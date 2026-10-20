@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { AppShell } from "@/components/AppNav";
+import { AdminTabs } from "@/components/AdminTabs";
 import { requireAdmin } from "@/lib/admin";
 import { MODULE_CATALOG, MODULE_CATEGORIES } from "@/lib/modules";
 import { ADMIN_MODULES, AGE_BANDS, SOURCE_LABEL, bankCounts } from "@/lib/adminModules";
@@ -10,7 +11,9 @@ export const metadata = { title: "Admin · Back of the Box" };
 export default async function AdminHome() {
   await requireAdmin();
   return (
-    <AppShell title="Admin" subtitle="Every module, where its content comes from, and how big its bank is.">
+    <AppShell title="Admin">
+      <AdminTabs active="modules" />
+      <p className="-mt-2 mb-6 text-sm text-ink-soft">Every module, where its content comes from, and how big its bank is.</p>
       <div className="space-y-8">
         {MODULE_CATEGORIES.map((cat) => {
           const mods = MODULE_CATALOG.filter((m) => m.category === cat.id);

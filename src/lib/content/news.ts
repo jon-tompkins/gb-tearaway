@@ -18,8 +18,18 @@ export interface NewsItem {
   wonder: string;
 }
 
-/** A live news item carrying its age bands (from the RSS→Haiku pipeline). */
-export type LiveNewsEntry = NewsItem & { bands: AgeBand[] };
+/** Where a live story came from — kept so it can be checked against the original. */
+export interface NewsSource {
+  /** The outlet's own headline, exactly as published. */
+  title: string;
+  url?: string;
+  outlet: string;
+  /** True when the writer had the full article text (not just the feed teaser). */
+  fullText: boolean;
+}
+
+/** A live news item carrying its age bands and its source (from the news pipeline). */
+export type LiveNewsEntry = NewsItem & { bands: AgeBand[]; source?: NewsSource };
 
 const NEWS_IDS = new Set<NewsModuleId>([
   "news_world",

@@ -122,22 +122,31 @@ async function saveRaw(userKey: string, value: unknown): Promise<void> {
   }
 }
 
+/** Thrown when the store can't be read — distinct from "no row yet" (null). */
+export class StoreUnavailableError extends Error {}
+
+/**
+ * The user's state, or null when they have none yet. THROWS StoreUnavailableError
+ * when the database can't be reached: callers must not mistake an outage for a
+ * new user and save a blank state over a real account.
+ */
 export async function loadState(userKey: string): Promise<AppState | null> {
   if (SUPA_URL && SUPA_KEY) {
+    let res: Response;
     try {
-      const res = await fetch(
+      res = await fetch(
         `${SUPA_URL}/rest/v1/${TABLE}?user_key=eq.${encodeURIComponent(userKey)}&select=state`,
         {
           headers: { apikey: SUPA_KEY, Authorization: `Bearer ${SUPA_KEY}` },
           cache: "no-store",
         },
       );
-      if (!res.ok) return null;
-      const rows = (await res.json()) as Array<{ state: AppState }>;
-      return rows[0]?.state ?? null;
-    } catch {
-      return null;
+    } catch (e) {
+      throw new StoreUnavailableError(`store read failed: ${e instanceof Error ? e.message : e}`);
     }
+    if (!res.ok) throw new StoreUnavailableError(`store read failed: HTTP ${res.status}`);
+    const rows = (await res.json()) as Array<{ state: AppState }>;
+    return rows[0]?.state ?? null;
   }
   try {
     return JSON.parse(await fs.readFile(filePath(userKey), "utf8")) as AppState;
