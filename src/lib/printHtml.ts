@@ -160,6 +160,38 @@ export function buildPrintHtml(
       else window.addEventListener('load',go);
     })();
   </script>`;
+  // Crossword cards: once the real card size is known, give the grid a square
+  // box of at most half the card, then grow the clue font until the clues fill
+  // the rest. Letter only (strip cards have no fixed height to fill).
+  const crosswordFit = `<script>
+    (function(){
+      if(!${isLetter ? "true" : "false"}) return;
+      function px(v){return parseFloat(v)||0}
+      function fit(){
+        document.querySelectorAll('section.mod-crossword').forEach(function(sec){
+          var g=sec.querySelector('.cw-grid'), c=sec.querySelector('.cw-clues');
+          if(!g||!c) return;
+          var cs=getComputedStyle(sec);
+          var w=sec.clientWidth-px(cs.paddingLeft)-px(cs.paddingRight);
+          var h=sec.clientHeight-px(cs.paddingTop)-px(cs.paddingBottom);
+          var h3=sec.querySelector('h3'); if(h3) h-=h3.getBoundingClientRect().height+px(getComputedStyle(h3).marginBottom);
+          // Box fits the grid's own shape: no taller than half the card, no wider than it.
+          var svg=g.querySelector('svg'), vb=svg&&svg.viewBox&&svg.viewBox.baseVal;
+          var aspect=vb&&vb.width?vb.height/vb.width:1;
+          g.style.height=Math.floor(Math.min(h*0.5,w*aspect))+'px';
+          var room=h-g.getBoundingClientRect().height-px(getComputedStyle(g).marginTop)-px(getComputedStyle(c).marginTop)-2;
+          var lo=6, hi=16;
+          for(var i=0;i<16;i++){
+            var mid=(lo+hi)/2; c.style.fontSize=mid+'pt';
+            if(c.scrollHeight<=room) lo=mid; else hi=mid;
+          }
+          c.style.fontSize=lo+'pt';
+        });
+      }
+      if(document.readyState==='complete') fit(); else window.addEventListener('load',fit);
+      window.addEventListener('beforeprint',fit);
+    })();
+  </script>`;
   // Embed mode (on-screen preview inside an iframe): no toolbar, no auto-print,
   // no top padding — just the sheet, so the preview is pixel-identical to print.
   const embed = !!opts.embed;
@@ -180,6 +212,7 @@ export function buildPrintHtml(
 </style></head>
 <body>
   <div class="sheet">${inner}</div>
+  ${crosswordFit}
   ${auto}
 </body></html>`;
 }

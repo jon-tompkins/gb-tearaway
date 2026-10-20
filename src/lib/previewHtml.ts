@@ -4,7 +4,7 @@ import { sudokuToSvg } from "./puzzles/sudoku";
 import { wordFindToSvg } from "./puzzles/wordfind";
 import { dotsToSvg } from "./puzzles/dots";
 import { battleshipToSvg } from "./puzzles/battleship";
-import { crosswordToSvg } from "./puzzles/crossword";
+import { crosswordToSvg, type CrosswordData } from "./puzzles/crossword";
 
 function esc(s: string): string {
   return s
@@ -137,6 +137,39 @@ export function weatherHtml(w: WeatherSnapshot, opts: { compact?: boolean } = {}
   return h;
 }
 
+/** Crossword card budget (mm): a square-ish grid box, and what's left for clues. Letter column ≈ 90mm wide. */
+const CROSSWORD_LAYOUT_MM: Record<"half" | "full" | "double", { gridMm: number; clueMm: { w: number; h: number } }> = {
+  double: { gridMm: 50, clueMm: { w: 90, h: 46 } },
+  full: { gridMm: 24, clueMm: { w: 90, h: 20 } },
+  half: { gridMm: 12, clueMm: { w: 90, h: 6 } },
+};
+const CLUE_GAP_MM = 3;
+const CLUE_LINE = 1.2;
+const PT_MM = 0.3528;
+
+/**
+ * Largest clue font (6.5–11pt) at which both clue columns fit the budget:
+ * monospace ≈ 0.6em per character, clues wrap within half the width, each clue
+ * has a small gap after it, plus the "Across"/"Down" heading line.
+ */
+function crosswordClueFontPt(cw: CrosswordData, box: { w: number; h: number }): number {
+  const colW = (box.w - CLUE_GAP_MM) / 2;
+  const columnHeight = (dir: "across" | "down", f: number) => {
+    const perLine = Math.max(8, Math.floor(colW / (0.6 * f * PT_MM)));
+    const lineMm = f * CLUE_LINE * PT_MM;
+    let lines = 1.3; // heading + its gap
+    for (const w of cw.words.filter((x) => x.dir === dir)) {
+      const text = `${w.num} ${w.clue} (${w.word.length})`;
+      lines += Math.ceil(text.length / perLine) + 0.35;
+    }
+    return lines * lineMm;
+  };
+  for (let f = 11; f >= 6.5; f -= 0.25) {
+    if (Math.max(columnHeight("across", f), columnHeight("down", f)) <= box.h) return f;
+  }
+  return 6.5;
+}
+
 export function sectionHtml(section: StripSection): string {
   if (section.kind === "header") {
     return `<header class="hdr">
@@ -187,21 +220,29 @@ export function sectionHtml(section: StripSection): string {
   </section>`;
   }
 
-  // Crossword: grid on top (shrinks to fit), then Across / Down clue columns.
+  // Crossword: the grid in a square box on top, then Across / Down clue columns.
+  // Sizes here are a fallback; the print page's fit script (printHtml) measures
+  // the real card and fills it (grid ≤ half the card, clues as large as fit).
   if (section.kind === "crossword" && section.crossword) {
     const cw = section.crossword;
     const sizeClass = section.size ? ` size-${section.size}` : "";
+    const { gridMm, clueMm } = CROSSWORD_LAYOUT_MM[section.size ?? "double"];
+    const fontPt = crosswordClueFontPt(cw, clueMm);
     const clueList = (dir: "across" | "down") =>
       cw.words
         .filter((w) => w.dir === dir)
-        .map((w) => `<div style="margin:0 0 .5mm"><b>${w.num}</b>&nbsp;${esc(w.clue)} <span style="color:#555">(${w.word.length})</span></div>`)
+        .map((w) => `<div style="margin:0 0 .35em"><b>${w.num}</b>&nbsp;${esc(w.clue)} <span style="color:#555">(${w.word.length})</span></div>`)
         .join("");
-    return `<section class="sec grow${sizeClass} mod-${section.moduleId}">
+    const head = `font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.3em`;
+    return `<section class="sec${sizeClass} mod-${section.moduleId}">
     <h3>${esc(section.title)}</h3>
-    <div class="fig">${crosswordToSvg(cw)}</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:3mm;font-size:8pt;line-height:1.25;margin-top:2mm">
-      <div><div style="font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.6mm">Across</div>${clueList("across")}</div>
-      <div><div style="font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.6mm">Down</div>${clueList("down")}</div>
+    <div class="cw-grid" style="height:${gridMm}mm;display:flex;align-items:center;justify-content:center;margin-top:1mm">${crosswordToSvg(cw).replace(
+      "<svg ",
+      '<svg style="height:100%;width:auto;max-width:100%" ',
+    )}</div>
+    <div class="cw-clues" style="display:grid;grid-template-columns:1fr 1fr;gap:${CLUE_GAP_MM}mm;font-size:${fontPt}pt;line-height:${CLUE_LINE};margin-top:2mm">
+      <div><div style="${head}">Across</div>${clueList("across")}</div>
+      <div><div style="${head}">Down</div>${clueList("down")}</div>
     </div>
   </section>`;
   }
