@@ -10,6 +10,7 @@ import { HISTORY } from "./content/history";
 import { WORDFIND_THEMES } from "./puzzles/wordfind";
 import { US_STATES } from "./puzzles/states-data";
 import { COUNTRIES } from "./puzzles/countries-data";
+import { CROSSWORD_THEMES } from "./content/crosswords";
 import { NEWS_FEEDS } from "./news/sources";
 import { loadPayload, listUserStates } from "./persist";
 import { ensureKidSlots, flattenSlotModules } from "./slots";
@@ -269,6 +270,17 @@ export const ADMIN_MODULES: Record<ModuleId, AdminModule> = {
   // ---- Generated puzzles ----
   maze: { kind: "generated", how: "Generated fresh by a maze algorithm from the date + kid's name. Infinite, never repeats." },
   sudoku: { kind: "generated", how: "Generated, then checked to have exactly one solution. 4×4 → 6×6 → 9×9 by appropriateness." },
+  crossword: {
+    kind: "generated",
+    how: "Each day's grid is generated from one theme (no repeats until every theme for the age band is used). Themes, words and clues below.",
+    bank: () => ({
+      columns: ["Theme", "Words & clues"],
+      rows: CROSSWORD_THEMES.map((t) => ({
+        cells: [t.theme, t.entries.map((e) => `${e.word} — ${e.clue}`).join(" · ")],
+        bands: t.bands,
+      })),
+    }),
+  },
   battleship: { kind: "generated", how: "Random no-touch fleet + a solver that guarantees exactly one solution before it prints." },
   sequence: { kind: "generated", how: "Procedural number pattern from 10 rule families (add/subtract, multiply, alternating, triangular, Fibonacci, squares, cubes, primes, double-and-add)." },
   dots: { kind: "generated", how: "Generated connect-the-dots shape with a caption." },

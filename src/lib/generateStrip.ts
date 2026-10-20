@@ -32,6 +32,8 @@ import { mockStocks } from "./stocks";
 import { generateMaze, mazeToSvg } from "./puzzles/maze";
 import { generateSudoku, sudokuToSvg } from "./puzzles/sudoku";
 import { generateBattleship, battleshipToSvg, battleshipSolutionText } from "./puzzles/battleship";
+import { buildCrossword, crosswordAnswerText, crosswordConfigForDifficulty } from "./puzzles/crossword";
+import { crosswordThemeForDay } from "./content/crosswords";
 import { generateStateQuiz } from "./puzzles/states";
 import { generateCountryQuiz, type Continent } from "./puzzles/countries";
 import { generateWordFind, wordFindToSvg } from "./puzzles/wordfind";
@@ -224,6 +226,33 @@ export function generateStrip(
           svg: battleshipToSvg(bs, { showSolution: false }),
           // Solution shows only in the app (Parent key / QR) — never printed.
           answer: battleshipSolutionText(bs),
+        });
+      }
+      continue;
+    }
+    if (moduleId === "crossword") {
+      const cfg = crosswordConfigForDifficulty(difficulty);
+      // Today's theme; if it can't fill the grid well, try a few others.
+      let theme = crosswordThemeForDay(band, { dateISO: date, kid: firstName, nonce });
+      let cw = buildCrossword(rng, theme.theme, theme.entries, cfg);
+      for (let t = 0; t < 4 && (!cw || cw.words.length < cfg.target - 1); t++) {
+        const alt = crosswordThemeForDay(band, { dateISO: date, kid: firstName, nonce: nonce + 1000 + t });
+        const next = buildCrossword(rng, alt.theme, alt.entries, cfg);
+        if (next && (!cw || next.words.length > cw.words.length)) {
+          cw = next;
+          theme = alt;
+        }
+      }
+      if (cw) {
+        sections.push({
+          id: `crossword-${theme.theme}-${cw.cols}x${cw.rows}`,
+          moduleId,
+          title: `Crossword: ${theme.theme}`,
+          kind: "crossword",
+          lines: [],
+          crossword: cw,
+          // Answers show only in the app (Parent key / QR) — never printed.
+          answer: crosswordAnswerText(cw),
         });
       }
       continue;

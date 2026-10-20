@@ -1,3 +1,4 @@
+import type { CrosswordData } from "./puzzles/crossword";
 export type AgeBand = "4-6" | "7-9" | "10-12";
 
 export type ModuleId =
@@ -19,6 +20,7 @@ export type ModuleId =
   | "joke"
   | "riddle"
   | "sequence"
+  | "crossword"
   | "scramble"
   | "spanish"
   | "poem"
@@ -319,6 +321,7 @@ export interface StripSection {
     | "wordfind"
     | "dots"
     | "battleship"
+    | "crossword"
     | "weather"
     | "stocks"
     | "calendar"
@@ -329,6 +332,7 @@ export interface StripSection {
   wordfind?: WordFindData;
   dots?: DotsData;
   battleship?: BattleshipData;
+  crossword?: CrosswordData;
   weather?: WeatherSnapshot;
   stocks?: StockQuote[];
   events?: CalendarEvent[];

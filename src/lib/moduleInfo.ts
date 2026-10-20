@@ -44,6 +44,12 @@ export const MODULE_INFO: Record<ModuleId, ModuleInfo> = {
     config: [DIAL + " Picks the pattern pool and trickiness."],
     answerInApp: true,
   },
+  crossword: {
+    source:
+      "Generated each day from a theme's word and clue list (hand-written per age band): words interlock in a real criss-cross grid, checked so every word crosses another and no stray letters touch.",
+    config: [DIAL + " Sets how many words and how big the grid is."],
+    answerInApp: true,
+  },
   battleship: {
     source:
       "Generated fleet placement with the no-touch rule, and a solver that guarantees exactly one solution before it ever prints.",

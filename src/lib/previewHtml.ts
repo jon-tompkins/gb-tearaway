@@ -4,6 +4,7 @@ import { sudokuToSvg } from "./puzzles/sudoku";
 import { wordFindToSvg } from "./puzzles/wordfind";
 import { dotsToSvg } from "./puzzles/dots";
 import { battleshipToSvg } from "./puzzles/battleship";
+import { crosswordToSvg } from "./puzzles/crossword";
 
 function esc(s: string): string {
   return s
@@ -183,6 +184,25 @@ export function sectionHtml(section: StripSection): string {
     return `<section class="sec${sizeClass}">
     <h3>${esc(section.title)}</h3>
     ${weatherHtml(section.weather, { compact: section.size === "half" })}
+  </section>`;
+  }
+
+  // Crossword: grid on top (shrinks to fit), then Across / Down clue columns.
+  if (section.kind === "crossword" && section.crossword) {
+    const cw = section.crossword;
+    const sizeClass = section.size ? ` size-${section.size}` : "";
+    const clueList = (dir: "across" | "down") =>
+      cw.words
+        .filter((w) => w.dir === dir)
+        .map((w) => `<div style="margin:0 0 .5mm"><b>${w.num}</b>&nbsp;${esc(w.clue)} <span style="color:#555">(${w.word.length})</span></div>`)
+        .join("");
+    return `<section class="sec grow${sizeClass} mod-${section.moduleId}">
+    <h3>${esc(section.title)}</h3>
+    <div class="fig">${crosswordToSvg(cw)}</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:3mm;font-size:8pt;line-height:1.25;margin-top:2mm">
+      <div><div style="font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.6mm">Across</div>${clueList("across")}</div>
+      <div><div style="font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.6mm">Down</div>${clueList("down")}</div>
+    </div>
   </section>`;
   }
 

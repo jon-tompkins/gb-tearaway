@@ -6,6 +6,8 @@ import { generateWordFind, wordFindToSvg } from "./puzzles/wordfind";
 import { generateDots, dotsToSvg } from "./puzzles/dots";
 import { generateSequence } from "./puzzles/sequence";
 import { generateBattleship, battleshipToSvg } from "./puzzles/battleship";
+import { buildCrossword, crosswordToSvg, crosswordConfigForDifficulty } from "./puzzles/crossword";
+import { CROSSWORD_THEMES } from "./content/crosswords";
 import { generateStateQuiz } from "./puzzles/states";
 import { generateCountryQuiz, type Continent } from "./puzzles/countries";
 import { pickWord } from "./content/words";
@@ -43,6 +45,17 @@ export function moduleExample(id: ModuleId): ModuleExample {
       return { svg: wordFindToSvg(generateWordFind(42, BAND, DIFF)) };
     case "dots":
       return { svg: dotsToSvg(generateDots(42, BAND)) };
+    case "crossword": {
+      const t = CROSSWORD_THEMES.find((x) => x.bands.includes(BAND)) ?? CROSSWORD_THEMES[0];
+      const cw = buildCrossword(mulberry32(11), t.theme, t.entries, crosswordConfigForDifficulty(DIFF));
+      if (!cw) return { text: ["(example unavailable)"] };
+      const clues = (d: "across" | "down") => cw.words.filter((w) => w.dir === d).map((w) => `${w.num}. ${w.clue}`);
+      return {
+        svg: crosswordToSvg(cw),
+        text: [`Theme: ${t.theme}`, "Across:", ...clues("across"), "Down:", ...clues("down")],
+        note: "Answers (in the app): " + cw.words.map((w) => `${w.num}${w.dir === "across" ? "A" : "D"} ${w.word}`).join(", "),
+      };
+    }
     case "battleship":
       return { svg: battleshipToSvg(generateBattleship(mulberry32(7), DIFF)) };
     case "sequence": {
