@@ -36,11 +36,13 @@ const WRITE_SYSTEM = `You write news for a printed children's morning newspaper.
 ${SAFETY}
 
 For each story:
-- headline: at most 8 words, concrete and specific (who/what did what). No puns, no exclamation marks.
+- headline: at most 8 words, sentence case (only the first word and names capitalized), concrete and specific (who/what did what). No puns, no exclamation marks.
 - location: where it happened — "City, Country", "City, State", or just the country/region when no city is given; for online/game/global stories with no place, "Worldwide". Never repeat a word ("Turkey, Turkey" is wrong — write "Turkey").
-- blurb: 2-3 short sentences a 7-year-old can read. Lead with the most surprising concrete fact. Include at least two specific details FROM THE ARTICLE (a number, a name, a place, what exactly was found or built). State status accurately — if something was proposed, voted on, or is being tested, say so; don't present it as finished.
-- wonder: one extra true detail FROM THE ARTICLE that makes it more interesting, as a plain sentence. If the article has no extra detail worth adding, use "". Do NOT bring in general trivia from outside the article.
+- blurb: 2-3 short sentences, AT MOST 45 WORDS total, that a 7-year-old can read (short words, one idea per sentence). Lead with the most surprising concrete fact. Include at least two specific details FROM THE ARTICLE (a number, a name, a place, what exactly was found or built). State status accurately — if something was proposed, voted on, or is being tested, say so; don't present it as finished.
+- wonder: one extra true detail FROM THE ARTICLE that makes it more interesting, as one plain sentence of AT MOST 20 WORDS. If the article has no extra detail worth adding, use "". Do NOT bring in general trivia from outside the article.
 - bands: which of "4-6","7-9","10-12" can follow it.
+
+Pick the details a kid will picture and remember (an animal, a size compared to something familiar, a record); skip dates BCE, technical names and side details. Never mention the article, the outlet, a podcast, a reviewer or "the report" — just tell the news.
 
 Never invent details that aren't in the text. Never pad with feel-good filler — banned: "amazing", "incredible", "magical", "super", "awesome", "Did you know", "forever", "helping everyone", "making the world a better place", and sentences that only say the story is good or exciting. If a story has too little real information to write 2 specific sentences, or turns out not to be kid-safe, leave it out.
 
@@ -112,6 +114,8 @@ function outletName(url?: string): string {
   }
 }
 
+const words = (t: string) => t.split(/\s+/).filter(Boolean).length;
+
 const str = (v: unknown) => (typeof v === "string" ? v.trim() : "");
 
 /** Drop "Turkey, Turkey" style repeats the model sometimes still writes. */
@@ -134,6 +138,7 @@ function parseItems(text: string): { story: number; item: LiveNewsEntry }[] {
     const bands = Array.isArray(o.bands)
       ? (o.bands.filter((b) => BANDS.includes(b as AgeBand)) as AgeBand[])
       : [];
+    if (words(blurb) > 60) continue; // ignored the length limit — too long to print
     out.push({
       // Accept 3, "3" or "Story 3" — a mislabeled number used to drop the story.
       story: Number(String(o.story ?? "").match(/\d+/)?.[0] ?? NaN),
