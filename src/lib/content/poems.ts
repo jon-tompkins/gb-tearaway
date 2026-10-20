@@ -1,5 +1,8 @@
 import type { AgeBand, SlotSize } from "../types";
-import { pick } from "../rng";
+import { hashString, mulberry32, pick, shuffle } from "../rng";
+import { mergeBank } from "./mergeBank";
+import type { RotateKey } from "./rotate";
+import { POEMS_PD } from "./bank/poems-pd";
 
 export interface PoemItem {
   title: string;
@@ -17,7 +20,7 @@ interface PoemEntry extends PoemItem {
  * whose line window it fits, so it fills the card without clipping or leaving
  * it half-empty.
  */
-export const POEMS: PoemEntry[] = [
+const BASE_POEMS: PoemEntry[] = [
   // --- Short (½) ---
   {
     bands: ["4-6", "7-9", "10-12"],
@@ -223,6 +226,9 @@ export const POEMS: PoemEntry[] = [
   },
 ];
 
+/** All public-domain poems (hand-picked + PoetryDB), one entry per title/author. */
+export const POEMS: PoemEntry[] = mergeBank([...BASE_POEMS, ...POEMS_PD], (p) => `${p.title}|${p.author}`);
+
 /** Printable content height (mm) inside each card size, and the column width. */
 const POEM_CONTENT_MM: Record<SlotSize, number> = { half: 20, full: 48, double: 104 };
 const POEM_COL_MM = 90; // a Letter print column
@@ -293,5 +299,29 @@ export function extremePoemForSize(size: SlotSize, which: "longest" | "shortest"
     (a, b) => poemHeightMm(poemLines(a), POEM_MIN_FONT) - poemHeightMm(poemLines(b), POEM_MIN_FONT),
   );
   const p = which === "longest" ? sorted[sorted.length - 1] : sorted[0];
+  return { title: p.title, author: p.author, lines: p.lines };
+}
+
+/**
+ * Today's poem for a kid and card size. Walks every poem that fits before any
+ * repeats, and alternates POETS (round-robin over authors, each shuffled) so a
+ * poet with many poems in the bank doesn't fill week after week.
+ */
+export function pickPoemForDay(band: AgeBand, key: RotateKey, size: SlotSize = "full"): PoemItem {
+  const fits = POEMS.filter((p) => fitsSize(p, size));
+  const pool = fits.length ? fits : POEMS;
+  const byBand = pool.filter((p) => p.bands.includes(band));
+  const src = byBand.length ? byBand : pool;
+
+  const rng = mulberry32(hashString(`${key.kid.trim().toLowerCase()}|poem|${band}|${size}`));
+  const byAuthor = new Map<string, PoemEntry[]>();
+  for (const p of src) byAuthor.set(p.author, [...(byAuthor.get(p.author) ?? []), p]);
+  const queues = shuffle(rng, [...byAuthor.values()].map((list) => shuffle(rng, list)));
+  const order: PoemEntry[] = [];
+  while (queues.some((q) => q.length)) for (const q of queues) if (q.length) order.push(q.shift()!);
+
+  const day = Math.floor(Date.parse(`${key.dateISO}T00:00:00Z`) / 86_400_000);
+  const step = (Number.isFinite(day) ? day : 0) + key.nonce;
+  const p = order[((step % order.length) + order.length) % order.length];
   return { title: p.title, author: p.author, lines: p.lines };
 }

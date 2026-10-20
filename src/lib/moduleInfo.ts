@@ -56,7 +56,7 @@ export const MODULE_INFO: Record<ModuleId, ModuleInfo> = {
     config: [DIAL + " Picks the age band's vocabulary."],
   },
   poem: {
-    source: "A curated short-poem bank — soft, silly, or thoughtful.",
+    source: "Real public-domain poems (text taken verbatim from PoetryDB and Project Gutenberg), sized to fit the card. One a day per kid, alternating poets, no repeats until the bank is used.",
     config: [DIAL + " Picks the age band.", "Card size sets how long a poem fits."],
   },
   joke: {

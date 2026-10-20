@@ -23,7 +23,7 @@ import { pickRiddle } from "./content/riddles";
 import { pickScrambleForDay, scrambleWord } from "./content/scramble";
 import { generateSequence } from "./puzzles/sequence";
 import { pickSpanish } from "./content/spanish";
-import { pickPoem, poemFontPt, poemLines } from "./content/poems";
+import { pickPoemForDay, poemFontPt, poemLines } from "./content/poems";
 import { isNewsModule, newsListFromPool, type LiveNewsEntry, type NewsModuleId } from "./content/news";
 import type { LiveHistoryEntry } from "./news/history-live";
 import type { SportsTeamResult } from "./sports";
@@ -438,7 +438,7 @@ export function generateStrip(
       continue;
     }
     if (moduleId === "poem") {
-      const poem = pickPoem(band, rng, cardSize);
+      const poem = pickPoemForDay(band, { dateISO: date, kid: firstName, nonce }, cardSize);
       const lines = poemLines(poem);
       sections.push({
         id: `poem-${hashish(poem.title)}`,
