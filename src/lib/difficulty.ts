@@ -82,3 +82,16 @@ export function wordFindConfigForDifficulty(d: number): {
 export function mazeCandidatesForDifficulty(d: number): number {
   return Math.min(44, 6 + clampDifficulty(d) * 2);
 }
+
+/** News isn't written for the youngest readers — its dial starts at 5. */
+const NEWS_MIN_DIFFICULTY = 5;
+
+/** Lowest appropriateness a module allows (news starts at 5; everything else at 1). */
+export function minDifficultyFor(id: ModuleId): number {
+  return id.startsWith("news_") ? NEWS_MIN_DIFFICULTY : DIFFICULTY_MIN;
+}
+
+/** A module's effective appropriateness: clamped to its own floor. */
+export function effectiveDifficulty(id: ModuleId, d: number): number {
+  return Math.max(minDifficultyFor(id), clampDifficulty(d));
+}

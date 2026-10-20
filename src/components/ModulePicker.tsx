@@ -8,6 +8,8 @@ import {
   DIFFICULTY_MAX,
   DIFFICULTY_MIN,
   defaultDifficultyForBand,
+  effectiveDifficulty,
+  minDifficultyFor,
 } from "@/lib/difficulty";
 
 /** Hard cap of modules per card → a tidy 2×2 grid. */
@@ -82,11 +84,14 @@ function DifficultyDial({
   onChange,
   onDark = false,
   compact = false,
+  min = DIFFICULTY_MIN,
 }: {
   value: number;
   onChange: (v: number) => void;
   onDark?: boolean;
   compact?: boolean;
+  /** Lowest level this module allows (news starts at 5). */
+  min?: number;
 }) {
   const [open, setOpen] = useState(false);
   return (
@@ -113,7 +118,7 @@ function DifficultyDial({
             </span>
             <input
               type="range"
-              min={DIFFICULTY_MIN}
+              min={min}
               max={DIFFICULTY_MAX}
               value={value}
               onChange={(e) => onChange(Number(e.target.value))}
@@ -181,7 +186,7 @@ function ModuleOption({
       </span>
       <span className="flex-1 truncate text-sm font-semibold">{name}</span>
       {inCard ? (
-        <DifficultyDial value={difficulty} onChange={onDifficulty} onDark />
+        <DifficultyDial value={difficulty} onChange={onDifficulty} onDark min={minDifficultyFor(id)} />
       ) : (
         <span
           className={`rounded px-1 py-px text-[0.6rem] font-bold ${
@@ -417,7 +422,7 @@ export function SlotEditor({
                 className="shrink-0 text-[0.55rem] font-bold tabular-nums text-ink-soft"
                 title="Appropriateness — edit in the card view"
               >
-                {slot.moduleDifficulty?.[id] ?? defaultDifficulty}
+                {effectiveDifficulty(id, slot.moduleDifficulty?.[id] ?? defaultDifficulty)}
               </span>
               <button
                 type="button"
@@ -779,7 +784,10 @@ export function SlotEditor({
                                 blurb={mod.blurb}
                                 inCard={inCard}
                                 blocked={!inCard && cardFull}
-                                difficulty={pickerSlot.moduleDifficulty?.[mod.id] ?? defaultDifficulty}
+                                difficulty={effectiveDifficulty(
+                                  mod.id,
+                                  pickerSlot.moduleDifficulty?.[mod.id] ?? defaultDifficulty,
+                                )}
                                 onToggle={() => toggleInCard(pickerSlot.id, mod.id)}
                                 onDifficulty={(v) => setModuleDifficulty(pickerSlot.id, mod.id, v)}
                               />

@@ -1,113 +1,88 @@
 import { NextResponse } from "next/server";
-import { readStore, writeStore } from "@/lib/store";
 import { listUserStates } from "@/lib/persist";
-import { partsInZone, dateISOInZone, formatStripDate } from "@/lib/dates";
-import { saveDispatchRef } from "@/lib/deliver";
-import { sendEmail, dispatchEmailHtml } from "@/lib/email";
-import { renderPdfFromUrl } from "@/lib/pdf";
-import { logEvent } from "@/lib/events";
+import { cronAuthorized } from "@/lib/cronAuth";
+import { dueInfo, sendOneDispatch, type SendJob, type SendResult } from "@/lib/sendDispatch";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-export const maxDuration = 60;
+export const maxDuration = 300;
 
 const SITE = process.env.EMAIL_SITE_URL || "https://www.backofthebox.xyz";
-
-function authorized(req: Request): boolean {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) return true; // no secret configured → allow (dev)
-  const auth = req.headers.get("authorization");
-  if (auth === `Bearer ${secret}`) return true; // Vercel Cron sends this
-  const url = new URL(req.url);
-  return url.searchParams.get("secret") === secret;
-}
+/** Emails rendering at once (each in its own /api/cron/send-one invocation). */
+const CONCURRENCY = 20;
+/** Stop starting new sends after this; anything left goes out on the next run. */
+const LAUNCH_BUDGET_MS = 200_000;
 
 /**
- * Delivery cron — run hourly. Emails each email-delivery dispatch whose local
- * delivery hour has arrived and that hasn't been sent yet today. Idempotent via
- * kid.lastEmailedDate. `?force=1` (with the secret) ignores the hour/dedupe for
- * a manual test send.
+ * Delivery dispatcher — runs every 5 minutes. Finds every email dispatch whose
+ * local delivery hour has passed and that hasn't been sent today, and hands
+ * each one to its own /api/cron/send-one invocation (PDF render + send), up to
+ * CONCURRENCY at a time. One run used to send them all in a row inside a 60s
+ * budget, which capped a delivery hour at a handful of emails.
+ *
+ * `?force=1` (with the secret) re-sends every email dispatch now — test sends.
  */
 export async function GET(req: Request) {
-  if (!authorized(req)) {
-    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
-  }
+  if (!cronAuthorized(req)) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   const force = new URL(req.url).searchParams.get("force") === "1";
-  const now = new Date();
+  const started = Date.now();
 
-  let sent = 0;
+  const jobs: SendJob[] = [];
   let skipped = 0;
-  let withPdf = 0;
-  const errors: string[] = [];
-
-  const users = await listUserStates();
-  for (const { userKey, state } of users) {
+  for (const { userKey, state } of await listUserStates()) {
     for (const kid of state.kids) {
-      const method = kid.deliveryMethod ?? "email";
-      const to = kid.deliveryEmail;
-      if (method !== "email" || !to) {
-        skipped++;
-        continue;
-      }
-      const tz = kid.timezone || state.settings.timezone;
-      const localDate = dateISOInZone(tz, now);
-      const { hour } = partsInZone(tz, now);
-      const deliverHour = Number((kid.printTime || "07:00").split(":")[0]);
-
-      const due = force || (hour === deliverHour && kid.lastEmailedDate !== localDate);
-      if (!due) {
-        skipped++;
-        continue;
-      }
-
-      try {
-        const token = await saveDispatchRef({ userKey, kidId: kid.id, date: localDate });
-        const openUrl = `${SITE}/api/render?token=${token}&format=print&auto=1`;
-        const { weekday, dateLabel } = formatStripDate(localDate);
-
-        // Attach the actual PDF (headless-Chromium render of the print page).
-        const pdf = await renderPdfFromUrl(`${SITE}/api/render?token=${token}&format=print`);
-        const attachments = pdf
-          ? [
-              {
-                filename: `back-of-the-box-${kid.name.toLowerCase()}-${localDate}.pdf`,
-                content: pdf.toString("base64"),
-              },
-            ]
-          : undefined;
-
-        const ok = await sendEmail({
-          to,
-          subject: `${kid.name}'s Back of the Box — ${weekday}`,
-          html: dispatchEmailHtml({ kidName: kid.name, dateLabel: `${weekday} · ${dateLabel}`, openUrl }),
-          attachments,
-        });
-        if (ok) {
-          // Mark sent on a FRESH copy: sending takes a while (PDF render), and
-          // writing back the state loaded at the start would undo any settings
-          // the parent saved in the meantime.
-          const fresh = await readStore(userKey);
-          const fk = fresh.kids.find((k) => k.id === kid.id);
-          if (fk) {
-            fk.lastEmailedDate = localDate;
-            await writeStore(userKey, fresh);
-          }
-          kid.lastEmailedDate = localDate;
-          sent++;
-          await logEvent({
-            type: "email_sent",
-            user_key: userKey,
-            meta: { kidId: kid.id, kidName: kid.name, withPdf: !!attachments, date: localDate },
-          });
-          if (attachments) withPdf++;
-        } else {
-          errors.push(`${userKey}/${kid.id}: send failed`);
-        }
-      } catch (e) {
-        errors.push(`${userKey}/${kid.id}: ${e instanceof Error ? e.message : "error"}`);
-      }
+      const { emailable, due } = dueInfo(kid, state);
+      if (emailable && (due || force)) jobs.push({ userKey, kidId: kid.id });
+      else skipped++;
     }
   }
 
-  return NextResponse.json({ sent, withPdf, skipped, errors });
+  const secret = process.env.CRON_SECRET;
+  async function sendViaWorker(job: SendJob): Promise<SendResult> {
+    try {
+      const res = await fetch(`${SITE}/api/cron/send-one`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(secret ? { Authorization: `Bearer ${secret}` } : {}),
+        },
+        body: JSON.stringify({ ...job, force }),
+      });
+      if (res.ok) return (await res.json()) as SendResult;
+      // Worker unreachable (e.g. local dev without SITE) → send in-process.
+      if (res.status === 404) return sendOneDispatch(job, { force });
+      return { status: "failed", reason: `worker HTTP ${res.status}` };
+    } catch (e) {
+      return { status: "failed", reason: e instanceof Error ? e.message : "worker error" };
+    }
+  }
+
+  const results: { job: SendJob; result: SendResult }[] = [];
+  let next = 0;
+  let deferred = 0;
+  async function lane() {
+    while (next < jobs.length) {
+      if (Date.now() - started > LAUNCH_BUDGET_MS) {
+        deferred = jobs.length - next;
+        next = jobs.length;
+        return;
+      }
+      const job = jobs[next++];
+      results.push({ job, result: await sendViaWorker(job) });
+    }
+  }
+  await Promise.all(Array.from({ length: Math.min(CONCURRENCY, jobs.length) }, lane));
+
+  const sent = results.filter((r) => r.result.status === "sent");
+  return NextResponse.json({
+    due: jobs.length,
+    sent: sent.length,
+    withPdf: sent.filter((r) => r.result.status === "sent" && r.result.withPdf).length,
+    skipped: skipped + results.filter((r) => r.result.status === "skipped").length,
+    deferred,
+    errors: results
+      .filter((r) => r.result.status === "failed")
+      .map((r) => `${r.job.userKey}/${r.job.kidId}: ${r.result.status === "failed" ? r.result.reason : ""}`),
+    ms: Date.now() - started,
+  });
 }

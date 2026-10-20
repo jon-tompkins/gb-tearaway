@@ -113,12 +113,12 @@ export const MODULE_INFO: Record<ModuleId, ModuleInfo> = {
   news_world: {
     source:
       "Real headlines from around the world (Good News Network, Mongabay, Science News Explores, Smithsonian, NASA) picked for interest, then written up kid-safe by AI from the full article each morning. If nothing is kid-safe today, the card simply doesn't print — never a made-up story.",
-    config: ["No setup — always real and kid-safe."],
+    config: ["Appropriateness starts at 5 — news is written for readers about 7 and up."],
   },
   news_national: {
     source:
       "Real US good-news headlines (Good News Network) rewritten kid-safe by AI, cached daily. No fabricated fallback.",
-    config: ["No setup — always real and kid-safe."],
+    config: ["Appropriateness starts at 5 — news is written for readers about 7 and up."],
   },
   news_city: {
     source:
@@ -126,13 +126,13 @@ export const MODULE_INFO: Record<ModuleId, ModuleInfo> = {
     config: ["Set your city in Settings (it uses your weather city)."],
   },
   news_tech: {
-    source: "Real tech headlines (BBC Technology) rewritten kid-safe by AI, cached daily.",
-    config: ["No setup — always real and kid-safe."],
+    source: "Real tech headlines (Science News Explores, Popular Science, IEEE Spectrum, ScienceDaily, New Atlas) — inventions, robots and gadgets — picked for interest, written up kid-safe from the full article, and fact-checked.",
+    config: ["Appropriateness starts at 5 — news is written for readers about 7 and up."],
   },
   news_gamer: {
     source:
       "Real gaming headlines across Nintendo, PlayStation, Xbox and PC — releases, updates, and esports results — rewritten kid-safe, dropping mature titles.",
-    config: ["No setup — always real and kid-safe."],
+    config: ["Appropriateness starts at 5 — news is written for readers about 7 and up."],
   },
   // Today's world
   weather: {

@@ -39,7 +39,7 @@ import { generateDots, dotsToSvg } from "./puzzles/dots";
 import { moduleById } from "./modules";
 import { buildPreviewHtml } from "./previewHtml";
 import { ensureKidSlots, resolveActiveModules } from "./slots";
-import { bandFromDifficulty, clampDifficulty, defaultDifficultyForBand } from "./difficulty";
+import { bandFromDifficulty, defaultDifficultyForBand, effectiveDifficulty } from "./difficulty";
 
 export interface GenerateOptions {
   nonce?: number;
@@ -95,9 +95,8 @@ export function generateStrip(
   const bodyDiffs = resolved.map((r) => {
     const s = slotById.get(r.slotId);
     const perModule = s?.moduleDifficulty?.[r.moduleId];
-    if (perModule != null) return clampDifficulty(perModule);
-    if (s?.difficulty != null) return clampDifficulty(s.difficulty);
-    return ageDefaultDiff;
+    const raw = perModule ?? s?.difficulty ?? ageDefaultDiff;
+    return effectiveDifficulty(r.moduleId, raw);
   });
 
   const paperWidthMm = paperSize === "letter" ? 216 : 58;

@@ -1,9 +1,7 @@
 import { NextResponse } from "next/server";
-import { listUserStates } from "@/lib/persist";
 import { getDailyNews } from "@/lib/news/daily";
 import { NEWS_FEEDS } from "@/lib/news/sources";
 import type { NewsModuleId } from "@/lib/content/news";
-import { flattenSlotModules, ensureKidSlots } from "@/lib/slots";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -29,17 +27,7 @@ export async function GET(req: Request) {
     Object.keys(NEWS_FEEDS) as NewsModuleId[]
   ).map((feed) => ({ feed }));
 
-  // Hometown news only for cities a dispatch actually prints.
-  const cities = new Set<string>();
-  for (const { state } of await listUserStates()) {
-    const city = state.settings.weatherCity?.trim();
-    if (!city) continue;
-    const usesCity = state.kids.some((k) =>
-      flattenSlotModules(ensureKidSlots(k).slots).includes("news_city"),
-    );
-    if (usesCity) cities.add(city);
-  }
-  for (const city of cities) jobs.push({ feed: "news_city", city });
+  // Hometown News is parked (not in the catalog), so no per-city feeds.
 
   const started = Date.now();
   const results = await Promise.all(

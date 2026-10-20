@@ -25,7 +25,18 @@ export const NEWS_FEEDS: Partial<
     hint: "This is the WORLD news card. Pick stories from as many DIFFERENT countries and continents as you can — no more than one or two from any single country, and do not let the US or UK dominate. Always name the country in the location. Return at most 10 items.",
   },
   news_national: { url: "https://www.goodnewsnetwork.org/feed/", label: "Good News" },
-  news_tech: { url: "https://feeds.bbci.co.uk/news/technology/rss.xml", label: "Technology" },
+  // BBC Technology was mostly outages and business news (often 0 kid-safe stories).
+  news_tech: {
+    url: [
+      "https://www.snexplores.org/topic/tech/feed",
+      "https://www.popsci.com/category/technology/feed/",
+      "https://spectrum.ieee.org/feeds/topic/robotics.rss",
+      "https://www.sciencedaily.com/rss/computers_math/robotics.xml",
+      "https://newatlas.com/index.rss",
+    ],
+    label: "Technology",
+    hint: "This is the TECH card. Keep inventions, robots, space hardware, clever gadgets, engineering feats, new materials and how-it-works stories a kid would find cool. Skip product reviews and buying guides, business/stock news, cybersecurity incidents, AI hype or fear pieces, military and weapons tech, and anything about phones or apps for adults.",
+  },
   // Gaming across all three consoles (Nintendo / PlayStation / Xbox) plus a
   // general gaming outlet. The safety filter still drops mature titles.
   news_gamer: {

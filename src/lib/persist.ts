@@ -67,6 +67,51 @@ export async function listUserStates(): Promise<Array<{ userKey: string; state: 
   }
 }
 
+/**
+ * Atomically claim a key: stores `value` only if the key doesn't exist yet.
+ * Returns true if this call created it (i.e. we own the claim).
+ */
+export async function claimPayload(key: string, value: unknown): Promise<boolean> {
+  if (SUPA_URL && SUPA_KEY) {
+    const res = await fetch(`${SUPA_URL}/rest/v1/${TABLE}?on_conflict=user_key`, {
+      method: "POST",
+      headers: {
+        apikey: SUPA_KEY,
+        Authorization: `Bearer ${SUPA_KEY}`,
+        "Content-Type": "application/json",
+        Prefer: "resolution=ignore-duplicates,return=representation",
+      },
+      body: JSON.stringify({ user_key: key, state: value, updated_at: new Date().toISOString() }),
+    });
+    if (!res.ok) return false;
+    const rows = (await res.json()) as unknown[];
+    return rows.length > 0;
+  }
+  try {
+    await fs.mkdir(FILE_DIR, { recursive: true });
+    await fs.writeFile(filePath(key), JSON.stringify(value), { flag: "wx" });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/** Remove a stored payload (e.g. release a claim). */
+export async function deletePayload(key: string): Promise<void> {
+  if (SUPA_URL && SUPA_KEY) {
+    try {
+      await fetch(`${SUPA_URL}/rest/v1/${TABLE}?user_key=eq.${encodeURIComponent(key)}`, {
+        method: "DELETE",
+        headers: { apikey: SUPA_KEY, Authorization: `Bearer ${SUPA_KEY}` },
+      });
+    } catch {
+      // best effort
+    }
+    return;
+  }
+  await fs.rm(filePath(key), { force: true }).catch(() => {});
+}
+
 /** Load a JSON payload previously stored with savePayload. */
 export async function loadPayload<T>(key: string): Promise<T | null> {
   return (await loadRaw(key)) as T | null;
