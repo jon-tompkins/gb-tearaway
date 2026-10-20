@@ -2,9 +2,9 @@ import type { AgeBand, WordFindData } from "../types";
 import { mulberry32, pick, shuffle } from "../rng";
 import { wordFindConfigForDifficulty, bandFromDifficulty } from "../difficulty";
 
-const WORDS_46 = ["CAT", "SUN", "HAT", "DOG", "BUG", "MAP", "CUP", "BEE", "OWL", "PIG", "BAT", "EGG"];
-const WORDS_79 = ["STAR", "FROG", "CAKE", "MOON", "BIRD", "SHIP", "TREE", "RAIN", "BOOK", "FISH", "KITE", "LEAF"];
-const WORDS_1012 = ["COMET", "ROBOT", "RIVER", "CLOUD", "BRAVE", "QUEST", "SPARK", "OCEAN", "PIANO", "MAPLE", "SOLAR", "PIXEL"];
+export const WORDS_46 = ["CAT", "SUN", "HAT", "DOG", "BUG", "MAP", "CUP", "BEE", "OWL", "PIG", "BAT", "EGG"];
+export const WORDS_79 = ["STAR", "FROG", "CAKE", "MOON", "BIRD", "SHIP", "TREE", "RAIN", "BOOK", "FISH", "KITE", "LEAF"];
+export const WORDS_1012 = ["COMET", "ROBOT", "RIVER", "CLOUD", "BRAVE", "QUEST", "SPARK", "OCEAN", "PIANO", "MAPLE", "SOLAR", "PIXEL"];
 
 function poolFor(band: AgeBand): string[] {
   if (band === "4-6") return WORDS_46;

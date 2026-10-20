@@ -2,12 +2,22 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import { AuthButton } from "./AuthButton";
 
 const LINKS = [{ href: "/app", label: "Dashboard", exact: true }];
 
 export function AppNav() {
   const pathname = usePathname();
+  // Admin link for the owner only; the admin pages enforce access themselves.
+  const [isAdmin, setIsAdmin] = useState(false);
+  useEffect(() => {
+    fetch("/api/admin/me")
+      .then((r) => (r.ok ? r.json() : { admin: false }))
+      .then((j: { admin?: boolean }) => setIsAdmin(!!j.admin))
+      .catch(() => {});
+  }, []);
+  const links = isAdmin ? [...LINKS, { href: "/admin", label: "Admin", exact: false }] : LINKS;
   return (
     <header className="sticky top-0 z-40 border-b border-rule/70 bg-cream/90 backdrop-blur-md">
       <div className="mx-auto flex max-w-5xl flex-col items-center gap-2 px-4 py-3 sm:flex-row sm:justify-between sm:gap-3">
@@ -23,7 +33,7 @@ export function AppNav() {
           </span>
         </Link>
         <nav aria-label="Parent app" className="flex w-full items-center justify-center gap-1 overflow-x-auto text-sm sm:w-auto sm:justify-end">
-          {LINKS.map((link) => {
+          {links.map((link) => {
             const active = link.exact
               ? pathname === link.href
               : pathname === link.href || pathname.startsWith(`${link.href}/`);

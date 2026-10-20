@@ -11,7 +11,7 @@ interface ScrambleEntry extends ScrambleItem {
 }
 
 /** Age-banded word bank. Short/common for littles, longer/trickier for olders. */
-const SCRAMBLES: ScrambleEntry[] = [
+export const SCRAMBLES: ScrambleEntry[] = [
   // 4–6 — short, concrete, phonetic
   { bands: ["4-6"], word: "cat", hint: "A pet that says meow." },
   { bands: ["4-6"], word: "dog", hint: "A pet that says woof." },

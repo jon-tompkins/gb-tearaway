@@ -12,7 +12,7 @@ interface SpanishEntry extends SpanishItem {
   bands: AgeBand[];
 }
 
-const WORDS: SpanishEntry[] = [
+export const WORDS: SpanishEntry[] = [
   { bands: ["4-6"], spanish: "hola", phonetic: "OH-lah", english: "hello", example: "Say hola to someone at breakfast." },
   { bands: ["4-6"], spanish: "gracias", phonetic: "GRAH-see-ahs", english: "thank you", example: "Gracias for the pancakes!" },
   { bands: ["4-6"], spanish: "agua", phonetic: "AH-gwah", english: "water", example: "¿Agua, por favor?" },

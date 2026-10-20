@@ -135,7 +135,7 @@ const BASE_JOKES: JokeEntry[] = [
  * ~500 jokes. The age files overlap (a joke written for both 4-6 and 7-9), so
  * identical jokes merge into one entry tagged for every band that had it.
  */
-const JOKES: JokeEntry[] = mergeBank(
+export const JOKES: JokeEntry[] = mergeBank(
   [...BASE_JOKES, ...JOKES_46, ...JOKES_79, ...JOKES_1012],
   (j) => j.setup,
 );

@@ -17,7 +17,7 @@ interface PoemEntry extends PoemItem {
  * whose line window it fits, so it fills the card without clipping or leaving
  * it half-empty.
  */
-const POEMS: PoemEntry[] = [
+export const POEMS: PoemEntry[] = [
   // --- Short (½) ---
   {
     bands: ["4-6", "7-9", "10-12"],

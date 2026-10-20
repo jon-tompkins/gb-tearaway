@@ -15,7 +15,7 @@ interface FallbackEntry {
   text: string;
 }
 
-const HISTORY: HistoryEntry[] = [
+export const HISTORY: HistoryEntry[] = [
   { month: 1, day: 1, year: "1863", bands: ["7-9", "10-12"], text: "The Emancipation Proclamation took effect, declaring millions of enslaved people in the Confederacy to be free." },
   { month: 1, day: 17, year: "1706", bands: ["7-9", "10-12"], text: "Benjamin Franklin was born in Boston. He loved experiments, libraries, and asking better questions." },
   { month: 2, day: 4, year: "2004", bands: ["4-6", "7-9", "10-12"], text: "Facebook launched from a college dorm. A reminder that huge things can start small — and that tools need careful rules." },

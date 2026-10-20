@@ -11,7 +11,7 @@ interface WordEntry {
   bands: AgeBand[];
 }
 
-const WORDS: WordEntry[] = [
+export const WORDS: WordEntry[] = [
   { word: "curious", phonetic: "KYUR-ee-us", pos: "adj.", bands: ["4-6", "7-9"], definition: "Wanting to learn or know more.", example: "The curious kitten peeked into every box.", tryThis: "Ask one question you have never asked before." },
   { word: "brave", phonetic: "BRAYV", pos: "adj.", bands: ["4-6", "7-9"], definition: "Ready to try something hard or a little scary.", example: "She felt brave when she tried the tall slide.", tryThis: "Try one small new thing today." },
   { word: "gentle", phonetic: "JEN-tul", pos: "adj.", bands: ["4-6"], definition: "Soft and careful, not rough.", example: "He gave the puppy a gentle pat.", tryThis: "Do one thing extra-gently — a door, a hug, a crayon." },

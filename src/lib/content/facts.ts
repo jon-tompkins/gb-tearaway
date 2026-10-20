@@ -126,7 +126,7 @@ const BASE_FACTS: FactEntry[] = [
 ];
 
 /** ~570 facts; the same fact appearing in two files merges into one entry. */
-const FACTS: FactEntry[] = mergeBank(
+export const FACTS: FactEntry[] = mergeBank(
   [...BASE_FACTS, ...FACTS_NATURE, ...FACTS_SCIENCE, ...FACTS_WORLD],
   (f) => f.fact,
 );

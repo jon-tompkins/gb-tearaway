@@ -10,7 +10,7 @@ interface RiddleEntry extends RiddleItem {
   bands: AgeBand[];
 }
 
-const RIDDLES: RiddleEntry[] = [
+export const RIDDLES: RiddleEntry[] = [
   { bands: ["4-6"], question: "I have a face and two hands, but no arms or legs. What am I?", answer: "A clock." },
   { bands: ["4-6"], question: "What has to be broken before you can use it?", answer: "An egg." },
   { bands: ["4-6"], question: "What gets wetter the more it dries?", answer: "A towel." },
