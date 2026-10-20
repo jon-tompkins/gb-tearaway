@@ -264,10 +264,11 @@ export async function rewriteKidSafe(
     if (!written.length) return none;
 
     // Fact-check every draft against the text it was written from; drop failures.
+    // Number drafts 1..n for the checker (it renumbers otherwise) and map back.
     const drafts = written
-      .map((w) => {
+      .map((w, i) => {
         const src = texts[w.story - 1] || chosen[w.story - 1].summary || "(none)";
-        return `### Draft ${w.story}\nDRAFT: ${JSON.stringify(w.item)}\nSOURCE TEXT:\n${src}`;
+        return `### Draft ${i + 1}\nDRAFT: ${JSON.stringify(w.item)}\nSOURCE TEXT:\n${src}`;
       })
       .join("\n\n");
     const checks = json(await ask("check", config.check, CHECK_SYSTEM + note, drafts, usage))?.checks;
@@ -275,7 +276,8 @@ export async function rewriteKidSafe(
     if (Array.isArray(checks)) {
       for (const c of checks as Record<string, unknown>[]) {
         const n = Number(String(c.story ?? "").match(/\d+/)?.[0] ?? NaN);
-        verdict.set(n, { pass: c.pass === true, problem: str(c.problem) });
+        const w = written[n - 1];
+        if (w) verdict.set(w.story, { pass: c.pass === true, problem: str(c.problem) });
       }
     }
     const dropped: DroppedStory[] = [];
