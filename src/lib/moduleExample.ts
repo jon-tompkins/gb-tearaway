@@ -77,11 +77,11 @@ export function moduleExample(id: ModuleId): ModuleExample {
     }
     case "fact": {
       const f = pickFact(BAND, rng);
-      return { text: [f.fact, f.extra], note: "Written fresh each morning, kid-safe — this is a sample." };
+      return { text: [f.fact, f.extra], note: "One a day from the bank — this is a sample." };
     }
     case "joke": {
       const j = pickJoke(BAND, rng);
-      return { text: [j.setup, j.punchline], note: "Written fresh each morning, kid-safe — this is a sample." };
+      return { text: [j.setup, j.punchline], note: "One a day from the bank — this is a sample." };
     }
     case "riddle": {
       const r = pickRiddle(BAND, rng);

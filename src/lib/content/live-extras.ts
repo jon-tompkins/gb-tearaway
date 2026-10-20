@@ -1,6 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
-import type { AgeBand, FactItem, ModuleId, WordItem } from "../types";
-import type { JokeItem } from "./jokes";
+import type { AgeBand, ModuleId, WordItem } from "../types";
 import type { SpanishItem } from "./spanish";
 import type { ScrambleItem } from "./scramble";
 import type { RiddleItem } from "./riddles";
@@ -8,7 +7,7 @@ import { loadPayload, savePayload } from "../persist";
 import { shuffle } from "../rng";
 
 /**
- * Fresh daily "content bites" — jokes, facts, word of the day, Spanish word,
+ * Fresh daily "content bites" — word of the day, Spanish word,
  * word scramble, riddle — generated kid-safe by Haiku and cached once per UTC
  * day (globally, like the news pipeline — one call per type per day for
  * everyone). Each DOES have a static fallback: if the model is unavailable the
@@ -18,16 +17,12 @@ import { shuffle } from "../rng";
 const MODEL = "claude-haiku-4-5";
 const BANDS: AgeBand[] = ["4-6", "7-9", "10-12"];
 
-export type LiveJoke = JokeItem & { bands: AgeBand[] };
-export type LiveFact = FactItem & { bands: AgeBand[] };
 export type LiveWord = WordItem & { bands: AgeBand[] };
 export type LiveSpanish = SpanishItem & { bands: AgeBand[] };
 export type LiveScramble = ScrambleItem & { bands: AgeBand[] };
 export type LiveRiddle = RiddleItem & { bands: AgeBand[] };
 
 export interface DailyExtras {
-  jokes?: LiveJoke[];
-  facts?: LiveFact[];
   words?: LiveWord[];
   spanish?: LiveSpanish[];
   scramble?: LiveScramble[];
@@ -68,77 +63,6 @@ async function haiku(system: string, user: string): Promise<string> {
     .map((b) => (b.type === "text" ? b.text : ""))
     .join("")
     .trim();
-}
-
-const JOKE_SYSTEM = `You write clean, genuinely funny jokes for a printed children's morning paper.
-
-Write 14 jokes as a mix of puns, riddles, and knock-knocks. Every joke must be:
-- G-rated and kind (no violence, insults, bathroom gross-out, stereotypes, or anything scary/adult)
-- actually funny with a satisfying pun or twist — avoid tired, over-used ones
-- self-contained: a short "setup" line and a short "punchline" line
-
-Spread them across three reading levels and tag each with the bands it suits:
-- "4-6": very simple words, silly and obvious
-- "7-9": light wordplay a new reader gets
-- "10-12": cleverer puns / double meanings
-A joke may list more than one band.
-
-Return ONLY minified JSON: {"jokes":[{"setup","punchline","bands"}]}. No prose, no markdown.`;
-
-const FACT_SYSTEM = `You write true "did you know" fun facts for a printed children's morning paper.
-
-Write 14 facts. Every fact must be:
-- TRUE and well-established — if you are not confident it is accurate, do not include it. Never invent numbers or specifics.
-- genuinely surprising or delightful (animals, space, nature, science, history, the human body, records, how things work)
-- kid-safe: nothing scary, sad, violent, or adult
-- two parts: "fact" (one punchy sentence) and "extra" (one short sentence that adds context)
-
-Spread them across three reading levels and tag each with the bands it suits:
-- "4-6": simple and concrete
-- "7-9": a bit more detail
-- "10-12": can handle bigger numbers / ideas
-A fact may list more than one band.
-
-Return ONLY minified JSON: {"facts":[{"fact","extra","bands"}]}. No prose, no markdown.`;
-
-async function generateJokes(avoid: string[]): Promise<LiveJoke[]> {
-  if (!process.env.ANTHROPIC_API_KEY) return [];
-  try {
-    const obj = jsonObject(await haiku(JOKE_SYSTEM, userMessage("Write today's jokes.", avoid)));
-    const arr = obj?.jokes;
-    if (!Array.isArray(arr)) return [];
-    const out: LiveJoke[] = [];
-    for (const raw of arr) {
-      const o = raw as Record<string, unknown>;
-      const setup = typeof o.setup === "string" ? o.setup.trim() : "";
-      const punchline = typeof o.punchline === "string" ? o.punchline.trim() : "";
-      if (!setup || !punchline) continue;
-      out.push({ setup, punchline, bands: parseBands(o.bands) });
-    }
-    return out;
-  } catch {
-    return [];
-  }
-}
-
-async function generateFacts(avoid: string[]): Promise<LiveFact[]> {
-  if (!process.env.ANTHROPIC_API_KEY) return [];
-  try {
-    const obj = jsonObject(await haiku(FACT_SYSTEM, userMessage("Write today's fun facts.", avoid)));
-    const arr = obj?.facts;
-    if (!Array.isArray(arr)) return [];
-    const out: LiveFact[] = [];
-    for (const raw of arr) {
-      const o = raw as Record<string, unknown>;
-      const fact = typeof o.fact === "string" ? o.fact.trim() : "";
-      const extra = typeof o.extra === "string" ? o.extra.trim() : "";
-      if (!fact) continue;
-      out.push({ fact, extra, bands: parseBands(o.bands) });
-    }
-    return out;
-  } catch {
-    return [];
-  }
 }
 
 const WORD_SYSTEM = `You choose a "word of the day" for a printed children's morning paper.
@@ -293,7 +217,8 @@ const norm = (t: string) => t.toLowerCase().replace(/[^a-z0-9áéíóúñü]+/g,
 
 /**
  * The same prompt every morning gets nearly the same answers back (two weeks of
- * "fresh" jokes were ~38 distinct ones). So each request carries the date and
+ * "fresh" jokes were ~38 distinct ones, which is why jokes and facts now come
+ * from the static bank instead). So each request carries the date and
  * the recently printed items, and anything repeated anyway is dropped below.
  */
 function userMessage(base: string, avoid: string[]): string {
@@ -345,8 +270,6 @@ async function getDaily<T>(
 /** Prefetch today's live content bites for the modules present in a pool. */
 export async function gatherDailyExtras(pool: ModuleId[]): Promise<DailyExtras | undefined> {
   const want = {
-    jokes: pool.includes("joke"),
-    facts: pool.includes("fact"),
     words: pool.includes("word"),
     spanish: pool.includes("spanish"),
     scramble: pool.includes("scramble"),
@@ -354,9 +277,7 @@ export async function gatherDailyExtras(pool: ModuleId[]): Promise<DailyExtras |
   };
   if (!Object.values(want).some(Boolean)) return undefined;
 
-  const [jokes, facts, words, spanish, scramble, riddles] = await Promise.all([
-    want.jokes ? getDaily("jokes", generateJokes, (j) => `${j.setup} ${j.punchline}`) : Promise.resolve<LiveJoke[]>([]),
-    want.facts ? getDaily("facts", generateFacts, (f) => f.fact) : Promise.resolve<LiveFact[]>([]),
+  const [words, spanish, scramble, riddles] = await Promise.all([
     want.words ? getDaily("words", generateWords, (w) => w.word) : Promise.resolve<LiveWord[]>([]),
     want.spanish ? getDaily("spanish", generateSpanish, (w) => w.spanish) : Promise.resolve<LiveSpanish[]>([]),
     want.scramble ? getDaily("scramble", generateScramble, (w) => w.word) : Promise.resolve<LiveScramble[]>([]),
@@ -364,31 +285,11 @@ export async function gatherDailyExtras(pool: ModuleId[]): Promise<DailyExtras |
   ]);
 
   const out: DailyExtras = {};
-  if (jokes.length) out.jokes = jokes;
-  if (facts.length) out.facts = facts;
   if (words.length) out.words = words;
   if (spanish.length) out.spanish = spanish;
   if (scramble.length) out.scramble = scramble;
   if (riddles.length) out.riddles = riddles;
   return Object.keys(out).length ? out : undefined;
-}
-
-/** Pick one band-appropriate joke from the live pool (null → use static bank). */
-export function pickLiveJoke(pool: LiveJoke[], band: AgeBand, rng: () => number): JokeItem | null {
-  const fit = pool.filter((j) => j.bands.includes(band));
-  const src = fit.length ? fit : pool;
-  if (!src.length) return null;
-  const j = shuffle(rng, src)[0];
-  return { setup: j.setup, punchline: j.punchline };
-}
-
-/** Pick one band-appropriate fact from the live pool (null → use static bank). */
-export function pickLiveFact(pool: LiveFact[], band: AgeBand, rng: () => number): FactItem | null {
-  const fit = pool.filter((f) => f.bands.includes(band));
-  const src = fit.length ? fit : pool;
-  if (!src.length) return null;
-  const f = shuffle(rng, src)[0];
-  return { fact: f.fact, extra: f.extra };
 }
 
 /** Band-appropriate pick from any live pool with a `bands` field (null → static). */

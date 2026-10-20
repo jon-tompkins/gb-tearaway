@@ -1,11 +1,16 @@
 import type { AgeBand, FactItem } from "../types";
 import { pick } from "../rng";
+import { pickRotating, type RotateKey } from "./rotate";
+import { mergeBank } from "./mergeBank";
+import { FACTS_NATURE } from "./bank/facts-nature";
+import { FACTS_SCIENCE } from "./bank/facts-science";
+import { FACTS_WORLD } from "./bank/facts-world";
 
 interface FactEntry extends FactItem {
   bands: AgeBand[];
 }
 
-const FACTS: FactEntry[] = [
+const BASE_FACTS: FactEntry[] = [
   { bands: ["4-6"], fact: "A group of flamingos is called a flamboyance.", extra: "They get their pink color from the food they eat." },
   { bands: ["4-6"], fact: "Otters hold hands when they sleep so they don’t drift apart.", extra: "Scientists call that a raft of otters." },
   { bands: ["4-6"], fact: "Honey never spoils. Jars thousands of years old can still be eaten.", extra: "Bees are tiny chemists." },
@@ -71,7 +76,6 @@ const FACTS: FactEntry[] = [
   { bands: ["4-6", "7-9"], fact: "A group of fish swimming together is called a school.", extra: "Swimming together helps keep them safe from predators." },
   { bands: ["4-6", "7-9"], fact: "Bats are the only mammals that can truly fly.", extra: "Their wings are made of skin stretched over long finger bones." },
   { bands: ["4-6", "7-9"], fact: "A group of owls is called a parliament.", extra: "Many owls are awake at night and sleep in the day." },
-  { bands: ["4-6", "7-9"], fact: "Woodpeckers have special skulls that cushion their brains.", extra: "That’s how they can peck wood without hurting themselves." },
   { bands: ["4-6", "7-9"], fact: "A cat has a special back-of-eye layer that helps it see in the dark.", extra: "It’s why cats’ eyes seem to glow in the dark." },
   { bands: ["7-9"], fact: "The blue whale is the largest animal that has ever lived.", extra: "Its heart alone can be as big as a small car." },
   { bands: ["7-9"], fact: "A hummingbird’s heart can beat over 1,000 times a minute.", extra: "They flap their wings so fast the wings make a humming sound." },
@@ -121,8 +125,26 @@ const FACTS: FactEntry[] = [
   { bands: ["10-12"], fact: "The Wright brothers’ first powered flight lasted about 12 seconds.", extra: "It happened in 1903 and covered around 120 feet." },
 ];
 
+/** ~570 facts; the same fact appearing in two files merges into one entry. */
+const FACTS: FactEntry[] = mergeBank(
+  [...BASE_FACTS, ...FACTS_NATURE, ...FACTS_SCIENCE, ...FACTS_WORLD],
+  (f) => f.fact,
+);
+
 export function pickFact(band: AgeBand, rng: () => number): FactItem {
   const pool = FACTS.filter((f) => f.bands.includes(band));
   const f = pick(rng, pool.length ? pool : FACTS);
   return { fact: f.fact, extra: f.extra };
+}
+
+/** Today's fact for a kid: walks the whole bank for their age band before repeating. */
+export function pickFactForDay(band: AgeBand, key: RotateKey): FactItem {
+  const pool = FACTS.filter((f) => f.bands.includes(band));
+  const f = pickRotating(pool.length ? pool : FACTS, key, `fact|${band}`);
+  return { fact: f.fact, extra: f.extra };
+}
+
+/** How many facts each age band can go through before a repeat. */
+export function factBankSize(band: AgeBand): number {
+  return FACTS.filter((f) => f.bands.includes(band)).length;
 }

@@ -27,7 +27,7 @@ async function fetchMany(urls: string[], perSource = 10): Promise<RawHeadline[]>
  */
 export async function getDailyNews(
   feed: NewsModuleId,
-  opts: { city?: string } = {},
+  opts: { city?: string; generate?: boolean } = {},
 ): Promise<LiveNewsEntry[] | null> {
   if (!process.env.ANTHROPIC_API_KEY) return null;
 
@@ -53,6 +53,11 @@ export async function getDailyNews(
   const key = `news:${date}:${feed}${cacheSuffix}`;
   const cached = await loadPayload<DailyNewsPayload>(key);
   if (cached?.date === date) return cached.items.length ? cached.items : null;
+  // Writing a feed (pick → fetch articles → write) takes a minute or more, far
+  // too slow for the dispatch render (the emailed PDF has a 60s budget). Only
+  // the news warm-up cron generates; renders read the cache, and a feed that
+  // isn't ready yet simply doesn't print.
+  if (!opts.generate) return null;
 
   const headlines = urls.length > 1 ? await fetchMany(urls) : await fetchHeadlines(urls[0]);
   const items = await rewriteKidSafe(headlines, hint);
@@ -60,7 +65,7 @@ export async function getDailyNews(
   return items.length ? items : null;
 }
 
-/** Gather live daily news for every news feed present in a module pool. */
+/** Gather today's cached news for every news feed present in a module pool (no generation). */
 export async function gatherDailyNews(
   pool: ModuleId[],
   opts: { city?: string } = {},

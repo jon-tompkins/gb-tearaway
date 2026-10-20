@@ -10,12 +10,10 @@ import { LETTER_WIDTH_PX, STRIP_DPI, STRIP_WIDTH_PX } from "./types";
 import { dateISOInZone, formatStripDate, formatTime12 } from "./dates";
 import { mulberry32, pick, stripSeed, uid } from "./rng";
 import { pickWord } from "./content/words";
-import { pickFact } from "./content/facts";
+import { pickFactForDay } from "./content/facts";
 import { pickHistory } from "./content/history";
-import { pickJoke } from "./content/jokes";
+import { pickJokeForDay } from "./content/jokes";
 import {
-  pickLiveJoke,
-  pickLiveFact,
   pickLiveWord,
   pickLiveSpanish,
   pickLiveScramble,
@@ -144,8 +142,7 @@ export function generateStrip(
       continue;
     }
     if (moduleId === "fact") {
-      const fact =
-        (opts.extras?.facts && pickLiveFact(opts.extras.facts, band, rng)) || pickFact(band, rng);
+      const fact = pickFactForDay(band, { dateISO: date, kid: firstName, nonce });
       sections.push({
         id: `fact-${hashish(fact.fact)}`,
         moduleId,
@@ -370,8 +367,7 @@ export function generateStrip(
       continue;
     }
     if (moduleId === "joke") {
-      const joke =
-        (opts.extras?.jokes && pickLiveJoke(opts.extras.jokes, band, rng)) || pickJoke(band, rng);
+      const joke = pickJokeForDay(band, { dateISO: date, kid: firstName, nonce });
       sections.push({
         id: `joke-${hashish(joke.setup)}`,
         moduleId,
@@ -505,7 +501,7 @@ export function generateStrip(
         news: items.map((i) => ({
           headline: i.headline,
           location: i.location,
-          blurb: `${i.blurb} ${i.wonder}`,
+          blurb: [i.blurb, i.wonder].filter(Boolean).join(" "),
         })),
       });
       continue;

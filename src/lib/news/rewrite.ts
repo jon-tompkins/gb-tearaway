@@ -2,51 +2,106 @@ import Anthropic from "@anthropic-ai/sdk";
 import type { AgeBand } from "../types";
 import type { LiveNewsEntry } from "../content/news";
 import type { RawHeadline } from "./rss";
+import { fetchArticleText } from "./article";
 
-const MODEL = "claude-haiku-4-5";
+/**
+ * Two steps, so stories are real AND worth reading:
+ *  1. PICK — from the day's headlines, choose the few genuinely interesting,
+ *     kid-safe news events (drops anniversaries, listicles, promos, grim stuff).
+ *  2. WRITE — fetch each chosen article and write from the actual text, so the
+ *     blurb carries the real names, numbers and details instead of filler.
+ * Runs once per feed per day in the news warm-up cron, so speed doesn't matter.
+ */
+const MODEL = "claude-opus-5-5";
 const BANDS: AgeBand[] = ["4-6", "7-9", "10-12"];
+const MAX_STORIES = 8;
 
-const SYSTEM = `You turn real news headlines into short, kid-safe news blurbs for a children's printed morning paper. You are the safety filter and the writer.
+const client = () => new Anthropic();
 
-STRICT — DROP any item that touches: death, injury, violence, war, weapons, crime, terrorism, disasters/accidents, abuse, illness/medical, protests, elections/partisan politics, money/economy scandals, celebrities' private lives, or anything scary, sad, or adult. When unsure, drop it.
+const SAFETY = `Kid safety (non-negotiable): DROP anything touching death, injury, violence, war, weapons, crime, terrorism, disasters or accidents, abuse, illness, protests, elections or partisan politics, money scandals, celebrity private lives, or anything scary, sad or adult. When unsure, drop it.`;
 
-KEEP only genuinely wholesome, curiosity-sparking stories: science, space, nature, animals, discoveries, inventions/technology-for-good, sports achievements, art/culture, community kindness, records, and cool "how the world works" news.
+const PICK_SYSTEM = `You are the front-page editor of a printed morning newspaper for children aged 4-12. From a numbered list of today's real headlines, pick the stories most worth a curious kid's two minutes.
 
-For each KEPT item write, grounded in the real headline/summary (do NOT invent events or fake specifics):
-- headline: <= 8 words, plain and fun
-- location: "City, Country" or "City, State" if known, else a broad region ("Pacific Ocean", "Space")
-- blurb: 2-3 short sentences a 7-year-old understands, factual to the real story
-- wonder: one delightful true "did you know" fact related to it
-- bands: which of "4-6","7-9","10-12" the story suits (array)
+${SAFETY}
 
-Return ONLY minified JSON: {"items":[{"headline","location","blurb","wonder","bands"}]}. No prose, no markdown. If nothing is appropriate, return {"items":[]}.`;
+A good pick is a real NEWS EVENT that happened or was announced recently, with something a kid would want to tell someone at breakfast: a discovery, a first, a record, a rescue, a clever invention, an animal doing something surprising, a place or project with a vivid detail.
+
+Skip: birthdays and "on this day" anniversaries, listicles and roundups ("10 ways to…", "what went right this week"), opinion pieces, product or app promotion, business results, vague trend pieces, and stories whose only point is that something is "good news". Prefer variety of topic and place.
+
+Return ONLY minified JSON: {"picks":[<numbers>]} with at most ${MAX_STORIES} numbers, best first. If nothing qualifies, {"picks":[]}.`;
+
+const WRITE_SYSTEM = `You write news for a printed children's morning newspaper. Each story you get comes with the real article text (or, when that wasn't available, just the feed teaser). Write it the way a good newspaper writes for kids: plain, specific, true.
+
+${SAFETY}
+
+For each story:
+- headline: at most 8 words, concrete and specific (who/what did what). No puns, no exclamation marks.
+- location: where it happened — "City, Country", "City, State", or just the country/region when no city is given. Never repeat a word ("Turkey, Turkey" is wrong — write "Turkey").
+- blurb: 2-3 short sentences a 7-year-old can read. Lead with the most surprising concrete fact. Include at least two specific details FROM THE ARTICLE (a number, a name, a place, what exactly was found or built). State status accurately — if something was proposed, voted on, or is being tested, say so; don't present it as finished.
+- wonder: one extra true detail FROM THE ARTICLE that makes it more interesting, as a plain sentence. If the article has no extra detail worth adding, use "". Do NOT bring in general trivia from outside the article.
+- bands: which of "4-6","7-9","10-12" can follow it.
+
+Never invent details that aren't in the text. Never pad with feel-good filler — banned: "amazing", "incredible", "magical", "super", "awesome", "Did you know", "forever", "helping everyone", "making the world a better place", and sentences that only say the story is good or exciting. If a story has too little real information to write 2 specific sentences, or turns out not to be kid-safe, leave it out.
+
+Return ONLY minified JSON: {"items":[{"headline","location","blurb","wonder","bands"}]}. No prose, no markdown. If nothing works, {"items":[]}.`;
+
+async function ask(system: string, user: string, effort: "low" | "medium"): Promise<string> {
+  // Opus 5.5 always thinks and that counts against max_tokens — stream with a
+  // generous cap, and treat a truncated or refused reply as no result.
+  const msg = await client()
+    .messages.stream({
+      model: MODEL,
+      max_tokens: 32000,
+      system,
+      output_config: { effort },
+      messages: [{ role: "user", content: user }],
+    })
+    .finalMessage();
+  if (msg.stop_reason !== "end_turn") return "";
+  return msg.content
+    .map((b) => (b.type === "text" ? b.text : ""))
+    .join("")
+    .trim();
+}
+
+function json(text: string): Record<string, unknown> | null {
+  const a = text.indexOf("{");
+  const b = text.lastIndexOf("}");
+  if (a < 0 || b < 0) return null;
+  try {
+    return JSON.parse(text.slice(a, b + 1)) as Record<string, unknown>;
+  } catch {
+    return null;
+  }
+}
+
+const str = (v: unknown) => (typeof v === "string" ? v.trim() : "");
+
+/** Drop "Turkey, Turkey" style repeats the model sometimes still writes. */
+function tidyLocation(loc: string): string {
+  const parts = loc.split(",").map((p) => p.trim()).filter(Boolean);
+  const out: string[] = [];
+  for (const p of parts) if (!out.some((o) => o.toLowerCase() === p.toLowerCase())) out.push(p);
+  return out.join(", ");
+}
 
 function parseItems(text: string): LiveNewsEntry[] {
-  const start = text.indexOf("{");
-  const end = text.lastIndexOf("}");
-  if (start < 0 || end < 0) return [];
-  let data: unknown;
-  try {
-    data = JSON.parse(text.slice(start, end + 1));
-  } catch {
-    return [];
-  }
-  const items = (data as { items?: unknown[] })?.items;
+  const items = json(text)?.items;
   if (!Array.isArray(items)) return [];
   const out: LiveNewsEntry[] = [];
   for (const raw of items) {
     const o = raw as Record<string, unknown>;
-    const headline = typeof o.headline === "string" ? o.headline.trim() : "";
-    const blurb = typeof o.blurb === "string" ? o.blurb.trim() : "";
+    const headline = str(o.headline);
+    const blurb = str(o.blurb);
     if (!headline || !blurb) continue;
     const bands = Array.isArray(o.bands)
       ? (o.bands.filter((b) => BANDS.includes(b as AgeBand)) as AgeBand[])
       : [];
     out.push({
       headline,
-      location: typeof o.location === "string" ? o.location.trim() : "",
+      location: tidyLocation(str(o.location)),
       blurb,
-      wonder: typeof o.wonder === "string" ? o.wonder.trim() : "",
+      wonder: str(o.wonder),
       bands: bands.length ? bands : ["7-9", "10-12"],
     });
   }
@@ -54,37 +109,38 @@ function parseItems(text: string): LiveNewsEntry[] {
 }
 
 /**
- * Rewrite raw headlines into kid-safe blurbs via Haiku. Returns [] on any
- * failure (missing key, API error, bad JSON) so callers fall back to the
- * static bank. Never throws.
+ * Pick and write today's kid-safe stories from raw headlines. Returns [] on any
+ * failure (no key, API error, bad JSON) — news never falls back to made-up text.
  */
 export async function rewriteKidSafe(
   headlines: RawHeadline[],
   hint?: string,
 ): Promise<LiveNewsEntry[]> {
   if (!process.env.ANTHROPIC_API_KEY || headlines.length === 0) return [];
+  const note = hint ? `\n\nFEED NOTE: ${hint}` : "";
   try {
-    const client = new Anthropic();
     const list = headlines
       .map((h, i) => `${i + 1}. ${h.title}${h.summary ? ` — ${h.summary}` : ""}`)
       .join("\n");
-    const res = await client.messages.create({
-      model: MODEL,
-      max_tokens: 2000,
-      system: hint ? `${SYSTEM}\n\nFEED NOTE: ${hint}` : SYSTEM,
-      messages: [
-        {
-          role: "user",
-          content: `Today's real headlines. Keep only the kid-safe ones and rewrite them:\n\n${list}`,
-        },
-      ],
-    });
-    const text = res.content
-      .map((b) => (b.type === "text" ? b.text : ""))
-      .join("")
-      .trim();
-    return parseItems(text);
-  } catch {
+    const picks = json(await ask(PICK_SYSTEM + note, `Today's headlines:\n\n${list}`, "low"))?.picks;
+    const chosen = (Array.isArray(picks) ? picks : [])
+      .map((n) => headlines[Number(n) - 1])
+      .filter((h): h is RawHeadline => !!h)
+      .slice(0, MAX_STORIES);
+    if (!chosen.length) return [];
+
+    const texts = await Promise.all(chosen.map((h) => (h.link ? fetchArticleText(h.link) : "")));
+    const stories = chosen
+      .map((h, i) =>
+        [
+          `### Story ${i + 1}: ${h.title}`,
+          texts[i] ? `ARTICLE TEXT:\n${texts[i]}` : `FEED TEASER ONLY:\n${h.summary || "(none)"}`,
+        ].join("\n"),
+      )
+      .join("\n\n");
+    return parseItems(await ask(WRITE_SYSTEM + note, stories, "medium"));
+  } catch (e) {
+    console.error("[news] rewrite failed:", e instanceof Error ? e.message : e);
     return [];
   }
 }

@@ -1,6 +1,8 @@
 export interface RawHeadline {
   title: string;
   summary: string;
+  /** Article URL, when the feed gives one — used to fetch the full story. */
+  link?: string;
 }
 
 function decode(s: string): string {
@@ -38,7 +40,11 @@ export async function fetchHeadlines(url: string, limit = 14): Promise<RawHeadli
   for (const block of items) {
     const title = tag(block, "title");
     const summary = tag(block, "description") || tag(block, "summary");
-    if (title) out.push({ title, summary: summary.slice(0, 500) });
+    // RSS: <link>url</link>; Atom: <link href="url"/>
+    const link =
+      tag(block, "link") ||
+      (block.match(/<link[^>]*href=["']([^"']+)["']/i)?.[1] ?? "");
+    if (title) out.push({ title, summary: summary.slice(0, 500), link: link || undefined });
     if (out.length >= limit) break;
   }
   return out;

@@ -61,7 +61,7 @@ export const MODULE_INFO: Record<ModuleId, ModuleInfo> = {
   },
   joke: {
     source:
-      "A fresh joke written each morning by an AI, kept clean and age-checked (with a hand-curated backup bank). One groaner a day, nothing mean.",
+      "A hand-picked bank of 500+ clean, age-checked jokes. Each kid works through it one a day in their own order, so nothing repeats until the whole bank is used.",
     config: [DIAL + " Picks the age band."],
   },
   spanish: {
@@ -106,13 +106,13 @@ export const MODULE_INFO: Record<ModuleId, ModuleInfo> = {
   },
   fact: {
     source:
-      "A fresh, true fun fact generated each morning by an AI (with a hand-curated backup bank) — one thing worth knowing before cereal.",
+      "A bank of 570+ true fun facts, written to avoid popular myths. Each kid works through it one a day in their own order, so nothing repeats until the whole bank is used.",
     config: [DIAL + " Picks the age band."],
   },
   // Kid-friendly news — live RSS + AI kid-safe rewrite, no fabricated fallback
   news_world: {
     source:
-      "Real headlines from around the world (Good News Network, Mongabay, Science News Explores, Smithsonian, NASA) rewritten kid-safe by AI and cached daily. If nothing is kid-safe today, the card simply doesn't print — never a made-up story.",
+      "Real headlines from around the world (Good News Network, Mongabay, Science News Explores, Smithsonian, NASA) picked for interest, then written up kid-safe by AI from the full article each morning. If nothing is kid-safe today, the card simply doesn't print — never a made-up story.",
     config: ["No setup — always real and kid-safe."],
   },
   news_national: {

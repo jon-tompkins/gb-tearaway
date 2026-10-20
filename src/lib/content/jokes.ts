@@ -1,5 +1,10 @@
 import type { AgeBand } from "../types";
 import { pick } from "../rng";
+import { pickRotating, type RotateKey } from "./rotate";
+import { mergeBank } from "./mergeBank";
+import { JOKES_46 } from "./bank/jokes-46";
+import { JOKES_79 } from "./bank/jokes-79";
+import { JOKES_1012 } from "./bank/jokes-1012";
 
 export interface JokeItem {
   setup: string;
@@ -10,7 +15,7 @@ interface JokeEntry extends JokeItem {
   bands: AgeBand[];
 }
 
-const JOKES: JokeEntry[] = [
+const BASE_JOKES: JokeEntry[] = [
   { bands: ["4-6"], setup: "Why did the banana go to the doctor?", punchline: "It wasn’t peeling well." },
   { bands: ["4-6"], setup: "What do you call a sleepy cow?", punchline: "A bull-dozer… no, a cow-a-nap!" },
   { bands: ["4-6"], setup: "Why don’t eggs tell jokes?", punchline: "They’d crack each other up." },
@@ -126,8 +131,29 @@ const JOKES: JokeEntry[] = [
   { bands: ["4-6", "7-9", "10-12"], setup: "Why can’t your nose be twelve inches long?", punchline: "Because then it would be a foot." },
 ];
 
+/**
+ * ~500 jokes. The age files overlap (a joke written for both 4-6 and 7-9), so
+ * identical jokes merge into one entry tagged for every band that had it.
+ */
+const JOKES: JokeEntry[] = mergeBank(
+  [...BASE_JOKES, ...JOKES_46, ...JOKES_79, ...JOKES_1012],
+  (j) => j.setup,
+);
+
 export function pickJoke(band: AgeBand, rng: () => number): JokeItem {
   const pool = JOKES.filter((j) => j.bands.includes(band));
   const j = pick(rng, pool.length ? pool : JOKES);
   return { setup: j.setup, punchline: j.punchline };
+}
+
+/** Today's joke for a kid: walks the whole bank for their age band before repeating. */
+export function pickJokeForDay(band: AgeBand, key: RotateKey): JokeItem {
+  const pool = JOKES.filter((j) => j.bands.includes(band));
+  const j = pickRotating(pool.length ? pool : JOKES, key, `joke|${band}`);
+  return { setup: j.setup, punchline: j.punchline };
+}
+
+/** How many jokes each age band can go through before a repeat. */
+export function jokeBankSize(band: AgeBand): number {
+  return JOKES.filter((j) => j.bands.includes(band)).length;
 }
