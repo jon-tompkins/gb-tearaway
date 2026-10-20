@@ -295,7 +295,8 @@ export function generateStrip(
             }`
           : weather.summary;
       const lines = [
-        `${weather.label} · ${weather.summary}`,
+        // The summary usually starts with the place already — don't print it twice.
+        weather.summary.startsWith(weather.label) ? weather.summary : `${weather.label} · ${weather.summary}`,
         tempLine,
         weather.tip,
       ];

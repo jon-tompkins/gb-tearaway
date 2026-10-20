@@ -2,7 +2,8 @@ import type { ModuleId } from "../types";
 import { isNewsModule, type LiveNewsEntry, type NewsModuleId } from "../content/news";
 import { loadPayload, savePayload } from "../persist";
 import { fetchHeadlines, type RawHeadline } from "./rss";
-import { rewriteKidSafe, type DroppedStory } from "./rewrite";
+import { rewriteKidSafe, type CallUsage, type DroppedStory, type NewsConfig } from "./rewrite";
+import { logEvent } from "../events";
 import { NEWS_FEEDS, cityFeedUrl } from "./sources";
 
 interface DailyNewsPayload {
@@ -10,6 +11,8 @@ interface DailyNewsPayload {
   items: LiveNewsEntry[];
   /** Stories picked but rejected (writer or fact-check), with the reason — for the admin. */
   dropped?: DroppedStory[];
+  /** Token usage + cost of each AI call that produced this feed. */
+  usage?: CallUsage[];
 }
 
 function utcDate(): string {
@@ -17,7 +20,7 @@ function utcDate(): string {
 }
 
 /** Fetch several feeds and merge, capped per source so one Haiku call stays small. */
-async function fetchMany(urls: string[], perSource = 10): Promise<RawHeadline[]> {
+async function fetchMany(urls: string[], perSource = 8): Promise<RawHeadline[]> {
   const lists = await Promise.all(urls.map((u) => fetchHeadlines(u)));
   return lists.flatMap((l) => l.slice(0, perSource));
 }
@@ -27,9 +30,21 @@ async function fetchMany(urls: string[], perSource = 10): Promise<RawHeadline[]>
  * Returns null when live news isn't available (no source, no API key, fetch/LLM
  * failure, or nothing kid-safe today) → the caller prints nothing (no fallback).
  */
+/** The source URLs + rewrite hint for a (non-hometown) feed. */
+export function feedSource(feed: NewsModuleId): { urls: string[]; hint?: string } | null {
+  const source = NEWS_FEEDS[feed];
+  if (!source) return null;
+  return { urls: Array.isArray(source.url) ? source.url : [source.url], hint: source.hint };
+}
+
+/** Today's raw headlines for a set of feed URLs (capped per source). */
+export async function headlinesFor(urls: string[]): Promise<RawHeadline[]> {
+  return urls.length > 1 ? fetchMany(urls) : fetchHeadlines(urls[0]);
+}
+
 export async function getDailyNews(
   feed: NewsModuleId,
-  opts: { city?: string; generate?: boolean } = {},
+  opts: { city?: string; generate?: boolean; config?: NewsConfig } = {},
 ): Promise<LiveNewsEntry[] | null> {
   if (!process.env.ANTHROPIC_API_KEY) return null;
 
@@ -61,9 +76,14 @@ export async function getDailyNews(
   // isn't ready yet simply doesn't print.
   if (!opts.generate) return null;
 
-  const headlines = urls.length > 1 ? await fetchMany(urls) : await fetchHeadlines(urls[0]);
-  const { items, dropped } = await rewriteKidSafe(headlines, hint);
-  await savePayload(key, { date, items, dropped } satisfies DailyNewsPayload);
+  const headlines = await headlinesFor(urls);
+  const { items, dropped, usage } = await rewriteKidSafe(headlines, hint, opts.config);
+  await savePayload(key, { date, items, dropped, usage } satisfies DailyNewsPayload);
+  const usd = usage.reduce((a, u) => a + u.usd, 0);
+  await logEvent({
+    type: "ai_usage",
+    meta: { feature: feed, usd, calls: usage, stories: items.length },
+  });
   return items.length ? items : null;
 }
 

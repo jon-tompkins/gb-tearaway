@@ -12,8 +12,41 @@ import { fetchArticleText } from "./article";
  *     blurb carries the real names, numbers and details instead of filler.
  * Runs once per feed per day in the news warm-up cron, so speed doesn't matter.
  */
-// Sonnet: about half the cost of Opus; quality checked against the Opus output.
-const MODEL = "claude-sonnet-5-5";
+type ModelId = "claude-sonnet-5-5" | "claude-haiku-4-5" | "claude-haiku-5-5";
+type Effort = "low" | "medium" | "high";
+
+/** Which model (and thinking effort) runs each step, and how much article text to read. */
+export interface NewsConfig {
+  pick: { model: ModelId; effort?: Effort };
+  write: { model: ModelId; effort?: Effort };
+  check: { model: ModelId; effort?: Effort };
+  articleChars: number;
+}
+
+/** Production setup — see scripts/notes in the cost comparison (admin Usage tab shows real spend). */
+export const DEFAULT_NEWS_CONFIG: NewsConfig = {
+  pick: { model: "claude-sonnet-5-5", effort: "low" },
+  write: { model: "claude-sonnet-5-5", effort: "medium" },
+  check: { model: "claude-sonnet-5-5", effort: "medium" },
+  articleChars: 5000,
+};
+
+/** $ per million tokens (input, output) — Anthropic list prices. */
+const PRICE: Record<ModelId, [number, number]> = {
+  "claude-sonnet-5-5": [2, 10],
+  "claude-haiku-4-5": [1, 5],
+  "claude-haiku-5-5": [0.1, 0.5],
+};
+
+export interface CallUsage {
+  step: "pick" | "write" | "check";
+  model: ModelId;
+  input: number;
+  output: number;
+  usd: number;
+  stop: string;
+}
+
 const BANDS: AgeBand[] = ["4-6", "7-9", "10-12"];
 const MAX_STORIES = 8;
 
@@ -58,18 +91,35 @@ Do NOT fail a draft for: simplified wording for children, paraphrase, a harmless
 
 Return ONLY minified JSON: {"checks":[{"story":<draft number, e.g. 3>,"pass":true|false,"problem":"<short reason if it fails, else empty>"}]}.`;
 
-async function ask(system: string, user: string, effort: "low" | "medium"): Promise<string> {
-  // Sonnet 5.5 thinks by default and that counts against max_tokens — stream with a
-  // generous cap, and treat a truncated or refused reply as no result.
+async function ask(
+  step: CallUsage["step"],
+  cfg: { model: ModelId; effort?: Effort },
+  system: string,
+  user: string,
+  usage: CallUsage[],
+): Promise<string> {
+  // Sonnet 5.5 / Haiku 5.5 think by default, and thinking counts against
+  // max_tokens — stream with a generous cap; a truncated or refused reply is
+  // treated as no result. Haiku 4.5 takes no effort setting.
   const msg = await client()
     .messages.stream({
-      model: MODEL,
-      max_tokens: 32000,
+      model: cfg.model,
+      max_tokens: cfg.model === "claude-haiku-4-5" ? 8000 : 32000,
       system,
-      output_config: { effort },
+      ...(cfg.model !== "claude-haiku-4-5" && cfg.effort ? { output_config: { effort: cfg.effort } } : {}),
       messages: [{ role: "user", content: user }],
     })
     .finalMessage();
+  const [pin, pout] = PRICE[cfg.model];
+  const input = msg.usage.input_tokens + (msg.usage.cache_read_input_tokens ?? 0) + (msg.usage.cache_creation_input_tokens ?? 0);
+  usage.push({
+    step,
+    model: cfg.model,
+    input,
+    output: msg.usage.output_tokens,
+    usd: (input * pin + msg.usage.output_tokens * pout) / 1e6,
+    stop: msg.stop_reason ?? "",
+  });
   if (msg.stop_reason !== "end_turn") return "";
   return msg.content
     .map((b) => (b.type === "text" ? b.text : ""))
@@ -172,22 +222,24 @@ export interface DroppedStory {
 export async function rewriteKidSafe(
   headlines: RawHeadline[],
   hint?: string,
-): Promise<{ items: LiveNewsEntry[]; dropped: DroppedStory[] }> {
-  const none = { items: [], dropped: [] };
+  config: NewsConfig = DEFAULT_NEWS_CONFIG,
+): Promise<{ items: LiveNewsEntry[]; dropped: DroppedStory[]; usage: CallUsage[] }> {
+  const usage: CallUsage[] = [];
+  const none = { items: [], dropped: [], usage };
   if (!process.env.ANTHROPIC_API_KEY || headlines.length === 0) return none;
   const note = hint ? `\n\nFEED NOTE: ${hint}` : "";
   try {
     const list = headlines
       .map((h, i) => `${i + 1}. ${h.title}${h.summary ? ` — ${h.summary}` : ""}`)
       .join("\n");
-    const picks = json(await ask(PICK_SYSTEM + note, `Today's headlines:\n\n${list}`, "low"))?.picks;
+    const picks = json(await ask("pick", config.pick, PICK_SYSTEM + note, `Today's headlines:\n\n${list}`, usage))?.picks;
     const chosen = (Array.isArray(picks) ? picks : [])
       .map((n) => headlines[Number(n) - 1])
       .filter((h): h is RawHeadline => !!h)
       .slice(0, MAX_STORIES);
     if (!chosen.length) return none;
 
-    const texts = await Promise.all(chosen.map((h) => (h.link ? fetchArticleText(h.link) : "")));
+    const texts = await Promise.all(chosen.map((h) => (h.link ? fetchArticleText(h.link, config.articleChars) : "")));
     const stories = chosen
       .map((h, i) =>
         [
@@ -196,7 +248,7 @@ export async function rewriteKidSafe(
         ].join("\n"),
       )
       .join("\n\n");
-    const written = parseItems(await ask(WRITE_SYSTEM + note, stories, "medium")).filter(
+    const written = parseItems(await ask("write", config.write, WRITE_SYSTEM + note, stories, usage)).filter(
       (w) => Number.isInteger(w.story) && w.story >= 1 && w.story <= chosen.length,
     );
     if (!written.length) return none;
@@ -208,7 +260,7 @@ export async function rewriteKidSafe(
         return `### Draft ${w.story}\nDRAFT: ${JSON.stringify(w.item)}\nSOURCE TEXT:\n${src}`;
       })
       .join("\n\n");
-    const checks = json(await ask(CHECK_SYSTEM + note, drafts, "medium"))?.checks;
+    const checks = json(await ask("check", config.check, CHECK_SYSTEM + note, drafts, usage))?.checks;
     const verdict = new Map<number, { pass: boolean; problem: string }>();
     if (Array.isArray(checks)) {
       for (const c of checks as Record<string, unknown>[]) {
@@ -243,7 +295,7 @@ export async function rewriteKidSafe(
           },
         };
       });
-    return { items, dropped };
+    return { items, dropped, usage };
   } catch (e) {
     console.error("[news] rewrite failed:", e instanceof Error ? e.message : e);
     return none;

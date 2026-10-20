@@ -8,7 +8,7 @@ const SUPA_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 export interface UsageEvent {
   ts?: string;
-  type: "pageview" | "email_sent";
+  type: "pageview" | "email_sent" | "ai_usage";
   path?: string | null;
   visitor?: string | null;
   user_key?: string | null;

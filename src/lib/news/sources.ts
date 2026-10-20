@@ -18,13 +18,24 @@ export const NEWS_FEEDS: Partial<
       "https://www.goodnewsnetwork.org/category/news/world/feed/",
       "https://news.mongabay.com/feed/",
       "https://www.snexplores.org/feed",
-      "https://www.smithsonianmag.com/rss/latest_articles/",
+      "https://www.smithsonianmag.com/rss/smart-news/",
       "https://www.nasa.gov/news-release/feed/",
+      "https://www.sciencedaily.com/rss/plants_animals.xml",
+      "https://www.positive.news/feed/",
+      "https://www.zmescience.com/feed/",
     ],
     label: "Around the World",
     hint: "This is the WORLD news card. Pick stories from as many DIFFERENT countries and continents as you can — no more than one or two from any single country, and do not let the US or UK dominate. Always name the country in the location. Return at most 10 items.",
   },
-  news_national: { url: "https://www.goodnewsnetwork.org/feed/", label: "Good News" },
+  news_national: {
+    url: [
+      "https://www.goodnewsnetwork.org/category/news/usa/feed/",
+      "https://www.sunnyskyz.com/rss_tebow.php",
+      "https://www.optimistdaily.com/feed/",
+    ],
+    label: "Around the Country",
+    hint: "This is the NATIONAL (United States) card. Only pick stories that happened in the US; skip anything set in another country. Name the city and state in the location. Skip weddings, proposals and romance, medical emergencies, and sad back-stories — keep kids, animals, communities, inventions, parks, records and discoveries.",
+  },
   // BBC Technology was mostly outages and business news (often 0 kid-safe stories).
   news_tech: {
     url: [
