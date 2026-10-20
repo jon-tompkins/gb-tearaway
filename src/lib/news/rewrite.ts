@@ -23,12 +23,16 @@ export interface NewsConfig {
   articleChars: number;
 }
 
-/** Production setup — see scripts/notes in the cost comparison (admin Usage tab shows real spend). */
+/** Production setup (admin Usage tab shows real spend). */
+// Measured Oct 20 on the same day's headlines (4 feeds): all-Sonnet $0.24/day;
+// Haiku 5.5 pick+write with a Sonnet fact-check $0.07/day with comparable
+// stories; all-Haiku 5.5 $0.02/day but it let teen-rated games through. The
+// Sonnet fact-check is the safety net and ~80% of the cost.
 export const DEFAULT_NEWS_CONFIG: NewsConfig = {
-  pick: { model: "claude-sonnet-5-5", effort: "low" },
-  write: { model: "claude-sonnet-5-5", effort: "medium" },
-  check: { model: "claude-sonnet-5-5", effort: "medium" },
-  articleChars: 5000,
+  pick: { model: "claude-haiku-5-5", effort: "low" },
+  write: { model: "claude-haiku-5-5", effort: "medium" },
+  check: { model: "claude-sonnet-5-5", effort: "low" },
+  articleChars: 3500,
 };
 
 /** $ per million tokens (input, output) — Anthropic list prices. */

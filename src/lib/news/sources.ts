@@ -34,7 +34,7 @@ export const NEWS_FEEDS: Partial<
       "https://www.optimistdaily.com/feed/",
     ],
     label: "Around the Country",
-    hint: "This is the NATIONAL (United States) card. Only pick stories that happened in the US; skip anything set in another country. Name the city and state in the location. Skip weddings, proposals and romance, medical emergencies, and sad back-stories — keep kids, animals, communities, inventions, parks, records and discoveries.",
+    hint: "This is the NATIONAL (United States) card. Pick stories that take place in the US (people from abroad doing something in the US count); skip stories set in other countries. For the location use the city and state when the article gives them, otherwise just the state. Skip weddings, proposals and romance, medical emergencies, and sad back-stories — keep kids, animals, communities, inventions, parks, records and discoveries.",
   },
   // BBC Technology was mostly outages and business news (often 0 kid-safe stories).
   news_tech: {
