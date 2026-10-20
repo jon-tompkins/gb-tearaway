@@ -58,7 +58,7 @@ export const NEWS_FEEDS: Partial<
       "https://www.gamesradar.com/rss/",
     ],
     label: "Gaming",
-    hint: "These are video-game headlines across Nintendo, PlayStation, Xbox, and PC. Kids want REAL game news, so KEEP and report factually (name the game / date / result): new game announcements and RELEASE DATES, game updates and new features, ESPORTS and tournament RESULTS, speedrun records, and console news. This overrides the 'wholesome only' rule for gaming — a normal game release or tournament score is fine. STILL DROP mature/violent/scary titles (shooters, horror, anything rated Teen+), gambling/loot-box topics, unconfirmed leaks/rumors, and anything not kid-safe. For 'wonder', give a fun true fact about the game or series.",
+    hint: "These are video-game headlines across Nintendo, PlayStation, Xbox, and PC. Kids want REAL game news, so KEEP and report factually (name the game / date / result): new game announcements and RELEASE DATES, game updates and new features, ESPORTS and tournament RESULTS, speedrun records, and console news. This overrides the 'wholesome only' rule for gaming — a normal game release or tournament score is fine. STILL DROP anything not rated E or E10+: shooters, horror, fighting games, and teen-rated RPGs and survival games (e.g. Final Fantasy, Monster Hunter, Palworld, Drova) — if you aren't sure a game is E/E10+, skip it. Also drop gambling/loot-box topics, unconfirmed leaks/rumors, and anything not kid-safe. For 'wonder', give a fun true fact about the game or series.",
   },
 };
 

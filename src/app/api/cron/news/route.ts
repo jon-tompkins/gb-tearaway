@@ -36,6 +36,12 @@ const VARIANTS: Record<string, NewsConfig> = {
     check: { model: "claude-haiku-4-5" },
     articleChars: 3000,
   },
+  haiku55_sonnet_check: {
+    pick: { model: "claude-haiku-5-5", effort: "low" },
+    write: { model: "claude-haiku-5-5", effort: "medium" },
+    check: { model: "claude-sonnet-5-5", effort: "low" },
+    articleChars: 3500,
+  },
   haiku55: {
     pick: { model: "claude-haiku-5-5", effort: "low" },
     write: { model: "claude-haiku-5-5", effort: "medium" },

@@ -193,6 +193,12 @@ function parseItems(text: string): { story: number; item: LiveNewsEntry }[] {
       ? (o.bands.filter((b) => BANDS.includes(b as AgeBand)) as AgeBand[])
       : [];
     if (words(blurb) > 60) continue; // ignored the length limit — too long to print
+    // Drop a "wonder" that just repeats the blurb.
+    const w = str(o.wonder);
+    const wonderWords = new Set(w.toLowerCase().match(/[a-z0-9]+/g) ?? []);
+    const blurbWords = new Set(blurb.toLowerCase().match(/[a-z0-9]+/g) ?? []);
+    const overlap = [...wonderWords].filter((x) => blurbWords.has(x)).length / Math.max(1, wonderWords.size);
+    o.wonder = overlap > 0.7 ? "" : w;
     out.push({
       // Accept 3, "3" or "Story 3" — a mislabeled number used to drop the story.
       story: Number(String(o.story ?? "").match(/\d+/)?.[0] ?? NaN),
