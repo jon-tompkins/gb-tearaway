@@ -3,6 +3,7 @@ import { hashString, mulberry32, pick, shuffle } from "../rng";
 import { mergeBank } from "./mergeBank";
 import type { RotateKey } from "./rotate";
 import { POEMS_PD } from "./bank/poems-pd";
+import { POEMS_GUTENBERG } from "./bank/poems-gutenberg";
 
 export interface PoemItem {
   title: string;
@@ -226,8 +227,11 @@ const BASE_POEMS: PoemEntry[] = [
   },
 ];
 
-/** All public-domain poems (hand-picked + PoetryDB), one entry per title/author. */
-export const POEMS: PoemEntry[] = mergeBank([...BASE_POEMS, ...POEMS_PD], (p) => `${p.title}|${p.author}`);
+/** All public-domain poems (hand-picked + PoetryDB + Project Gutenberg), one entry per title/author. */
+export const POEMS: PoemEntry[] = mergeBank(
+  [...BASE_POEMS, ...POEMS_PD, ...POEMS_GUTENBERG],
+  (p) => `${p.title}|${p.author}`,
+);
 
 /** Printable content height (mm) inside each card size, and the column width. */
 const POEM_CONTENT_MM: Record<SlotSize, number> = { half: 20, full: 48, double: 104 };
@@ -313,12 +317,19 @@ export function pickPoemForDay(band: AgeBand, key: RotateKey, size: SlotSize = "
   const byBand = pool.filter((p) => p.bands.includes(band));
   const src = byBand.length ? byBand : pool;
 
+  // Spread each poet evenly across the cycle: a poet's k-th poem (of n) sits at
+  // position (k + jitter) / n. Round-robin would bunch the poet with the most
+  // poems into a long run at the end of the cycle.
   const rng = mulberry32(hashString(`${key.kid.trim().toLowerCase()}|poem|${band}|${size}`));
   const byAuthor = new Map<string, PoemEntry[]>();
   for (const p of src) byAuthor.set(p.author, [...(byAuthor.get(p.author) ?? []), p]);
-  const queues = shuffle(rng, [...byAuthor.values()].map((list) => shuffle(rng, list)));
-  const order: PoemEntry[] = [];
-  while (queues.some((q) => q.length)) for (const q of queues) if (q.length) order.push(q.shift()!);
+  const slots: { at: number; p: PoemEntry }[] = [];
+  for (const list of byAuthor.values()) {
+    const shuffled = shuffle(rng, list);
+    const offset = rng();
+    shuffled.forEach((p, k) => slots.push({ at: (k + offset) / shuffled.length, p }));
+  }
+  const order = slots.sort((a, b) => a.at - b.at).map((x) => x.p);
 
   const day = Math.floor(Date.parse(`${key.dateISO}T00:00:00Z`) / 86_400_000);
   const step = (Number.isFinite(day) ? day : 0) + key.nonce;
