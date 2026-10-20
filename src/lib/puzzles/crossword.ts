@@ -134,6 +134,24 @@ class Board {
   area() {
     return (this.maxR - this.minR + 1) * (this.maxC - this.minC + 1);
   }
+
+  /** Interlock quality: total shared squares, and how many words cross only once. */
+  interlock(): { shared: number; singles: number } {
+    let shared = 0;
+    for (const cell of this.cells.values()) if (cell.across && cell.down) shared++;
+    let singles = 0;
+    for (const p of this.placed) {
+      const dr = p.dir === "down" ? 1 : 0;
+      const dc = p.dir === "across" ? 1 : 0;
+      let n = 0;
+      for (let i = 0; i < p.word.length; i++) {
+        const c = this.get(p.row + dr * i, p.col + dc * i);
+        if (c && c.across && c.down) n++;
+      }
+      if (n <= 1) singles++;
+    }
+    return { shared, singles };
+  }
 }
 
 function attempt(rng: RNG, entries: CrosswordEntry[], target: number, maxSize: number): Board {
@@ -166,7 +184,7 @@ function attempt(rng: RNG, entries: CrosswordEntry[], target: number, maxSize: n
             trial.maxC = Math.max(board.maxC, dir === "across" ? col + e.word.length - 1 : col);
             const h = trial.maxR - trial.minR + 1;
             const w = trial.maxC - trial.minC + 1;
-            const score = crossings * 12 - (h * w - before) * 0.4 - Math.abs(h - w) * 0.6 + rng() * 2;
+            const score = crossings * 30 - (h * w - before) * 0.4 - Math.abs(h - w) * 0.6 + rng() * 2;
             if (!best || score > best.score) best = { p: { ...e, row, col, dir }, score };
           }
         }
@@ -211,16 +229,24 @@ export function buildCrossword(
 ): CrosswordData | null {
   const usable = entries.filter((e) => /^[A-Z]+$/.test(e.word) && e.word.length >= 2 && e.word.length <= opts.maxSize);
   if (usable.length < 3) return null;
+  // Try many layouts (each takes well under a millisecond) and keep the best:
+  // most words first, then the most interlocked — more shared squares, fewer
+  // words that cross only one other — then the most compact.
+  const quality = (b: Board) => {
+    const { shared, singles } = b.interlock();
+    return b.placed.length * 1000 + shared * 10 - singles * 6 - b.area() * 0.05;
+  };
   let best: Board | null = null;
-  for (let t = 0; t < (opts.attempts ?? 30); t++) {
+  let bestQ = -Infinity;
+  const started = Date.now();
+  for (let t = 0; t < (opts.attempts ?? 400); t++) {
     const b = attempt(rng, usable, opts.target, opts.maxSize);
-    if (
-      !best ||
-      b.placed.length > best.placed.length ||
-      (b.placed.length === best.placed.length && b.area() < best.area())
-    )
+    const q = quality(b);
+    if (q > bestQ) {
       best = b;
-    if (best.placed.length >= opts.target && t >= 8) break;
+      bestQ = q;
+    }
+    if (Date.now() - started > 250) break; // time cap for very large themes
   }
   if (!best || best.placed.length < 3) return null;
   return finish(best, theme);
