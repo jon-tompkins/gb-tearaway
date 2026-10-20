@@ -12,7 +12,8 @@ import { fetchArticleText } from "./article";
  *     blurb carries the real names, numbers and details instead of filler.
  * Runs once per feed per day in the news warm-up cron, so speed doesn't matter.
  */
-const MODEL = "claude-opus-5-5";
+// Sonnet: about half the cost of Opus; quality checked against the Opus output.
+const MODEL = "claude-sonnet-5-5";
 const BANDS: AgeBand[] = ["4-6", "7-9", "10-12"];
 const MAX_STORIES = 8;
 
@@ -56,7 +57,7 @@ Do NOT fail a draft for: simplified wording for children, paraphrase, a harmless
 Return ONLY minified JSON: {"checks":[{"story":<draft number, e.g. 3>,"pass":true|false,"problem":"<short reason if it fails, else empty>"}]}.`;
 
 async function ask(system: string, user: string, effort: "low" | "medium"): Promise<string> {
-  // Opus 5.5 always thinks and that counts against max_tokens — stream with a
+  // Sonnet 5.5 thinks by default and that counts against max_tokens — stream with a
   // generous cap, and treat a truncated or refused reply as no result.
   const msg = await client()
     .messages.stream({
