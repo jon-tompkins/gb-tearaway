@@ -47,6 +47,8 @@ Return ONLY minified JSON: {"items":[{"story","headline","location","blurb","won
 
 const CHECK_SYSTEM = `You are the fact-checker for a children's newspaper. For each numbered draft you get the source text it was written from. Check every claim in the draft's headline, location, blurb and wonder against that source text.
 
+If a FEED NOTE is given below, apply its rules for what counts as kid-safe (it may allow things the general rules would drop, e.g. ordinary video-game news).
+
 A draft PASSES only if every specific (numbers, names, places, dates, what happened, and its status — proposed vs done, tested vs proven) is supported by the source text, and it is kid-safe. Minor simplification for children is fine; adding facts that aren't in the source is not.
 
 Return ONLY minified JSON: {"checks":[{"story":<number>,"pass":true|false,"problem":"<short reason if it fails, else empty>"}]}.`;
@@ -147,11 +149,19 @@ function parseItems(text: string): { story: number; item: LiveNewsEntry }[] {
  * Pick and write today's kid-safe stories from raw headlines. Returns [] on any
  * failure (no key, API error, bad JSON) — news never falls back to made-up text.
  */
+/** A story the fact-check (or writer) rejected, kept so the admin can see why. */
+export interface DroppedStory {
+  title: string;
+  url?: string;
+  reason: string;
+}
+
 export async function rewriteKidSafe(
   headlines: RawHeadline[],
   hint?: string,
-): Promise<LiveNewsEntry[]> {
-  if (!process.env.ANTHROPIC_API_KEY || headlines.length === 0) return [];
+): Promise<{ items: LiveNewsEntry[]; dropped: DroppedStory[] }> {
+  const none = { items: [], dropped: [] };
+  if (!process.env.ANTHROPIC_API_KEY || headlines.length === 0) return none;
   const note = hint ? `\n\nFEED NOTE: ${hint}` : "";
   try {
     const list = headlines
@@ -162,7 +172,7 @@ export async function rewriteKidSafe(
       .map((n) => headlines[Number(n) - 1])
       .filter((h): h is RawHeadline => !!h)
       .slice(0, MAX_STORIES);
-    if (!chosen.length) return [];
+    if (!chosen.length) return none;
 
     const texts = await Promise.all(chosen.map((h) => (h.link ? fetchArticleText(h.link) : "")));
     const stories = chosen
@@ -176,7 +186,7 @@ export async function rewriteKidSafe(
     const written = parseItems(await ask(WRITE_SYSTEM + note, stories, "medium")).filter(
       (w) => Number.isInteger(w.story) && w.story >= 1 && w.story <= chosen.length,
     );
-    if (!written.length) return [];
+    if (!written.length) return none;
 
     // Fact-check every draft against the text it was written from; drop failures.
     const drafts = written
@@ -185,16 +195,28 @@ export async function rewriteKidSafe(
         return `### Draft ${w.story}\nDRAFT: ${JSON.stringify(w.item)}\nSOURCE TEXT:\n${src}`;
       })
       .join("\n\n");
-    const checks = json(await ask(CHECK_SYSTEM, drafts, "medium"))?.checks;
-    const verdict = new Map<number, boolean>();
+    const checks = json(await ask(CHECK_SYSTEM + note, drafts, "medium"))?.checks;
+    const verdict = new Map<number, { pass: boolean; problem: string }>();
     if (Array.isArray(checks)) {
       for (const c of checks as Record<string, unknown>[]) {
-        verdict.set(Number(c.story), c.pass === true);
-        if (c.pass !== true) console.warn("[news] fact-check dropped story", c.story, c.problem);
+        verdict.set(Number(c.story), { pass: c.pass === true, problem: str(c.problem) });
       }
     }
-    return written
-      .filter((w) => verdict.get(w.story) === true) // unchecked counts as failed
+    const dropped: DroppedStory[] = [];
+    // Picked but never written up (writer judged it too thin or not kid-safe).
+    chosen.forEach((h, i) => {
+      if (!written.some((w) => w.story === i + 1))
+        dropped.push({ title: h.title, url: h.link, reason: "Writer skipped it (too little real detail or not kid-safe)" });
+    });
+    for (const w of written) {
+      const v = verdict.get(w.story);
+      if (!v?.pass) {
+        const h = chosen[w.story - 1];
+        dropped.push({ title: h.title, url: h.link, reason: v ? `Fact-check: ${v.problem || "failed"}` : "Fact-check returned no verdict" });
+      }
+    }
+    const items = written
+      .filter((w) => verdict.get(w.story)?.pass === true) // unchecked counts as failed
       .map((w) => {
         const h = chosen[w.story - 1];
         return {
@@ -207,8 +229,9 @@ export async function rewriteKidSafe(
           },
         };
       });
+    return { items, dropped };
   } catch (e) {
     console.error("[news] rewrite failed:", e instanceof Error ? e.message : e);
-    return [];
+    return none;
   }
 }

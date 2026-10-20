@@ -2,12 +2,14 @@ import type { ModuleId } from "../types";
 import { isNewsModule, type LiveNewsEntry, type NewsModuleId } from "../content/news";
 import { loadPayload, savePayload } from "../persist";
 import { fetchHeadlines, type RawHeadline } from "./rss";
-import { rewriteKidSafe } from "./rewrite";
+import { rewriteKidSafe, type DroppedStory } from "./rewrite";
 import { NEWS_FEEDS, cityFeedUrl } from "./sources";
 
 interface DailyNewsPayload {
   date: string;
   items: LiveNewsEntry[];
+  /** Stories picked but rejected (writer or fact-check), with the reason — for the admin. */
+  dropped?: DroppedStory[];
 }
 
 function utcDate(): string {
@@ -60,8 +62,8 @@ export async function getDailyNews(
   if (!opts.generate) return null;
 
   const headlines = urls.length > 1 ? await fetchMany(urls) : await fetchHeadlines(urls[0]);
-  const items = await rewriteKidSafe(headlines, hint);
-  await savePayload(key, { date, items } satisfies DailyNewsPayload);
+  const { items, dropped } = await rewriteKidSafe(headlines, hint);
+  await savePayload(key, { date, items, dropped } satisfies DailyNewsPayload);
   return items.length ? items : null;
 }
 

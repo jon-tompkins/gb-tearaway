@@ -97,11 +97,28 @@ const newsCells = (i: NewsItem) => [
   i.source?.url ?? "",
 ];
 
+type Dropped = { title: string; url?: string; reason: string };
+
+/** Each news day: the printed stories, then any picked-but-rejected ones with the reason. */
+function newsDays(keyFor: (date: string) => string, labelSuffix = ""): () => Promise<CachedDay[]> {
+  return async () =>
+    Promise.all(
+      lastDays(7).map(async (date) => {
+        const p = await loadPayload<{ items?: NewsItem[]; dropped?: Dropped[] }>(keyFor(date));
+        if (!p) return { label: `${date}${labelSuffix}`, table: null };
+        const rows: Table["rows"] = (p.items ?? []).map((i) => ({ cells: newsCells(i), bands: i.bands }));
+        for (const d of p.dropped ?? [])
+          rows.push({ cells: ["✗ not printed", "", d.reason, d.title, d.url ?? ""] });
+        return { label: `${date}${labelSuffix}`, table: { columns: newsColumns, rows } };
+      }),
+    );
+}
+
 function newsModule(feed: ModuleId, sourceNote: string): AdminModule {
   return {
     kind: "live",
-    how: `${sourceNote} Each morning the news job picks the few genuinely interesting kid-safe stories, reads the full articles, and writes them up. No backup bank — if nothing qualifies, the card doesn't print.`,
-    recent: cachedDays<NewsItem>((d) => `news:${d}:${feed}`, newsColumns, newsCells),
+    how: `${sourceNote} Each morning the news job picks the few genuinely interesting kid-safe stories, reads the full articles, writes them up, then fact-checks each against its article — anything unsupported is dropped (shown as “not printed” with the reason). No backup bank: if nothing qualifies, the card doesn't print.`,
+    recent: newsDays((d) => `news:${d}:${feed}`),
   };
 }
 
@@ -225,12 +242,7 @@ export const ADMIN_MODULES: Record<ModuleId, AdminModule> = {
       }
       const out: CachedDay[] = [];
       for (const city of cities) {
-        const days = await cachedDays<NewsItem>(
-          (d) => `news:${d}:news_city:${city.toLowerCase()}`,
-          newsColumns,
-          newsCells,
-        )();
-        out.push(...days.map((d) => ({ ...d, label: `${d.label} · ${city}` })));
+        out.push(...(await newsDays((d) => `news:${d}:news_city:${city.toLowerCase()}`, ` · ${city}`)()));
       }
       return out;
     },
