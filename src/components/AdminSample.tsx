@@ -10,7 +10,18 @@ const SIZES: { id: SlotSize; label: string }[] = [
 ];
 
 /** Admin test output: pick appropriateness + card size, generate one card as it prints. */
-export function AdminSample({ moduleId, naturalSize, minLevel }: { moduleId: ModuleId; naturalSize: SlotSize; minLevel: number }) {
+export function AdminSample({
+  moduleId,
+  naturalSize,
+  sizes,
+  minLevel,
+}: {
+  moduleId: ModuleId;
+  naturalSize: SlotSize;
+  /** Card sizes this module can go in. */
+  sizes: SlotSize[];
+  minLevel: number;
+}) {
   const [d, setD] = useState(Math.max(minLevel, 8));
   const [size, setSize] = useState<SlotSize>(naturalSize);
   const [src, setSrc] = useState<string | null>(null);
@@ -38,7 +49,7 @@ export function AdminSample({ moduleId, naturalSize, minLevel }: { moduleId: Mod
           />
         </label>
         <div className="flex gap-1">
-          {SIZES.map((s) => (
+          {SIZES.filter((s) => sizes.includes(s.id)).map((s) => (
             <button
               key={s.id}
               type="button"

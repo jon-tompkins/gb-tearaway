@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AppShell } from "@/components/AppNav";
 import { requireAdmin } from "@/lib/admin";
-import { isModuleId, moduleById, moduleSize } from "@/lib/modules";
+import { isModuleId, moduleById, moduleSize, moduleSizes } from "@/lib/modules";
 import { AdminSample } from "@/components/AdminSample";
 import { minDifficultyFor } from "@/lib/difficulty";
 import type { AgeBand } from "@/lib/types";
@@ -97,7 +97,7 @@ export default async function AdminModule({
       </Link>
       <p className="mt-3 max-w-3xl text-ink">{info.how}</p>
 
-      <AdminSample moduleId={id} naturalSize={moduleSize(id)} minLevel={minDifficultyFor(id)} />
+      <AdminSample moduleId={id} naturalSize={moduleSize(id)} sizes={moduleSizes(id)} minLevel={minDifficultyFor(id)} />
 
       {recent.length ? (
         <section className="mt-8">

@@ -208,6 +208,13 @@ export function buildPrintHtml(
   .fig svg [stroke="#c45c26"]{stroke:#000}
   .fig svg [fill="#c45c26"]{fill:#000}
   .fig svg{max-width:100%;height:auto}
+  /* Word Find: words above the grid by default; beside it on Letter 1× cards. */
+  .wf-body{display:flex;flex-direction:column;flex:1;min-height:0;gap:1.5mm}
+  .wf-body .wf-top{margin:0;font-size:9pt;line-height:1.3;font-weight:700;letter-spacing:.02em}
+  .wf-words{font-size:9pt;line-height:1.5;font-weight:700;letter-spacing:.03em}
+  .col .wf-body.wf-side{flex-direction:row;align-items:center;gap:4mm}
+  .col .wf-body.wf-side .fig{flex:1 1 auto;height:100%;margin-top:0}
+  .col .wf-body.wf-side .wf-words{flex:0 0 auto}
   body{padding-top:0}
 </style></head>
 <body>

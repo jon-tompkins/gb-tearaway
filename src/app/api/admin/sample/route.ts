@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/admin";
-import { isModuleId, moduleSize } from "@/lib/modules";
+import { isModuleId, moduleSize, moduleSizes } from "@/lib/modules";
 import { readStore, seedKid } from "@/lib/store";
 import { buildJobForKid } from "@/lib/serverStrip";
 import { buildCardSampleHtml } from "@/lib/printHtml";
@@ -24,7 +24,8 @@ export async function GET(req: Request) {
   const p = new URL(req.url).searchParams;
   const id = p.get("module") ?? "";
   if (!isModuleId(id)) return NextResponse.json({ error: "unknown module" }, { status: 400 });
-  const size = (["half", "full", "double"].includes(p.get("size") ?? "") ? p.get("size") : moduleSize(id)) as SlotSize;
+  const asked = p.get("size") as SlotSize | null;
+  const size: SlotSize = asked && moduleSizes(id).includes(asked) ? asked : moduleSize(id);
   const d = effectiveDifficulty(id, Number(p.get("d") ?? 8));
   const seed = Math.abs(Math.floor(Number(p.get("seed") ?? Date.now()))) % 1_000_000;
 

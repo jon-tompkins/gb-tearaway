@@ -247,6 +247,23 @@ export function sectionHtml(section: StripSection): string {
   </section>`;
   }
 
+  // Word Find: no "N×N · circle each word" line (it's understood). 1× card puts
+  // the word list beside the grid so the grid can be bigger; 2× keeps the words
+  // on top. (On the 58mm strip the side layout falls back to words on top.)
+  if (section.kind === "wordfind" && section.wordfind) {
+    const wf = section.wordfind;
+    const sizeClass = section.size ? ` size-${section.size}` : "";
+    const side = section.size !== "double";
+    const grid = `<div class="fig">${section.svg || wordFindToSvg(wf)}</div>`;
+    const words = side
+      ? `<div class="wf-words"${wf.words.length > 8 ? ' style="font-size:8pt;line-height:1.35"' : ""}>${wf.words.map((w) => `<div>${esc(w)}</div>`).join("")}</div>`
+      : `<p class="wf-top">${wf.words.map(esc).join(" · ")}</p>`;
+    return `<section class="sec grow${sizeClass} mod-${section.moduleId}">
+    <h3>${esc(section.title)}</h3>
+    <div class="wf-body${side ? " wf-side" : ""}">${side ? grid + words : words + grid}</div>
+  </section>`;
+  }
+
   const svg =
     section.svg ||
     (section.kind === "maze" && section.maze

@@ -63,6 +63,49 @@ export const MODULE_CATALOG: ModuleMeta[] = [
   { id: "calendar", name: "Calendar", blurb: "A short list of today’s events. Stub list you can edit.", category: "today", defaultOn: false, size: "half" },
 ];
 
+/**
+ * Card sizes each module can be placed in. Grid and picture puzzles need at
+ * least a 1× card (a ½ card makes the grid unreadable); the crossword needs
+ * 2×; short text bites fit ½ or 1×. Modules not listed allow only their
+ * natural size.
+ */
+const MODULE_SIZES: Partial<Record<ModuleId, SlotSize[]>> = {
+  maze: ["full", "double"],
+  wordfind: ["full", "double"],
+  dots: ["full", "double"],
+  sudoku: ["full", "double"],
+  battleship: ["full", "double"],
+  crossword: ["double"],
+  usstate: ["full", "double"],
+  country_eu: ["full", "double"],
+  country_af: ["full", "double"],
+  country_asia_oce: ["full", "double"],
+  country_americas: ["full", "double"],
+  news_world: ["full", "double"],
+  news_national: ["full", "double"],
+  news_tech: ["full", "double"],
+  news_gamer: ["full", "double"],
+  stocks: ["full", "double"],
+  sports: ["full", "double"],
+  weather: ["half", "full", "double"],
+  poem: ["half", "full", "double"],
+  word: ["half", "full"],
+  joke: ["half", "full"],
+  riddle: ["half", "full"],
+  sequence: ["half", "full"],
+  scramble: ["half", "full"],
+  spanish: ["half", "full"],
+  fact: ["half", "full"],
+  history: ["half", "full"],
+  calendar: ["half", "full"],
+};
+
+/** Sizes a module may be placed in (always includes its natural size). */
+export function moduleSizes(id: ModuleId): SlotSize[] {
+  const list = MODULE_SIZES[id] ?? [moduleSize(id)];
+  return list.includes(moduleSize(id)) ? list : [...list, moduleSize(id)];
+}
+
 /** Natural size for a module (used as the card default). */
 export function moduleSize(id: ModuleId): SlotSize {
   return MODULE_CATALOG.find((m) => m.id === id)?.size ?? "full";

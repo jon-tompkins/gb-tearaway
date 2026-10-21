@@ -3,7 +3,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 import type { AgeBand, ModuleCategoryId, ModuleId, ModuleSlot, PaperSize, SlotMode, SlotSize } from "@/lib/types";
 import { COLUMN_CAPACITY_UNITS, PAPER_SIZE_META, slotSizeUnits } from "@/lib/types";
-import { moduleById, moduleSize, modulesByCategory, MODULE_CATALOG, MODULE_CATEGORIES } from "@/lib/modules";
+import { moduleById, moduleSize, modulesByCategory, MODULE_CATALOG, MODULE_CATEGORIES, moduleSizes } from "@/lib/modules";
 import {
   DIFFICULTY_MAX,
   DIFFICULTY_MIN,
@@ -52,12 +52,11 @@ function sizeLabel(sz: "half" | "full" | "double" | undefined): string {
 }
 
 /**
- * A module fits a card only when its footprint matches the card size exactly —
- * a 2× card takes only 2× modules, a ½ card only ½ modules. (Flexible modules
- * that come in multiple sizes, e.g. World News 1× vs 2×, can be added later.)
+ * A module fits a card when the card is one of the sizes it supports
+ * (moduleSizes): e.g. Word Find in 1× or 2×, never ½.
  */
 function moduleFitsCard(id: ModuleId, cardSize: SlotSize): boolean {
-  return moduleSize(id) === cardSize;
+  return moduleSizes(id).includes(cardSize);
 }
 
 /** Keep only the difficulty entries for modules still present in the card. */

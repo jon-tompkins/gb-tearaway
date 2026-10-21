@@ -487,10 +487,9 @@ export function generateStrip(
         moduleId,
         title: wordfind.theme ? `${meta.name}: ${wordfind.theme}` : meta.name,
         kind: "wordfind",
-        lines: [
-          `Find: ${wordfind.words.join(" · ")}`,
-          `${wordfind.cols}×${wordfind.rows} · circle each word`,
-        ],
+        // The print layout lists the words itself (beside or above the grid);
+        // this line is the plain-text fallback.
+        lines: [wordfind.words.join(" · ")],
         wordfind,
         svg,
       });
