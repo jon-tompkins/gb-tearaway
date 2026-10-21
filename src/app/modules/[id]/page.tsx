@@ -1,6 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { isModuleId, moduleById, moduleSize, MODULE_CATEGORIES, MODULE_CATALOG } from "@/lib/modules";
+import { auth } from "@/auth";
+import { isAdminEmail } from "@/lib/admin";
+import { isModuleId, moduleById, moduleSize, MODULE_CATEGORIES } from "@/lib/modules";
+import { getHiddenModules } from "@/lib/visibility";
 import type { SlotSize } from "@/lib/types";
 import { MODULE_INFO } from "@/lib/moduleInfo";
 import { moduleExample } from "@/lib/moduleExample";
@@ -9,13 +12,16 @@ function sizeLabel(sz: SlotSize): string {
   return sz === "half" ? "½ card" : sz === "double" ? "2× card (tall)" : "1× card";
 }
 
-export function generateStaticParams() {
-  return MODULE_CATALOG.map((m) => ({ id: m.id }));
-}
+// Dynamic so a module the admin hid 404s for everyone else.
+export const dynamic = "force-dynamic";
 
 export default async function ModuleDetail({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   if (!isModuleId(id)) notFound();
+  if ((await getHiddenModules().catch((): string[] => [])).includes(id)) {
+    const session = await auth().catch(() => null);
+    if (!isAdminEmail(session?.user?.email)) notFound();
+  }
   const meta = moduleById(id);
   const info = MODULE_INFO[id];
   const ex = moduleExample(id);

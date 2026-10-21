@@ -3,6 +3,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 import type { AgeBand, ModuleCategoryId, ModuleId, ModuleSlot, PaperSize, SlotMode, SlotSize } from "@/lib/types";
 import { COLUMN_CAPACITY_UNITS, PAPER_SIZE_META, slotSizeUnits } from "@/lib/types";
+import { useModuleVisibility } from "@/lib/useModuleVisibility";
 import { moduleById, moduleSize, modulesByCategory, MODULE_CATALOG, MODULE_CATEGORIES, moduleSizes } from "@/lib/modules";
 import {
   DIFFICULTY_MAX,
@@ -236,7 +237,11 @@ export function SlotEditor({
   actions?: ReactNode;
 }) {
   const isStrip = paperSize !== "letter";
-  const groups = modulesByCategory();
+  const vis = useModuleVisibility();
+  // Hidden (admin-only) modules drop out for everyone else.
+  const groups = modulesByCategory()
+    .map((g) => ({ ...g, modules: g.modules.filter((m) => vis.isVisible(m.id)) }))
+    .filter((g) => g.modules.length > 0);
   const [exploreType, setExploreType] = useState<ModuleCategoryId | "all">("all");
   const [exploreSize, setExploreSize] = useState<SlotSize | "all">("all");
   const [pickerType, setPickerType] = useState<ModuleCategoryId | "all">("all");
@@ -566,6 +571,7 @@ export function SlotEditor({
           MODULE_CATEGORIES.find((c) => c.id === id)?.name ?? id;
         const shown = MODULE_CATALOG.filter(
           (m) =>
+            vis.isVisible(m.id) &&
             (exploreType === "all" || m.category === exploreType) &&
             (exploreSize === "all" || moduleSize(m.id) === exploreSize),
         );
@@ -601,6 +607,9 @@ export function SlotEditor({
                   <div key={m.id} className="rounded-xl border border-rule bg-paper px-3 py-2.5">
                     <div className="flex items-center gap-2">
                       <span className="flex-1 truncate text-sm font-semibold text-ink">{m.name}</span>
+                      {vis.isHidden(m.id) ? (
+                        <span className="rounded bg-stamp/15 px-1.5 py-px text-[0.6rem] font-bold text-stamp">Hidden</span>
+                      ) : null}
                       <span
                         className="rounded bg-cream px-1.5 py-px text-[0.6rem] font-bold text-ink-soft"
                         title={`${sizeLabel(moduleSize(m.id))} card`}
@@ -779,7 +788,7 @@ export function SlotEditor({
                               <ModuleOption
                                 key={mod.id}
                                 id={mod.id}
-                                name={mod.name}
+                                name={vis.isHidden(mod.id) ? `${mod.name} (hidden)` : mod.name}
                                 blurb={mod.blurb}
                                 inCard={inCard}
                                 blocked={!inCard && cardFull}

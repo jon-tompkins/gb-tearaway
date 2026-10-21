@@ -3,6 +3,8 @@ import { AppShell } from "@/components/AppNav";
 import { AdminTabs } from "@/components/AdminTabs";
 import { requireAdmin } from "@/lib/admin";
 import { MODULE_CATALOG, MODULE_CATEGORIES } from "@/lib/modules";
+import { AdminVisibilityToggle } from "@/components/AdminVisibilityToggle";
+import { getHiddenModules } from "@/lib/visibility";
 import { ADMIN_MODULES, AGE_BANDS, SOURCE_LABEL, bankCounts } from "@/lib/adminModules";
 
 export const dynamic = "force-dynamic";
@@ -10,10 +12,11 @@ export const metadata = { title: "Admin · Back of the Box" };
 
 export default async function AdminHome() {
   await requireAdmin();
+  const hidden = new Set(await getHiddenModules());
   return (
     <AppShell title="Admin">
       <AdminTabs active="modules" />
-      <p className="-mt-2 mb-6 text-sm text-ink-soft">Every module, where its content comes from, and how big its bank is.</p>
+      <p className="-mt-2 mb-6 text-sm text-ink-soft">Every module, where its content comes from, and how big its bank is. Hidden modules are visible only to you.</p>
       <div className="space-y-8">
         {MODULE_CATEGORIES.map((cat) => {
           const mods = MODULE_CATALOG.filter((m) => m.category === cat.id);
@@ -26,6 +29,7 @@ export default async function AdminHome() {
                   <thead className="text-left text-[0.65rem] uppercase tracking-wide text-ink-soft">
                     <tr className="border-b border-rule">
                       <th className="px-3 py-2">Module</th>
+                      <th className="px-3 py-2">Visibility</th>
                       <th className="px-3 py-2">Source</th>
                       {AGE_BANDS.map((b) => (
                         <th key={b} className="px-3 py-2 text-right">{b}</th>
@@ -43,6 +47,9 @@ export default async function AdminHome() {
                             <Link href={`/admin/modules/${m.id}`} className="font-semibold text-ink hover:underline">
                               {m.name}
                             </Link>
+                          </td>
+                          <td className="px-3 py-2">
+                            <AdminVisibilityToggle id={m.id} initialHidden={hidden.has(m.id)} />
                           </td>
                           <td className="px-3 py-2 text-ink-soft">{SOURCE_LABEL[info.kind]}</td>
                           {AGE_BANDS.map((b) => (

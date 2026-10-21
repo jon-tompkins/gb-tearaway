@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import type { ModuleCategoryId, SlotSize } from "@/lib/types";
 import { MODULE_CATALOG, MODULE_CATEGORIES, moduleSize } from "@/lib/modules";
+import { useModuleVisibility } from "@/lib/useModuleVisibility";
 
 function sizeLabel(sz: SlotSize): string {
   return sz === "half" ? "½" : sz === "double" ? "2×" : "1×";
@@ -12,6 +13,7 @@ function sizeLabel(sz: SlotSize): string {
 export default function ModulesBrowse() {
   const [type, setType] = useState<ModuleCategoryId | "all">("all");
   const [size, setSize] = useState<SlotSize | "all">("all");
+  const vis = useModuleVisibility();
 
   const chip = (active: boolean) =>
     `rounded-full border px-3 py-1 text-xs font-semibold transition ${
@@ -32,6 +34,7 @@ export default function ModulesBrowse() {
 
   const shown = MODULE_CATALOG.filter(
     (m) =>
+      vis.isVisible(m.id) &&
       (type === "all" || m.category === type) && (size === "all" || moduleSize(m.id) === size),
   );
 
@@ -76,6 +79,9 @@ export default function ModulesBrowse() {
               <span className="flex-1 truncate font-display text-lg text-ink group-hover:underline">
                 {m.name}
               </span>
+              {vis.isHidden(m.id) ? (
+                <span className="rounded bg-stamp/15 px-1.5 py-px text-[0.6rem] font-bold text-stamp">Hidden</span>
+              ) : null}
               <span className="rounded bg-cream px-1.5 py-px text-[0.6rem] font-bold text-ink-soft">
                 {sizeLabel(moduleSize(m.id))}
               </span>
