@@ -427,8 +427,9 @@ export function battleshipToSvg(d: BattleshipData, opts: { showSolution?: boolea
   // grid lines
   for (let i = 0; i <= n; i++) {
     const b = i === 0 || i === n;
-    const col = b ? "#111" : "#d2d2d2";
-    const w = b ? 1.6 : 1;
+    // Inner lines were 1px light grey and faded out on home printers.
+    const col = b ? "#111" : "#9a9a9a";
+    const w = b ? 2.2 : 1.6;
     p.push(`<line x1="${ox + i * CS}" y1="${oy}" x2="${ox + i * CS}" y2="${oy + gridPx}" stroke="${col}" stroke-width="${w}"/>`);
     p.push(`<line x1="${ox}" y1="${oy + i * CS}" x2="${ox + gridPx}" y2="${oy + i * CS}" stroke="${col}" stroke-width="${w}"/>`);
   }

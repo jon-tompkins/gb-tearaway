@@ -216,3 +216,22 @@ export function buildPrintHtml(
   ${auto}
 </body></html>`;
 }
+
+/**
+ * One card rendered exactly as it prints on a Letter page (same CSS, same
+ * column width, its real ½/1×/2× height) — for the admin's test output.
+ * The column band is 224.4mm tall and holds 8 half-units.
+ */
+export function buildCardSampleHtml(job: PrintJob, section: PrintJob["sections"][number], footerHtml = ""): string {
+  const units = section.size === "double" ? 4 : section.size === "half" ? 1 : 2;
+  const html = buildPrintHtml({ ...job, paperSize: "letter", sections: [{ ...section, column: 0 }] }, { embed: true });
+  const override = `<style>
+  html,body{background:#f4eee3}
+  .sheet{height:auto;width:auto;padding:6mm;overflow:visible}
+  .hdr1,.ftr1{display:none}
+  .cols{height:${((224.4 * units) / 8).toFixed(1)}mm;width:93mm;background:#fff;outline:1px dashed #b9ad94;outline-offset:2mm}
+  .col:empty{display:none}
+  .sample-foot{font-family:ui-monospace,Menlo,monospace;font-size:11px;color:#333;margin:6mm 0 0;max-width:93mm;white-space:pre-wrap}
+</style>`;
+  return html.replace("</head>", `${override}</head>`).replace("</body>", `${footerHtml}</body>`);
+}
