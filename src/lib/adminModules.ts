@@ -282,7 +282,7 @@ export const ADMIN_MODULES: Record<ModuleId, AdminModule> = {
     }),
   },
   battleship: { kind: "generated", how: "Random no-touch fleet + a solver that guarantees exactly one solution before it prints." },
-  sequence: { kind: "generated", how: "Procedural number pattern from 10 rule families (add/subtract, multiply, alternating, triangular, Fibonacci, squares, cubes, primes, double-and-add)." },
+  sequence: { kind: "generated", how: "Procedural number pattern, 10 tiers by dial: count-by → growing jumps/×/squares → primes/Fibonacci/cubes → woven sequences, square/prime/Fibonacci gaps, ×k±c, tribonacci, polynomials, disguised primes. 13+ rejects plain add/× patterns (scripts/verify-sequence.ts)." },
   dots: { kind: "generated", how: "Generated connect-the-dots shape with a caption." },
   wordfind: {
     kind: "generated",

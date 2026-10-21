@@ -40,8 +40,8 @@ export const MODULE_INFO: Record<ModuleId, ModuleInfo> = {
   },
   sequence: {
     source:
-      "Fully procedural number pattern (add/subtract, multiply, alternating steps, triangular, Fibonacci, squares, cubes, primes, and double-and-add). Infinite variety, no content bank.",
-    config: [DIAL + " Picks the pattern pool and trickiness."],
+      "Fully procedural number pattern. Little kids count by 2s, 5s, and 10s; the middle levels add growing jumps, multiplying, squares, primes, and Fibonacci; the top levels use IQ-test rules like two woven sequences, jumps that are squares or primes, triple-then-subtract, and n³ − n. Harder levels show more numbers so there is exactly one sensible answer. Infinite variety, no content bank.",
+    config: [DIAL + " Picks the rule families and how big the numbers get. From 13 up, it never prints a plain add-or-multiply pattern."],
     answerInApp: true,
   },
   crossword: {
