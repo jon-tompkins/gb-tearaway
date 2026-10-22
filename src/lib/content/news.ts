@@ -53,10 +53,10 @@ export function newsListFromPool(
   band: AgeBand,
   rng: () => number,
   count: number,
-): NewsItem[] {
+): (NewsItem & { source?: NewsSource })[] {
   const fit = pool.filter((n) => n.bands.includes(band));
   const src = fit.length >= count ? fit : pool;
   return shuffle(rng, src)
     .slice(0, Math.min(count, src.length))
-    .map((n) => ({ headline: n.headline, location: n.location, blurb: n.blurb, wonder: n.wonder }));
+    .map((n) => ({ headline: n.headline, location: n.location, blurb: n.blurb, wonder: n.wonder, source: n.source }));
 }

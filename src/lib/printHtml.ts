@@ -14,10 +14,10 @@ import { sectionHtml } from "./previewHtml";
  */
 export function buildPrintHtml(
   job: PrintJob,
-  opts: { autoPrint?: boolean; qrSvg?: string; embed?: boolean } = {},
+  opts: { autoPrint?: boolean; qrSvg?: string; qrLabel?: string; embed?: boolean } = {},
 ): string {
   const qrBlock = opts.qrSvg
-    ? `<div class="qr"><span class="qrcap">Scan for<br/>answers</span>${opts.qrSvg}</div>`
+    ? `<div class="qr"><span class="qrcap">${opts.qrLabel ?? "Scan for<br/>answers"}</span>${opts.qrSvg}</div>`
     : "";
   const isLetter = job.paperSize === "letter";
   const header = job.sections.find((s) => s.kind === "header");

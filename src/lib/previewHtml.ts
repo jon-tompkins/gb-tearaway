@@ -191,18 +191,18 @@ export function sectionHtml(section: StripSection): string {
   if (section.news?.length) {
     const sizeClass = section.size ? ` size-${section.size}` : "";
     const items = section.news
-      .map(
-        (i) =>
-          `<div><div style="font-weight:700;font-size:9pt;line-height:1.15">${esc(
-            i.headline,
-          )}</div><div style="font-size:8.2pt;line-height:1.3">${
-            i.location
-              ? `<span style="font-weight:700;text-transform:uppercase;letter-spacing:.02em">${esc(
-                  i.location,
-                )}</span> — `
-              : ""
-          }${esc(i.blurb)}</div></div>`,
-      )
+      .map((i) => {
+        const paras = i.blurb.split(/\n\s*\n/).map((x) => x.trim()).filter(Boolean);
+        const dateline = i.location
+          ? `<span style="font-weight:700;text-transform:uppercase;letter-spacing:.02em">${esc(i.location)}</span> — `
+          : "";
+        const body = paras
+          .map((p, n) => `<p style="margin:${n ? ".9mm" : "0"} 0 0">${n === 0 ? dateline : ""}${esc(p)}</p>`)
+          .join("");
+        return `<div><div style="font-weight:700;font-size:9.5pt;line-height:1.15;margin-bottom:.6mm">${esc(
+          i.headline,
+        )}</div><div style="font-size:8.4pt;line-height:1.32">${body}</div></div>`;
+      })
       .join("");
     // Stretch stories to fill the card — 3 in a 4-slot card spread out instead
     // of leaving a gap at the bottom.

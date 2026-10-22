@@ -6,10 +6,18 @@ export interface AnswerItem {
   answer: string;
 }
 
+export interface StoryLink {
+  headline: string;
+  url: string;
+  outlet?: string;
+}
+
 export interface AnswersPayload {
   kidName: string;
   date: string;
   items: AnswerItem[];
+  /** The original articles behind today's news cards. */
+  stories?: StoryLink[];
   generatedAt: string;
 }
 
@@ -33,4 +41,11 @@ export function collectAnswers(job: PrintJob): AnswerItem[] {
     }
   }
   return items;
+}
+
+/** The original articles behind the news cards, for the QR page. */
+export function collectStories(job: PrintJob): StoryLink[] {
+  return job.sections.flatMap((s) =>
+    (s.news ?? []).flatMap((n) => (n.url ? [{ headline: n.headline, url: n.url, outlet: n.outlet }] : [])),
+  );
 }

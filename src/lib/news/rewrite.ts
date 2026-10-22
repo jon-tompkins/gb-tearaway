@@ -32,7 +32,7 @@ export const DEFAULT_NEWS_CONFIG: NewsConfig = {
   pick: { model: "claude-haiku-5-5", effort: "low" },
   write: { model: "claude-haiku-5-5", effort: "medium" },
   check: { model: "claude-sonnet-5-5", effort: "low" },
-  articleChars: 3500,
+  articleChars: 5000,
 };
 
 /** $ per million tokens (input, output) — Anthropic list prices. */
@@ -75,17 +75,20 @@ ${SAFETY}
 For each story:
 - headline: at most 8 words, sentence case (only the first word and names capitalized), concrete and specific (who/what did what). No puns, no exclamation marks.
 - location: where it happened — "City, Country", "City, State", or just the country/region when no city is given; for online/game/global stories with no place, "Worldwide". Never repeat a word ("Turkey, Turkey" is wrong — write "Turkey").
-- blurb: 2-3 short sentences, AT MOST 45 WORDS total, that a 7-year-old can read (short words, one idea per sentence). Lead with the most surprising concrete fact. Include at least two specific details FROM THE ARTICLE (a number, a name, a place, what exactly was found or built). State status accurately — if something was proposed, voted on, or is being tested, say so; don't present it as finished.
-- wonder: one extra true detail FROM THE ARTICLE that makes it more interesting, as one plain sentence of AT MOST 20 WORDS. If the article has no extra detail worth adding, use "". Do NOT bring in general trivia from outside the article.
+- blurb: TWO paragraphs separated by a blank line ("\n\n"), 70-110 words in total, that a 7-year-old can read (short words, one idea per sentence).
+  - Paragraph 1 (2-3 sentences): the news. Lead with the most surprising concrete fact: who did what, where.
+  - Paragraph 2 (2-3 sentences): the details that make it make sense: how it works, how they found out, how big or how many, or what happens next.
+  Use at least four specific details FROM THE ARTICLE across the two paragraphs (numbers, names, places, what exactly was found or built). State status accurately: if something was proposed, voted on, or is being tested, say so; don't present it as finished.
+- wonder: always "".
 - bands: which of "4-6","7-9","10-12" can follow it.
 
 Pick the details a kid will picture and remember (an animal, a size compared to something familiar, a record); skip dates BCE, technical names and side details. Never mention the article, the outlet, a podcast, a reviewer or "the report" — just tell the news.
 
-Never invent details that aren't in the text. Never pad with feel-good filler — banned: "amazing", "incredible", "magical", "super", "awesome", "Did you know", "forever", "helping everyone", "making the world a better place", and sentences that only say the story is good or exciting. If a story has too little real information to write 2 specific sentences, or turns out not to be kid-safe, leave it out.
+Never invent details that aren't in the text. Never pad with feel-good filler — banned: "amazing", "incredible", "magical", "super", "awesome", "Did you know", "forever", "helping everyone", "making the world a better place", and sentences that only say the story is good or exciting. If a story has too little real information for two paragraphs without padding, or turns out not to be kid-safe, leave it out.
 
 Return ONLY minified JSON: {"items":[{"story","headline","location","blurb","wonder","bands"}]} where "story" is the plain number (e.g. 3) of the story you wrote it from. No prose, no markdown. If nothing works, {"items":[]}.`;
 
-const CHECK_SYSTEM = `You are the fact-checker for a children's newspaper. For each numbered draft you get the source text it was written from. Check every claim in the draft's headline, location, blurb and wonder against that source text.
+const CHECK_SYSTEM = `You are the fact-checker for a children's newspaper. For each numbered draft you get the source text it was written from. Check every claim in the draft's headline, location, blurb (two paragraphs) and wonder against that source text.
 
 If a FEED NOTE is given below, apply its rules for what counts as kid-safe (it may allow things the general rules would drop, e.g. ordinary video-game news).
 
@@ -196,7 +199,7 @@ function parseItems(text: string): { story: number; item: LiveNewsEntry }[] {
     const bands = Array.isArray(o.bands)
       ? (o.bands.filter((b) => BANDS.includes(b as AgeBand)) as AgeBand[])
       : [];
-    if (words(blurb) > 60) continue; // ignored the length limit — too long to print
+    if (words(blurb) > 140) continue; // ignored the length limit — too long to print
     // Drop a "wonder" that just repeats the blurb.
     const w = str(o.wonder);
     const wonderWords = new Set(w.toLowerCase().match(/[a-z0-9]+/g) ?? []);

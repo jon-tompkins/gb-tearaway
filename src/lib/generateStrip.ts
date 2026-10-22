@@ -515,9 +515,9 @@ export function generateStrip(
       continue;
     }
     if (isNewsModule(moduleId)) {
-      // 2x (double) = 3 stories, 1x (full) = 2, half = 1 — bigger font, stretched
-      // to fill the card, so 3 roomy stories beat 4 cramped ones.
-      const count = cardSize === "double" ? 3 : cardSize === "half" ? 1 : 2;
+      // Stories are two paragraphs now: 2x (double) = 2 stories, 1x = 1, and a
+      // half card gets one story's first paragraph.
+      const count = cardSize === "double" ? 2 : 1;
       // Real (kid-safe) headlines only — no fabricated fallback. If there are
       // none today, the card simply doesn't print (better to fail than fake it).
       const livePool = opts.newsByFeed?.[moduleId];
@@ -529,11 +529,16 @@ export function generateStrip(
         title: meta.name,
         kind: "text",
         lines: [],
-        news: items.map((i) => ({
-          headline: i.headline,
-          location: i.location,
-          blurb: [i.blurb, i.wonder].filter(Boolean).join(" "),
-        })),
+        news: items.map((i) => {
+          const blurb = [i.blurb, i.wonder].filter(Boolean).join(" ");
+          return {
+            headline: i.headline,
+            location: i.location,
+            blurb: cardSize === "half" ? blurb.split(/\n\s*\n/)[0] : blurb,
+            url: i.source?.url,
+            outlet: i.source?.outlet,
+          };
+        }),
       });
       continue;
     }

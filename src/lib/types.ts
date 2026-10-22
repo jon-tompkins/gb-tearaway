@@ -345,7 +345,8 @@ export interface StripSection {
   /** Print column carried from the owning slot (Letter = 0|1). */
   column?: number;
   /** For news modules: a short column of stories with a dateline. */
-  news?: { headline: string; blurb: string; location?: string }[];
+  /** blurb paragraphs are separated by a blank line; url = the original article (listed behind the QR code). */
+  news?: { headline: string; blurb: string; location?: string; url?: string; outlet?: string }[];
   /** Solution shown in the app under the Parent key toggle — never printed. */
   answer?: string;
   /** Optional per-card body font size in pt (e.g. poems sized to fill the card). */

@@ -8,7 +8,7 @@ import { buildPrintHtml } from "@/lib/printHtml";
 import { readStore } from "@/lib/store";
 import { currentUserKey } from "@/lib/userKey";
 import { savePayload } from "@/lib/persist";
-import { answersToken, collectAnswers } from "@/lib/answers";
+import { answersToken, collectAnswers, collectStories } from "@/lib/answers";
 import { qrSvg } from "@/lib/qr";
 import { renderPdfFromUrl } from "@/lib/pdf";
 import { saveDispatchRef, loadDispatchRef } from "@/lib/deliver";
@@ -115,20 +115,24 @@ export async function GET(req: Request) {
     // to the public answers page (the scanning phone need not be signed in).
     // Done for embed too so the on-screen preview matches print exactly.
     let qr: string | undefined;
+    let qrLabel: string | undefined;
     const items = collectAnswers(job);
-    if (items.length) {
+    const stories = collectStories(job);
+    if (items.length || stories.length) {
       const token = answersToken(kid.id, job.date, job.nonce);
       await savePayload(`answers:${token}`, {
         kidName: job.kidName,
         date: job.date,
         items,
+        stories,
         generatedAt: new Date().toISOString(),
       });
       const host = req.headers.get("x-forwarded-host") ?? req.headers.get("host") ?? url.host;
       const proto = req.headers.get("x-forwarded-proto") ?? url.protocol.replace(":", "");
       qr = qrSvg(`${proto}://${host}/answers/${token}`, { sizePx: 96 });
+      qrLabel = !stories.length ? undefined : items.length ? "Answers +<br/>stories" : "Scan for<br/>stories";
     }
-    const html = buildPrintHtml(job, { autoPrint, qrSvg: qr, embed });
+    const html = buildPrintHtml(job, { autoPrint, qrSvg: qr, qrLabel, embed });
     return new NextResponse(html, {
       status: 200,
       headers: {
