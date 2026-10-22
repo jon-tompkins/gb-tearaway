@@ -647,12 +647,20 @@ export function SlotEditor({
               { id: "all", name: "All" },
               ...fitCats.map((g) => ({ id: g.category.id, name: g.category.name })),
             ];
-            const fitGroups = groups
-              .map((g) => ({
-                category: g.category,
-                modules: g.modules.filter((m) => moduleFitsCard(m.id, cardSize)),
-              }))
-              .filter((g) => g.modules.length > 0 && (pickerType === "all" || g.category.id === pickerType));
+            // Two tiers: modules designed for this card size, then ones that can be resized to fit.
+            const tierGroups = (exact: boolean) =>
+              groups
+                .map((g) => ({
+                  category: g.category,
+                  modules: g.modules.filter(
+                    (m) => moduleFitsCard(m.id, cardSize) && (moduleSize(m.id) === cardSize) === exact,
+                  ),
+                }))
+                .filter((g) => g.modules.length > 0 && (pickerType === "all" || g.category.id === pickerType));
+            const tiers = [
+              { key: "exact", title: `Made for a ${sizeLabel(cardSize)} card`, groups: tierGroups(true) },
+              { key: "resized", title: "Also fits (resized)", groups: tierGroups(false) },
+            ].filter((t) => t.groups.length > 0);
             return (
               <div
                 className="fixed inset-0 z-50 flex items-end justify-center bg-ink/40 backdrop-blur-sm sm:items-center sm:p-4"
@@ -772,36 +780,41 @@ export function SlotEditor({
                   {/* module list (only modules that fit this card size) */}
                   <div className="flex-1 space-y-5 overflow-y-auto px-5 py-4">
                     <p className="text-xs text-ink-soft">
-                      Showing modules that fit a{" "}
-                      <span className="font-semibold text-ink">{sizeLabel(cardSize)}</span> card. Tap to add or
-                      remove.
+                      Modules made for a{" "}
+                      <span className="font-semibold text-ink">{sizeLabel(cardSize)}</span> card come first; the rest
+                      can be resized to fit. Tap to add or remove.
                     </p>
-                    {fitGroups.map(({ category, modules }) => (
-                      <div key={category.id}>
-                        <h4 className="mb-2 text-xs font-bold uppercase tracking-wider text-ink-soft">
-                          {category.name}
-                        </h4>
-                        <div className="grid gap-2 sm:grid-cols-2">
-                          {modules.map((mod) => {
-                            const inCard = pickerSlot.moduleIds.includes(mod.id);
-                            return (
-                              <ModuleOption
-                                key={mod.id}
-                                id={mod.id}
-                                name={vis.isHidden(mod.id) ? `${mod.name} (hidden)` : mod.name}
-                                blurb={mod.blurb}
-                                inCard={inCard}
-                                blocked={!inCard && cardFull}
-                                difficulty={effectiveDifficulty(
-                                  mod.id,
-                                  pickerSlot.moduleDifficulty?.[mod.id] ?? defaultDifficulty,
-                                )}
-                                onToggle={() => toggleInCard(pickerSlot.id, mod.id)}
-                                onDifficulty={(v) => setModuleDifficulty(pickerSlot.id, mod.id, v)}
-                              />
-                            );
-                          })}
-                        </div>
+                    {tiers.map((tier) => (
+                      <div key={tier.key} className="space-y-4">
+                        <h3 className="border-b border-rule pb-1 font-display text-base text-ink">{tier.title}</h3>
+                        {tier.groups.map(({ category, modules }) => (
+                          <div key={category.id}>
+                            <h4 className="mb-2 text-xs font-bold uppercase tracking-wider text-ink-soft">
+                              {category.name}
+                            </h4>
+                            <div className="grid gap-2 sm:grid-cols-2">
+                              {modules.map((mod) => {
+                                const inCard = pickerSlot.moduleIds.includes(mod.id);
+                                return (
+                                  <ModuleOption
+                                    key={mod.id}
+                                    id={mod.id}
+                                    name={vis.isHidden(mod.id) ? `${mod.name} (hidden)` : mod.name}
+                                    blurb={mod.blurb}
+                                    inCard={inCard}
+                                    blocked={!inCard && cardFull}
+                                    difficulty={effectiveDifficulty(
+                                      mod.id,
+                                      pickerSlot.moduleDifficulty?.[mod.id] ?? defaultDifficulty,
+                                    )}
+                                    onToggle={() => toggleInCard(pickerSlot.id, mod.id)}
+                                    onDifficulty={(v) => setModuleDifficulty(pickerSlot.id, mod.id, v)}
+                                  />
+                                );
+                              })}
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     ))}
                   </div>
