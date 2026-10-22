@@ -47,7 +47,18 @@ export default async function ModuleDetail({ params }: { params: Promise<{ id: s
       <section className="mt-8">
         <h2 className="mb-2 text-xs font-bold uppercase tracking-wider text-ink-soft">Example</h2>
         <div className="rounded-2xl border border-rule bg-[#fbf8f1] p-5">
-          {ex.svg ? (
+          {ex.svg && ex.locator ? (
+            <div className="mx-auto flex max-w-md items-center justify-center gap-4">
+              <div
+                className="flex-1 [&_svg]:h-auto [&_svg]:max-w-full"
+                dangerouslySetInnerHTML={{ __html: ex.svg }}
+              />
+              <div
+                className="w-2/5 [&_svg]:h-auto [&_svg]:w-full"
+                dangerouslySetInnerHTML={{ __html: ex.locator }}
+              />
+            </div>
+          ) : ex.svg ? (
             <div
               className="mx-auto flex max-w-sm items-center justify-center [&_svg]:h-auto [&_svg]:max-w-full"
               dangerouslySetInnerHTML={{ __html: ex.svg }}

@@ -1,5 +1,6 @@
 import { COUNTRIES, type CountryShape } from "./countries-data";
 import { clampDifficulty } from "../difficulty";
+import { countryLocatorSvg } from "./locator";
 
 type RNG = () => number;
 export type Continent = CountryShape["continent"];
@@ -10,6 +11,8 @@ export interface CountryQuiz {
   /** Easy = country named + capital starred on the card. Hard = blank outline. */
   easy: boolean;
   svg: string;
+  /** Small regional map with the country filled in, printed beside the outline. */
+  locatorSvg: string | null;
   answer: string;
 }
 
@@ -51,6 +54,7 @@ export function generateCountryQuiz(rng: RNG, difficulty: number, continent: Con
     capital: s.capital,
     easy,
     svg: countryToSvg(s, { showStar: easy }),
+    locatorSvg: countryLocatorSvg(s.name),
     answer: `${s.name} — capital: ${s.capital} (${locationPhrase(s)})`,
   };
 }

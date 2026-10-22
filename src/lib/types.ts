@@ -338,6 +338,8 @@ export interface StripSection {
   events?: CalendarEvent[];
   /** Optional pre-rendered SVG for maze/sudoku/wordfind/dots (paper has no parent key). */
   svg?: string;
+  /** Geography cards: small locator map printed beside the outline. */
+  locator?: string;
   /** Card footprint carried from the owning slot (half/full/double). */
   size?: SlotSize;
   /** Print column carried from the owning slot (Letter = 0|1). */

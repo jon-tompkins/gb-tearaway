@@ -1,5 +1,6 @@
 import { US_STATES, type StateShape } from "./states-data";
 import { clampDifficulty } from "../difficulty";
+import { stateLocatorSvg } from "./locator";
 
 type RNG = () => number;
 
@@ -9,6 +10,8 @@ export interface StateQuiz {
   /** Easy = state named + capital starred on the card. Hard = blank outline. */
   easy: boolean;
   svg: string;
+  /** Small US map with the state filled in, printed beside the outline. */
+  locatorSvg: string | null;
   /** In-app answer (state, capital, roughly where the capital sits). */
   answer: string;
 }
@@ -52,6 +55,7 @@ export function generateStateQuiz(rng: RNG, difficulty: number): StateQuiz {
     capital: s.capital,
     easy,
     svg: stateToSvg(s, { showStar: easy }),
+    locatorSvg: stateLocatorSvg(s.name),
     answer: `${s.name} — capital: ${s.capital} (${locationPhrase(s)})`,
   };
 }

@@ -90,6 +90,12 @@ export function buildPrintHtml(
   .sec h3{margin:0 0 1.2mm;font-size:6.5pt;letter-spacing:.16em;text-transform:uppercase}
   .sec p{margin:0 0 1mm;font-size:8.5pt;line-height:1.35}
   .fig{margin-top:1.6mm;text-align:center}
+  .geo-row{display:flex;gap:2mm;align-items:center}
+  .geo-row .fig{flex:1;min-width:0}
+  .geo-row .fig svg{width:100%;height:auto}
+  .geo-loc{flex:0 0 40%;margin-top:1.6mm}
+  .geo-loc svg{width:100%;height:auto;display:block}
+  .geo-cap{font-size:5pt;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-top:.6mm;text-align:center}
   .ftr{text-align:center;padding-top:2mm}
   .perf{border-top:1.5px dashed #000;margin:0 10% 1.6mm}
   .tear{font-size:7pt;font-weight:700;letter-spacing:.24em}
@@ -141,7 +147,14 @@ export function buildPrintHtml(
   /* Maze stretches to fill its card — rectangular cells are fine and kill the gaps */
   .col .fig-fill svg{width:100%;height:100%;max-width:none;max-height:none}
   /* Square maze (1× card) keeps square cells: as tall as the card allows */
-  .col .fig-square svg{width:auto;height:100%;max-width:100%;max-height:100%}`;
+  .col .fig-square svg{width:auto;height:100%;max-width:100%;max-height:100%}
+  /* Geography: outline takes the room, locator map sits beside it */
+  .geo-row{flex:1;min-height:0;display:flex;gap:3mm;align-items:center;margin-top:1.2mm}
+  .geo-row .fig{height:100%;margin-top:0}
+  .geo-row .fig svg{width:auto;height:100%}
+  .geo-loc{flex:0 0 42%;height:100%;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+  .geo-loc svg{width:100%;height:auto;min-height:0;max-height:calc(100% - 4mm)}
+  .geo-cap{font-size:5.5pt;font-weight:700;letter-spacing:.12em;text-transform:uppercase;margin-top:1mm;text-align:center}`;
 
   // For the strip, size the print page to the actual content height so the PDF
   // is one continuous 58mm-wide page (no half-empty trailing page).

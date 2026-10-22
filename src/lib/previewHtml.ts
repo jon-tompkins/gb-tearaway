@@ -298,6 +298,15 @@ export function sectionHtml(section: StripSection): string {
     section.kind === "maze"
       ? squareMaze ? "fig fig-square" : "fig fig-fill"
       : section.kind === "sudoku" ? "fig fig-small" : "fig";
+  // Geography: the outline stays the puzzle; a small locator map beside it
+  // shows where it is (target filled black, named region underneath).
+  if (svg && section.locator) {
+    return `<section class="sec grow${sizeClass} mod-${section.moduleId}">
+    <h3>${esc(section.title)}</h3>
+    ${lines}
+    <div class="geo-row"><div class="fig">${svg}</div><div class="geo-loc">${section.locator}</div></div>
+  </section>`;
+  }
   return `<section class="sec${growClass}${sizeClass} mod-${section.moduleId}">
     <h3>${esc(section.title)}</h3>
     ${lines}
@@ -340,6 +349,11 @@ export function buildPreviewHtml(job: PrintJob): string {
   .sec p{margin:0 0 4px;font-size:13px;line-height:1.35}
   .fig{margin-top:8px;text-align:center}
   .fig svg{max-width:100%;height:auto}
+  .geo-row{display:flex;gap:10px;align-items:center}
+  .geo-row .fig{flex:1;min-width:0}
+  .geo-loc{flex:0 0 42%;margin-top:8px;text-align:center}
+  .geo-loc svg{width:100%;height:auto;max-height:150px}
+  .geo-cap{font-size:8px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;margin-top:3px}
   .ftr{text-align:center;padding-top:8px;grid-column:1/-1}
   .perf{border-top:2px dashed #cfc4b0;margin:0 10% 8px}
   .tear{font-size:11px;font-weight:700;letter-spacing:.24em;color:#c45c26}

@@ -271,6 +271,7 @@ export function generateStrip(
           ? [`${q.name}  ·  Capital: ${q.capital}  ★`]
           : ["What state is this? Name it and its capital."],
         svg: q.svg,
+        locator: q.locatorSvg ?? undefined,
         // Easy shows the answer on the card; hard keeps it in the app (Parent key / QR).
         answer: q.easy ? undefined : q.answer,
       });
@@ -300,6 +301,7 @@ export function generateStrip(
           ? [`${q.name}  ·  Capital: ${q.capital}  ★`]
           : ["What country is this? Name it and its capital."],
         svg: q.svg,
+        locator: q.locatorSvg ?? undefined,
         answer: q.easy ? undefined : q.answer,
       });
       continue;

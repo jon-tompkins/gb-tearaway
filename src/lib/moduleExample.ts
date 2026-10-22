@@ -24,6 +24,8 @@ import { mockStocks } from "./stocks";
 export interface ModuleExample {
   /** Pre-rendered SVG figure (puzzles / maps). */
   svg?: string;
+  /** Geography: locator map shown beside the outline. */
+  locator?: string;
   /** Text lines, exactly as they'd print. */
   text?: string[];
   /** A note shown under the example (e.g. the in-app answer, or "demo"). */
@@ -67,7 +69,7 @@ export function moduleExample(id: ModuleId): ModuleExample {
     }
     case "usstate": {
       const q = generateStateQuiz(mulberry32(3), 4);
-      return { svg: q.svg, text: [`${q.name}  ·  Capital: ${q.capital}  ★`] };
+      return { svg: q.svg, locator: q.locatorSvg ?? undefined, text: [`${q.name}  ·  Capital: ${q.capital}  ★`] };
     }
     case "country_eu":
     case "country_af":
@@ -82,7 +84,7 @@ export function moduleExample(id: ModuleId): ModuleExample {
               ? "asia_oceania"
               : "americas";
       const q = generateCountryQuiz(mulberry32(5), 4, cont);
-      return { svg: q.svg, text: [`${q.name}  ·  Capital: ${q.capital}  ★`] };
+      return { svg: q.svg, locator: q.locatorSvg ?? undefined, text: [`${q.name}  ·  Capital: ${q.capital}  ★`] };
     }
     case "word": {
       const w = pickWord(BAND, rng);
