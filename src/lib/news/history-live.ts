@@ -34,7 +34,7 @@ ${HISTORY_CATEGORIES.map((c) => `- ${c}`).join("\n")}
 
 What makes a good pick: something a kid would repeat at breakfast. Inventions and patents, discoveries, expeditions and space missions, unusual or record-breaking sports moments (first games, odd matches, famous upsets, firsts in a sport), famous battles and turning points that changed history, books/art/music/films/games released, famous buildings and bridges opened, quirky firsts, and births of inventors, scientists, explorers, artists, athletes and writers kids may know.
 
-Battles & turning points ARE allowed, written like a good kids' history book: who was on each side, what it decided, and why it mattered. No gore, no casualty numbers, no cruelty details; mark them "7-9","10-12" only. Still DROP: terrorism, massacres, genocide, executions, assassinations, disasters with deaths, crimes, abuse, disease outbreaks, and modern partisan politics.
+Battles & turning points ARE allowed, written like a good kids' history book: who was on each side, what it decided, and why it mattered. No gore, no casualty numbers, no cruelty details; mark them "7-9","10-12" only. Still DROP: terrorism, massacres, genocide, executions, assassinations, disasters with deaths, crimes, abuse, disease outbreaks, modern partisan politics, and games/films/music rated for adults (e.g. Grand Theft Auto, R-rated movies).
 
 For each entry:
 - year: the real year exactly as given (keep "BC"/"BCE").
@@ -44,6 +44,7 @@ For each entry:
 
 Return ONLY minified JSON: {"items":[{"year","category","text","bands"}]}. No prose, no markdown.`;
 
+/** Model output, capped at 3 entries per category so no one theme dominates. */
 function parse(text: string): LiveHistoryEntry[] {
   const s = text.indexOf("{"), e = text.lastIndexOf("}");
   if (s < 0 || e < 0) return [];
@@ -72,7 +73,12 @@ function parse(text: string): LiveHistoryEntry[] {
       bands: bands.length ? bands : ["7-9", "10-12"],
     });
   }
-  return out;
+  const perCategory = new Map<string, number>();
+  return out.filter((e) => {
+    const n = (perCategory.get(e.category ?? "") ?? 0) + 1;
+    perCategory.set(e.category ?? "", n);
+    return n <= 3;
+  });
 }
 
 interface RawEvent {
