@@ -11,6 +11,7 @@ import { dateISOInZone, formatStripDate, formatTime12 } from "./dates";
 import { mulberry32, pick, stripSeed, uid } from "./rng";
 import { pickWord } from "./content/words";
 import { pickFactForDay } from "./content/facts";
+import { pickRecordForDay } from "./content/records";
 import { pickHistory } from "./content/history";
 import { pickJokeForDay } from "./content/jokes";
 import {
@@ -149,6 +150,17 @@ export function generateStrip(
         title: meta.name,
         kind: "text",
         lines: [fact.fact, fact.extra],
+      });
+      continue;
+    }
+    if (moduleId === "records") {
+      const rec = pickRecordForDay(band, { dateISO: date, kid: firstName, nonce });
+      sections.push({
+        id: `rec-${hashish(rec.record)}`,
+        moduleId,
+        title: meta.name,
+        kind: "text",
+        lines: [rec.category, rec.record, rec.extra],
       });
       continue;
     }

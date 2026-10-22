@@ -1,6 +1,7 @@
 import type { AgeBand, ModuleId } from "./types";
 import { JOKES } from "./content/jokes";
 import { FACTS } from "./content/facts";
+import { RECORDS } from "./content/records";
 import { WORDS } from "./content/words";
 import { WORDS as SPANISH } from "./content/spanish";
 import { SCRAMBLES } from "./content/scramble";
@@ -147,6 +148,14 @@ export const ADMIN_MODULES: Record<ModuleId, AdminModule> = {
       rows: FACTS.map((f) => ({ cells: [f.fact, f.extra], bands: f.bands })),
     }),
   },
+  records: {
+    kind: "bank",
+    how: "Static bank of verified records (nature + people). Each kid works through their age band one a day, in their own shuffled order. The category prints as a small lead line.",
+    bank: () => ({
+      columns: ["Category", "Record", "Extra"],
+      rows: RECORDS.map((r) => ({ cells: [r.category, r.record, r.extra], bands: r.bands })),
+    }),
+  },
   poem: {
     kind: "bank",
     how: "Static bank of real public-domain poems, sized to fit the card.",
@@ -206,7 +215,7 @@ export const ADMIN_MODULES: Record<ModuleId, AdminModule> = {
   },
   history: {
     kind: "live+bank",
-    how: "Real “on this day” events from Wikipedia, filtered and rewritten kid-safe by AI, cached per date. The small dated bank below fills in only when the live feed has nothing usable.",
+    how: "Real “on this day” events and births from Wikipedia; Sonnet picks 10-14 per date across inventions, science, space, sports, battles, arts, buildings, births and oddities (max 3 per category), written for kids. All 366 dates are pre-built by /api/cron/history. The small dated bank below fills in only when a date has nothing.",
     bank: () => ({
       columns: ["Date", "Year", "Event"],
       rows: HISTORY.map((h) => ({ cells: [`${h.month}/${h.day}`, h.year, h.text], bands: h.bands })),
@@ -214,12 +223,12 @@ export const ADMIN_MODULES: Record<ModuleId, AdminModule> = {
     recent: async () =>
       Promise.all(
         lastDays(7).map(async (date) => {
-          const key = `history:${date.slice(5, 7)}-${date.slice(8, 10)}`;
-          const p = await loadPayload<{ items?: { year: string; text: string; bands: AgeBand[] }[] }>(key);
+          const key = `history2:${date.slice(5, 7)}-${date.slice(8, 10)}`;
+          const p = await loadPayload<{ items?: { year: string; category?: string; text: string; bands: AgeBand[] }[] }>(key);
           return {
             label: date,
             table: p
-              ? { columns: ["Year", "Event"], rows: (p.items ?? []).map((i) => ({ cells: [i.year, i.text], bands: i.bands })) }
+              ? { columns: ["Year", "Category", "Event"], rows: (p.items ?? []).map((i) => ({ cells: [i.year, i.category ?? "", i.text], bands: i.bands })) }
               : null,
           };
         }),

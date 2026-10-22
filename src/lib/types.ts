@@ -4,6 +4,7 @@ export type AgeBand = "4-6" | "7-9" | "10-12";
 export type ModuleId =
   | "word"
   | "fact"
+  | "records"
   | "maze"
   | "sudoku"
   | "battleship"

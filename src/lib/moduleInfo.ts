@@ -107,7 +107,12 @@ export const MODULE_INFO: Record<ModuleId, ModuleInfo> = {
   },
   history: {
     source:
-      "Real 'on this day' events from Wikipedia, filtered kid-safe by AI and cached per date — no made-up history.",
+      "Real 'on this day' events from Wikipedia — inventions, science, space, sports, famous battles, arts and births — picked and written for kids by AI, cached per date. No made-up history.",
+    config: [DIAL + " Picks the age band."],
+  },
+  records: {
+    source:
+      "A bank of 250+ real, current world records — animals, space, weather, sports, buildings, giant food and human feats. Disputed or fast-changing records are left out. Each kid works through it one a day in their own order.",
     config: [DIAL + " Picks the age band."],
   },
   fact: {

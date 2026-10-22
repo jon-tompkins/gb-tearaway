@@ -139,6 +139,9 @@ export function buildPrintHtml(
   /* This-day-in-history: tighter so more text fits in a half card */
   .mod-history p{font-size:8pt;line-height:1.28}
   .mod-history p:first-of-type{font-weight:700}
+  /* World Records: small category kicker, then the record in bold */
+  .mod-records p:first-of-type{font-size:6.8pt;font-weight:700;text-transform:uppercase;letter-spacing:.06em}
+  .mod-records p:nth-of-type(2){font-weight:700}
   .fig{flex:1;min-height:0;margin-top:1.2mm;display:flex;align-items:center;justify-content:center}
   /* Figures scale up to the column width (bigger sudoku/word-find), capped to card height */
   .fig svg{width:100%;height:auto;max-width:100%;max-height:100%}

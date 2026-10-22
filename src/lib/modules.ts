@@ -48,6 +48,7 @@ export const MODULE_CATALOG: ModuleMeta[] = [
   { id: "country_asia_oce", name: "Countries: Asia & Oceania", blurb: "An Asian or Oceanian country outline, with a small regional map showing where it is. Easy names it + stars the capital; harder is outline-only.", category: "facts", defaultOn: false, size: "full" },
   { id: "country_americas", name: "Countries: Americas", blurb: "A country of the Americas (N or S), with a small map showing where it is. Easy names it + stars the capital; harder is outline-only.", category: "facts", defaultOn: false, size: "full" },
   { id: "history", name: "This Day in History", blurb: "Something that really happened on this date — kid-appropriate.", category: "facts", defaultOn: true, size: "half" },
+  { id: "records", name: "World Records", blurb: "A real world record — fastest, biggest, oldest, most — with something to compare it to.", category: "facts", defaultOn: false, size: "half" },
   { id: "fact", name: "Fun Fact", blurb: "One true thing worth knowing before cereal.", category: "facts", defaultOn: true, size: "half" },
   // Kid-friendly news
   { id: "news_world", name: "World News", blurb: "Wonder from far away — animals, space, discoveries.", category: "news", defaultOn: false, size: "double" },
