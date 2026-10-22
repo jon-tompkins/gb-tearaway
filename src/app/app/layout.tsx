@@ -1,3 +1,5 @@
+import { BillingGate } from "@/components/BillingGate";
+
 export default function ParentAppLayout({ children }: { children: React.ReactNode }) {
-  return children;
+  return <BillingGate>{children}</BillingGate>;
 }

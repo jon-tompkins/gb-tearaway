@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { listUserStates } from "@/lib/persist";
 import { cronAuthorized } from "@/lib/cronAuth";
+import { accessFor } from "@/lib/billing";
 import { dueInfo, sendOneDispatch, type SendJob, type SendResult } from "@/lib/sendDispatch";
 
 export const runtime = "nodejs";
@@ -30,7 +31,13 @@ export async function GET(req: Request) {
 
   const jobs: SendJob[] = [];
   let skipped = 0;
+  let unpaid = 0;
   for (const { userKey, state } of await listUserStates()) {
+    // Trial over and no subscription/code → no more deliveries.
+    if (!(await accessFor(userKey)).active) {
+      unpaid += state.kids.length;
+      continue;
+    }
     for (const kid of state.kids) {
       const { delivery, due } = dueInfo(kid, state);
       if (delivery && (due || force)) jobs.push({ userKey, kidId: kid.id });
@@ -82,6 +89,7 @@ export async function GET(req: Request) {
     withPdf: sent.filter((r) => r.result.status === "sent" && r.result.withPdf).length,
     skipped: skipped + results.filter((r) => r.result.status === "skipped").length,
     deferred,
+    unpaid,
     errors: results
       .filter((r) => r.result.status === "failed")
       .map((r) => `${r.job.userKey}/${r.job.kidId}: ${r.result.status === "failed" ? r.result.reason : ""}`),

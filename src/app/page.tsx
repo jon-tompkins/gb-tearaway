@@ -30,7 +30,7 @@ const STEPS = [
 const FAQ = [
   {
     q: "What does it cost?",
-    a: "It’s free while we’re in beta. You can try it without signing up, and you sign in with Google to save your setup and get a page every morning.",
+    a: "Your first month is free. After that it’s $5 a month, with every kid in your house included. You can try it without signing up, and you sign in with Google to save your setup and get a page every morning.",
   },
   {
     q: "What do I need to print it?",
@@ -97,7 +97,7 @@ export default async function HomePage() {
               </Link>
             </div>
             <p className="mt-4 text-sm text-ink-soft">
-              Free during the beta, and you can try it without signing up.
+              First month free, then $5 a month. Try it without signing up.
             </p>
           </div>
 

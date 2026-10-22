@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
 import { AuthButton } from "./AuthButton";
 
 const LINKS = [{ href: "/app", label: "Dashboard", exact: true }];
@@ -17,7 +18,12 @@ export function AppNav() {
       .then((j: { admin?: boolean }) => setIsAdmin(!!j.admin))
       .catch(() => {});
   }, []);
-  const links = isAdmin ? [...LINKS, { href: "/admin", label: "Admin", exact: false }] : LINKS;
+  const signedIn = useSession().status === "authenticated";
+  const links = [
+    ...LINKS,
+    ...(signedIn ? [{ href: "/app/billing", label: "Plan", exact: false }] : []),
+    ...(isAdmin ? [{ href: "/admin", label: "Admin", exact: false }] : []),
+  ];
   return (
     <header className="sticky top-0 z-40 border-b border-rule/70 bg-cream/90 backdrop-blur-md">
       <div className="mx-auto flex max-w-5xl flex-col items-center gap-2 px-4 py-3 sm:flex-row sm:justify-between sm:gap-3">

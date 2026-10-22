@@ -3,6 +3,7 @@ import Link from "next/link";
 const TABS = [
   { href: "/admin", label: "Modules", key: "modules" },
   { href: "/admin/usage", label: "Usage", key: "usage" },
+  { href: "/admin/codes", label: "Plans & codes", key: "codes" },
 ] as const;
 
 export function AdminTabs({ active }: { active: (typeof TABS)[number]["key"] }) {

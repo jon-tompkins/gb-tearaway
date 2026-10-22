@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { AppShell } from "@/components/AppNav";
 import { RunsPanel } from "@/components/RunsPanel";
 import { useAppStore } from "@/lib/clientStore";
+import { daysLeft, useBilling } from "@/lib/useBilling";
 import { formatTime12, nextPrintLabel } from "@/lib/dates";
 import { moduleById } from "@/lib/modules";
 import { AGE_BANDS, PAPER_SIZE_META, type KidProfile } from "@/lib/types";
@@ -30,6 +31,8 @@ function moduleSummary(kid: KidProfile): string {
 export default function DashboardPage() {
   const router = useRouter();
   const { store, hydrated, error: storeError, reload, setActiveKid } = useAppStore();
+  const { status: billing } = useBilling();
+  const trialLeft = billing?.access.reason === "trial" ? daysLeft(billing.access.until) : null;
 
   // If there are truly no dispatches yet, drop straight into Create.
   useEffect(() => {
@@ -69,6 +72,17 @@ export default function DashboardPage() {
       title="Dashboard"
       subtitle="Your morning dispatches — preview, edit, or add another child."
     >
+      {trialLeft !== null ? (
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-rule bg-paper px-4 py-2 text-sm">
+          <span className="text-ink">
+            Free month: {trialLeft} day{trialLeft === 1 ? "" : "s"} left. Then ${billing!.access.priceCents / 100}/month.
+          </span>
+          <Link href="/app/billing" className="font-semibold text-stamp hover:underline">
+            Subscribe or use a code
+          </Link>
+        </div>
+      ) : null}
+
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-ink-soft">
           {kids.length} dispatch{kids.length === 1 ? "" : "es"}
