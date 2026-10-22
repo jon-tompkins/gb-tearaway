@@ -119,9 +119,17 @@ function difficultyScore(maze: MazeData): number {
  * for long off-path branches gives the tempting wrong turns that make a maze
  * actually tricky instead of a single obvious corridor.
  */
-export function generateMaze(seed: number, band: AgeBand, difficulty?: number): MazeData {
-  const { cols, rows } =
-    difficulty != null ? mazeSizeForDifficulty(difficulty) : sizeForBand(band);
+export function generateMaze(
+  seed: number,
+  band: AgeBand,
+  difficulty?: number,
+  opts: { square?: boolean } = {},
+): MazeData {
+  const base = difficulty != null ? mazeSizeForDifficulty(difficulty) : sizeForBand(band);
+  // A square maze (Letter 1× card) uses fewer columns so its cells stay about
+  // the size they'd be in a tall card.
+  const side = Math.max(6, Math.round(base.cols * 0.75));
+  const { cols, rows } = opts.square ? { cols: side, rows: side } : base;
   // Little kids get an easy maze; bigger kids get a harder-selected one.
   const candidates =
     difficulty != null

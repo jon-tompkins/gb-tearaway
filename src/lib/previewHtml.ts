@@ -164,10 +164,10 @@ function crosswordClueFontPt(cw: CrosswordData, box: { w: number; h: number }): 
     }
     return lines * lineMm;
   };
-  for (let f = 11; f >= 6.5; f -= 0.25) {
+  for (let f = 8.5; f >= 6; f -= 0.25) {
     if (Math.max(columnHeight("across", f), columnHeight("down", f)) <= box.h) return f;
   }
-  return 6.5;
+  return 6;
 }
 
 export function sectionHtml(section: StripSection): string {
@@ -222,7 +222,7 @@ export function sectionHtml(section: StripSection): string {
 
   // Crossword: the grid in a square box on top, then Across / Down clue columns.
   // Sizes here are a fallback; the print page's fit script (printHtml) measures
-  // the real card and fills it (grid ≤ half the card, clues as large as fit).
+  // the real card and fills it (small clues, grid takes the rest).
   if (section.kind === "crossword" && section.crossword) {
     const cw = section.crossword;
     const sizeClass = section.size ? ` size-${section.size}` : "";
@@ -291,13 +291,17 @@ export function sectionHtml(section: StripSection): string {
   // Figure cards (maze/sudoku/etc.) grow to fill the column's leftover space so
   // there's no wasted gap; text cards stay at their natural height.
   const growClass = svg ? " grow" : "";
-  // Maze fills its card; the number grid stays small (~half a maze).
+  // A tall maze fills its card; a square one (1× card) keeps its shape. The
+  // number grid stays small (~half a maze).
+  const squareMaze = section.kind === "maze" && section.maze && section.maze.cols === section.maze.rows;
   const figClass =
-    section.kind === "maze" ? "fig fig-fill" : section.kind === "sudoku" ? "fig fig-small" : "fig";
+    section.kind === "maze"
+      ? squareMaze ? "fig fig-square" : "fig fig-fill"
+      : section.kind === "sudoku" ? "fig fig-small" : "fig";
   return `<section class="sec${growClass}${sizeClass} mod-${section.moduleId}">
     <h3>${esc(section.title)}</h3>
     ${lines}
-    ${svg ? `<div class="${figClass}">${svg}</div>` : ""}
+    ${svg ? `<div class="${figClass}">${squareMaze ? svg.replace(' preserveAspectRatio="none"', "") : svg}</div>` : ""}
   </section>`;
 }
 

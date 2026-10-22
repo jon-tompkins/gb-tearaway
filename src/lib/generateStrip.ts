@@ -182,7 +182,10 @@ export function generateStrip(
       continue;
     }
     if (moduleId === "maze") {
-      const maze = generateMaze((seed ^ 0x4d41) >>> 0, band, difficulty);
+      // A Letter 1× card is wide and short, so stretching a tall maze into it
+      // squashes the cells; print a square maze there instead.
+      const square = paperSize === "letter" && cardSize === "full";
+      const maze = generateMaze((seed ^ 0x4d41) >>> 0, band, difficulty, { square });
       const svg = mazeToSvg(maze, { showPath: false });
       sections.push({
         id: `maze-${maze.cols}x${maze.rows}`,

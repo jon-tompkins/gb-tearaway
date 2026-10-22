@@ -139,7 +139,9 @@ export function buildPrintHtml(
   /* Number grid stays compact — about half a maze */
   .fig.fig-small svg{width:auto;max-width:46mm;max-height:100%}
   /* Maze stretches to fill its card — rectangular cells are fine and kill the gaps */
-  .col .fig-fill svg{width:100%;height:100%;max-width:none;max-height:none}`;
+  .col .fig-fill svg{width:100%;height:100%;max-width:none;max-height:none}
+  /* Square maze (1× card) keeps square cells: as tall as the card allows */
+  .col .fig-square svg{width:auto;height:100%;max-width:100%;max-height:100%}`;
 
   // For the strip, size the print page to the actual content height so the PDF
   // is one continuous 58mm-wide page (no half-empty trailing page).
@@ -161,8 +163,8 @@ export function buildPrintHtml(
     })();
   </script>`;
   // Crossword cards: once the real card size is known, give the grid a square
-  // box of at most half the card, then grow the clue font until the clues fill
-  // the rest. Letter only (strip cards have no fixed height to fill).
+  // box, size the clues (small, capped at 8.5pt) to fit, then give the grid any
+  // space left over. Letter only (strip cards have no fixed height to fill).
   const crosswordFit = `<script>
     (function(){
       if(!${isLetter ? "true" : "false"}) return;
@@ -175,17 +177,23 @@ export function buildPrintHtml(
           var w=sec.clientWidth-px(cs.paddingLeft)-px(cs.paddingRight);
           var h=sec.clientHeight-px(cs.paddingTop)-px(cs.paddingBottom);
           var h3=sec.querySelector('h3'); if(h3) h-=h3.getBoundingClientRect().height+px(getComputedStyle(h3).marginBottom);
-          // Box fits the grid's own shape: no taller than half the card, no wider than it.
+          // Box fits the grid's own shape: no taller than 60% of the card, no wider than it.
           var svg=g.querySelector('svg'), vb=svg&&svg.viewBox&&svg.viewBox.baseVal;
           var aspect=vb&&vb.width?vb.height/vb.width:1;
-          g.style.height=Math.floor(Math.min(h*0.5,w*aspect))+'px';
-          var room=h-g.getBoundingClientRect().height-px(getComputedStyle(g).marginTop)-px(getComputedStyle(c).marginTop)-2;
-          var lo=6, hi=16;
-          for(var i=0;i<16;i++){
+          var gm=px(getComputedStyle(g).marginTop)+px(getComputedStyle(c).marginTop)+2;
+          g.style.height=Math.floor(Math.min(h*0.6,w*aspect))+'px';
+          var room=h-g.getBoundingClientRect().height-gm;
+          // Clues stay small (capped at 8.5pt, like a newspaper puzzle).
+          var lo=5.5, hi=8.5;
+          c.style.fontSize=hi+'pt';
+          if(c.scrollHeight<=room) lo=hi;
+          else for(var i=0;i<14;i++){
             var mid=(lo+hi)/2; c.style.fontSize=mid+'pt';
             if(c.scrollHeight<=room) lo=mid; else hi=mid;
           }
           c.style.fontSize=lo+'pt';
+          // Any space the clues leave goes back to the grid.
+          g.style.height=Math.floor(Math.min(w*aspect,Math.max(h*0.5,h-c.scrollHeight-gm)))+'px';
         });
       }
       if(document.readyState==='complete') fit(); else window.addEventListener('load',fit);

@@ -105,7 +105,7 @@ export default async function HomePage() {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/cereal-box.png"
-              alt="Back of the Box, morning brain cereal: today’s puzzle page with weather, kid-safe news, a crossword and a maze"
+              alt="Back of the Box, morning brain cereal: a real puzzle page with weather, a crossword, a maze and a number grid"
               className="w-full drop-shadow-2xl"
             />
           </div>
@@ -118,11 +118,11 @@ export default async function HomePage() {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/dispatch-preview.png"
-              alt="A real Back of the Box page: weather, world news, a themed crossword, a maze, word of the day, a joke, a riddle, and a fun fact"
+              alt="A real Back of the Box page: weather, a space-themed crossword, a maze, a joke, a fun fact, a number pattern, a number grid, and a state and capital"
               className="w-full rounded-lg border border-rule shadow-xl"
             />
             <p className="mt-3 text-center text-xs text-ink-soft">
-              Today’s page for a 7–9 year old, untouched.
+              A real morning page for a 7–9 year old, untouched.
             </p>
           </div>
           <div className="order-1 lg:order-2">
