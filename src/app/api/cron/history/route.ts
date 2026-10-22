@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getDailyHistory } from "@/lib/news/history-live";
+import { getDailyHistory, lastHistoryError } from "@/lib/news/history-live";
 import { loadPayload } from "@/lib/persist";
 
 export const runtime = "nodejs";
@@ -34,13 +34,13 @@ export async function GET(req: Request) {
   }
   const results: Record<string, number | string> = {};
   // A few at a time keeps well inside the function timeout and rate limits.
-  for (let i = 0; i < days.length; i += 5) {
+  for (let i = 0; i < days.length; i += 3) {
     await Promise.all(
-      days.slice(i, i + 5).map(async (iso) => {
+      days.slice(i, i + 3).map(async (iso) => {
         const md = iso.slice(5);
         const had = await loadPayload(`history2:${md}`);
         const items = await getDailyHistory(iso);
-        results[md] = items ? (had ? `cached ${items.length}` : items.length) : "failed";
+        results[md] = items ? (had ? `cached ${items.length}` : items.length) : `failed: ${lastHistoryError}`;
       }),
     );
   }

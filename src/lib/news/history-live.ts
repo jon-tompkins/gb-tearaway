@@ -3,6 +3,9 @@ import type { AgeBand, ModuleId } from "../types";
 import { loadPayload, savePayload } from "../persist";
 import { parseISODate } from "../dates";
 
+/** Why the most recent build failed (for the warm-up cron's report). */
+export let lastHistoryError = "";
+
 const MODEL = "claude-sonnet-5-5";
 const BANDS: AgeBand[] = ["4-6", "7-9", "10-12"];
 
@@ -90,8 +93,16 @@ async function fetchOnThisDay(mm: string, dd: string): Promise<RawEvent[]> {
   const url = `https://api.wikimedia.org/feed/v1/wikipedia/en/onthisday/all/${mm}/${dd}`;
   const headers = { "User-Agent": "BackOfTheBox/1.0 (kids morning paper; contact via app)" };
   try {
-    const res = await fetch(url, { headers });
-    if (!res.ok) return [];
+    let res = await fetch(url, { headers });
+    // Wikimedia rate-limits bursts (429) — back off and retry a couple of times.
+    for (let i = 1; i <= 3 && res.status === 429; i++) {
+      await new Promise((r) => setTimeout(r, 1500 * i));
+      res = await fetch(url, { headers });
+    }
+    if (!res.ok) {
+      lastHistoryError = `wikimedia ${res.status}`;
+      return [];
+    }
     const data = (await res.json()) as Partial<Record<"selected" | "events" | "births", RawEvent[]>>;
     const seen = new Set<string>();
     const out: RawEvent[] = [];
@@ -144,11 +155,16 @@ export async function getDailyHistory(
         messages: [{ role: "user", content: `Real events and births for ${month}/${day}:\n\n${list}` }],
       })
       .finalMessage();
-    if (msg.stop_reason !== "end_turn") return null;
+    if (msg.stop_reason !== "end_turn") {
+      lastHistoryError = `stop_reason ${msg.stop_reason}`;
+      return null;
+    }
     items = parse(msg.content.map((b) => (b.type === "text" ? b.text : "")).join("").trim());
-  } catch {
+  } catch (e) {
+    lastHistoryError = e instanceof Error ? e.message.slice(0, 120) : "model error";
     return null;
   }
+  if (!items.length) lastHistoryError = "model returned nothing usable";
   if (items.length) await savePayload(key, { items });
   return items.length ? items : null;
 }
