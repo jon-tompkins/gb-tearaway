@@ -218,7 +218,7 @@ export default function EditDispatchPage() {
           </div>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="field">
             <label htmlFor="dt">Delivery time</label>
             <input id="dt" type="time" value={deliveryTime} onChange={(e) => setDeliveryTime(e.target.value)} />

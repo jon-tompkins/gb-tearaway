@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { AuthButton } from "@/components/AuthButton";
+import { HomeHeaderActions } from "@/components/HomeHeaderActions";
 import { MODULE_CATALOG, MODULE_CATEGORIES } from "@/lib/modules";
 import { getHiddenModules } from "@/lib/visibility";
 
@@ -71,25 +71,11 @@ export default async function HomePage() {
           </span>
           <span className="masthead-display whitespace-nowrap text-lg sm:text-xl">Back of the Box</span>
         </Link>
-        <div className="flex shrink-0 items-center gap-3">
-          <Link
-            href="/modules"
-            className="hidden whitespace-nowrap text-sm font-semibold text-ink-soft hover:text-ink sm:inline"
-          >
-            Modules
-          </Link>
-          <AuthButton compact />
-          <Link
-            href="/app"
-            className="hidden whitespace-nowrap text-sm font-semibold text-ink-soft hover:text-ink sm:inline"
-          >
-            Open dashboard →
-          </Link>
-        </div>
+        <HomeHeaderActions />
       </header>
 
       <section className="border-y border-rule/50">
-        <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 sm:py-16 lg:grid-cols-[0.92fr_1.08fr] lg:items-center">
+        <div className="mx-auto grid max-w-6xl grid-cols-1 gap-10 px-4 py-12 sm:py-16 lg:grid-cols-[0.92fr_1.08fr] lg:items-center">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.22em] text-stamp">
               Morning ritual · screen-free
@@ -119,7 +105,7 @@ export default async function HomePage() {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/cereal-box.png"
-              alt="A sample Back of the Box dispatch printed on the back of a cereal box"
+              alt="Back of the Box, morning brain cereal: today’s puzzle page with weather, kid-safe news, a crossword and a maze"
               className="w-full drop-shadow-2xl"
             />
           </div>
@@ -127,7 +113,7 @@ export default async function HomePage() {
       </section>
 
       <section id="sample" className="mx-auto max-w-6xl scroll-mt-6 px-4 py-16">
-        <div className="grid gap-10 lg:grid-cols-[1fr_0.85fr] lg:items-center">
+        <div className="grid grid-cols-1 gap-10 lg:grid-cols-[1fr_0.85fr] lg:items-center">
           <div className="order-2 mx-auto w-full max-w-[480px] lg:order-1">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
@@ -165,8 +151,8 @@ export default async function HomePage() {
                 {visible.length} cards to build with
               </h2>
               <p className="mt-2 max-w-2xl text-ink-soft">
-                Mix and match up to eight cards on a page. One card can also rotate through a few
-                modules, like sudoku one day and battleship the next.
+                Mix and match cards in three sizes, from a quick joke to a big crossword. One card
+                can also rotate through a few modules, like sudoku one day and battleship the next.
               </p>
             </div>
             <Link href="/modules" className="text-sm font-semibold text-ink underline-offset-4 hover:underline">
