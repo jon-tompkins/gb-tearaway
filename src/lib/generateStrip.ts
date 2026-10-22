@@ -153,17 +153,19 @@ export function generateStrip(
       continue;
     }
     if (moduleId === "history") {
-      // Prefer real, kid-safe "on this day" events (Wikimedia → Haiku), gathered
+      // Prefer real "on this day" events (Wikimedia → Sonnet, pre-built), gathered
       // by the route; fall back to the static bank if unavailable.
       const livePool = (opts.historyLive ?? []).filter(
         (h) => !h.bands.length || h.bands.includes(band),
       );
       let year: string;
       let text: string;
+      let category: string | undefined;
       if (livePool.length) {
         const chosen = livePool[Math.floor(rng() * livePool.length) % livePool.length];
         year = chosen.year;
         text = chosen.text;
+        category = chosen.category;
       } else {
         const hist = pickHistory(date, band, rng);
         year = hist.year;
@@ -171,7 +173,8 @@ export function generateStrip(
       }
       // Year only as the lead — the month/day is redundant (it's today). Entries
       // without a year drop the lead entirely rather than print the date.
-      const lines = year ? [String(year), text] : [text];
+      const lead = [year, category].filter(Boolean).join(" · ");
+      const lines = lead ? [lead, text] : [text];
       sections.push({
         id: `hist-${year || "x"}`,
         moduleId,

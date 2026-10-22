@@ -7,6 +7,10 @@
     {
       "path": "/api/cron/news",
       "schedule": "30 * * * *"
+    },
+    {
+      "path": "/api/cron/history",
+      "schedule": "10 6 * * *"
     }
   ]
 }
