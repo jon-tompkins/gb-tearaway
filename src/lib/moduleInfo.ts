@@ -122,6 +122,12 @@ export const MODULE_INFO: Record<ModuleId, ModuleInfo> = {
     config: [DIAL + " Picks the age band and cipher type."],
     answerInApp: true,
   },
+  logicgrid: {
+    source:
+      "Generated fresh each day: kids are matched to pets, lunches or sports. A solver checks every possible answer so the puzzle has exactly one solution, then trims the clues to the minimum. Ages 4–9: 3×3 with about 3 clues; 10–12: 4×4 with about 6. Solution shows in the app only.",
+    config: [DIAL + " Picks the grid size."],
+    answerInApp: true,
+  },
   animal: {
     source:
       "A bank of ~55 animals, each with a simple coloring-page drawing, where it lives, its size and a true fun fact. Each kid works through the bank one a day in their own order.",

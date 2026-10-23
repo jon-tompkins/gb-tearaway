@@ -14,6 +14,7 @@ import { pickWord } from "./content/words";
 import { pickFact } from "./content/facts";
 import { pickRecord } from "./content/records";
 import { pickTwister, twisterLines } from "./content/twisters";
+import { generateLogicGrid } from "./puzzles/logicgrid";
 import { pickAnimal } from "./content/animals";
 import { pickCryptogram } from "./content/cryptograms";
 import { generateCryptogram } from "./puzzles/cryptogram";
@@ -108,6 +109,10 @@ export function moduleExample(id: ModuleId): ModuleExample {
     case "cryptogram": {
       const cg = generateCryptogram(pickCryptogram(BAND, rng), BAND, rng);
       return { text: cg.lines, note: `Answer (in the app): ${cg.answer}` };
+    }
+    case "logicgrid": {
+      const lg = generateLogicGrid(BAND, rng);
+      return { text: lg.lines, svg: lg.svg, note: `Answer (in the app): ${lg.answer}` };
     }
     case "animal": {
       const a = pickAnimal(BAND, rng);

@@ -163,6 +163,10 @@ export const ADMIN_MODULES: Record<ModuleId, AdminModule> = {
       rows: CRYPTOGRAMS.map((c) => ({ cells: [c.text], bands: c.bands })),
     }),
   },
+  logicgrid: {
+    kind: "generated",
+    how: "Built fresh each day; a solver proves exactly one solution and prunes redundant clues. Answer in the app only.",
+  },
   animal: {
     kind: "bank",
     how: "Static bank of ~55 animals with generated line art. Each kid works through it one a day in their own shuffled order.",

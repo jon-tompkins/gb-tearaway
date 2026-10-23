@@ -16,6 +16,7 @@ import { pickTwisterForDay, twisterLines } from "./content/twisters";
 import { pickAnimalForDay } from "./content/animals";
 import { pickCryptogramForDay } from "./content/cryptograms";
 import { generateCryptogram } from "./puzzles/cryptogram";
+import { generateLogicGrid } from "./puzzles/logicgrid";
 import { buildNumberCross } from "./puzzles/numbercross";
 import { pickHistory } from "./content/history";
 import { pickJokeForDay } from "./content/jokes";
@@ -166,6 +167,19 @@ export function generateStrip(
         title: meta.name,
         kind: "text",
         lines: [rec.category, rec.record, rec.extra],
+      });
+      continue;
+    }
+    if (moduleId === "logicgrid") {
+      const lg = generateLogicGrid(band, rng);
+      sections.push({
+        id: `logic-${lg.n}-${hashish(lg.answer)}`,
+        moduleId,
+        title: meta.name,
+        kind: "text",
+        lines: lg.lines,
+        svg: lg.svg,
+        answer: lg.answer,
       });
       continue;
     }
