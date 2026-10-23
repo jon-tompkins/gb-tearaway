@@ -13,7 +13,11 @@ interface DailyNewsPayload {
   dropped?: DroppedStory[];
   /** Token usage + cost of each AI call that produced this feed. */
   usage?: CallUsage[];
+  /** Generation attempts that came back empty today (retried hourly, up to MAX_EMPTY_TRIES). */
+  emptyTries?: number;
 }
+
+const MAX_EMPTY_TRIES = 3;
 
 function utcDate(): string {
   return new Date().toISOString().slice(0, 10);
@@ -69,7 +73,12 @@ export async function getDailyNews(
   const date = utcDate();
   const key = `news:${date}:${feed}${cacheSuffix}`;
   const cached = await loadPayload<DailyNewsPayload>(key);
-  if (cached?.date === date) return cached.items.length ? cached.items : null;
+  if (cached?.date === date) {
+    if (cached.items.length) return cached.items;
+    // An empty feed is retried by the hourly warm-up (a bad pick or fetch
+    // shouldn't blank the card for the whole day), then left alone.
+    if (!opts.generate || (cached.emptyTries ?? 1) >= MAX_EMPTY_TRIES) return null;
+  }
   // Writing a feed (pick → fetch articles → write) takes a minute or more, far
   // too slow for the dispatch render (the emailed PDF has a 60s budget). Only
   // the news warm-up cron generates; renders read the cache, and a feed that
@@ -78,7 +87,8 @@ export async function getDailyNews(
 
   const headlines = await headlinesFor(urls);
   const { items, dropped, usage } = await rewriteKidSafe(headlines, hint, opts.config);
-  await savePayload(key, { date, items, dropped, usage } satisfies DailyNewsPayload);
+  const emptyTries = items.length ? 0 : (cached?.date === date ? (cached.emptyTries ?? 1) : 0) + 1;
+  await savePayload(key, { date, items, dropped, usage, emptyTries } satisfies DailyNewsPayload);
   const usd = usage.reduce((a, u) => a + u.usd, 0);
   await logEvent({
     type: "ai_usage",
