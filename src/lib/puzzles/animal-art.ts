@@ -5,6 +5,7 @@
  * made to be colored in with crayons, so the shapes are simple and cartoon-like.
  */
 import { customSvg } from "./animal-art-custom";
+import { openmojiSvg } from "./animal-art-openmoji";
 
 export type Ears = "none" | "point" | "round" | "long" | "floppy" | "small";
 export type Tail = "none" | "curl" | "thin" | "bushy" | "tuft" | "stub" | "long";
@@ -363,7 +364,7 @@ function misc(p: MiscSpec, label: string): string {
 
 export function animalSvg(spec: AnimalSpec, label: string): string {
   switch (spec.plan) {
-    case "custom": return customSvg(spec.id, label);
+    case "custom": return openmojiSvg(spec.id, label) ?? customSvg(spec.id, label);
     case "quad": return quad(spec, label);
     case "bird": return bird(spec, label);
     case "fish": return fish(spec, label);
