@@ -77,7 +77,7 @@ export function generateCryptogram(text: string, band: AgeBand, rng: RNG): Crypt
   const counts = new Map<string, number>();
   for (const c of text) if (c !== " ") counts.set(c, (counts.get(c) ?? 0) + 1);
   const top = [...counts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).slice(0, 2).map(([c]) => c);
-  const reveals = top.map((c) => `${map[ALPHA.indexOf(c)]} = ${c}`).join("   ");
+  const reveals = top.map((c) => `${map[ALPHA.indexOf(c)]} = ${c}`).join(", ");
   return {
     lines: [
       "CRYPTOGRAM: each letter stands for a different letter. Crack the code!",
