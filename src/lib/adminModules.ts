@@ -150,6 +150,10 @@ export const ADMIN_MODULES: Record<ModuleId, AdminModule> = {
       rows: FACTS.map((f) => ({ cells: [f.fact, f.extra], bands: f.bands })),
     }),
   },
+  numbercross: {
+    kind: "generated",
+    how: "A criss-cross of number answers with calculation clues (sums, times tables, doubles → squares, percents, perimeters). Reuses the crossword layout engine with digits encoded as letters; each clue has exactly one numeric answer. Answers show in the app only.",
+  },
   cryptogram: {
     kind: "bank",
     how: "Bank of ~70 short messages, encoded fresh each day: number code (4–6), letter shift with one clue letter (7–9), random substitution cipher with two letters revealed (10–12). Decoded message shows in the app only.",

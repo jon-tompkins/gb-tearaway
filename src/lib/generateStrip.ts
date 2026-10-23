@@ -15,6 +15,7 @@ import { pickRecordForDay } from "./content/records";
 import { pickTwisterForDay, twisterLines } from "./content/twisters";
 import { pickCryptogramForDay } from "./content/cryptograms";
 import { generateCryptogram } from "./puzzles/cryptogram";
+import { buildNumberCross } from "./puzzles/numbercross";
 import { pickHistory } from "./content/history";
 import { pickJokeForDay } from "./content/jokes";
 import {
@@ -299,6 +300,22 @@ export function generateStrip(
           crossword: cw,
           // Answers show only in the app (Parent key / QR) — never printed.
           answer: crosswordAnswerText(cw),
+        });
+      }
+      continue;
+    }
+    if (moduleId === "numbercross") {
+      const nc = buildNumberCross(rng, band, cardSize === "double" ? "double" : "full");
+      if (nc) {
+        sections.push({
+          id: `numbercross-${nc.cw.cols}x${nc.cw.rows}-${nc.cw.words[0]?.word ?? "x"}`,
+          moduleId,
+          title: meta.name,
+          kind: "crossword",
+          lines: [],
+          crossword: nc.cw,
+          // Answers show only in the app (Parent key / QR) — never printed.
+          answer: crosswordAnswerText(nc.cw),
         });
       }
       continue;

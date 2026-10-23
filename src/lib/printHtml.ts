@@ -186,7 +186,7 @@ export function buildPrintHtml(
       if(!${isLetter ? "true" : "false"}) return;
       function px(v){return parseFloat(v)||0}
       function fit(){
-        document.querySelectorAll('section.mod-crossword').forEach(function(sec){
+        document.querySelectorAll('section.mod-crossword, section.mod-numbercross').forEach(function(sec){
           var g=sec.querySelector('.cw-grid'), c=sec.querySelector('.cw-clues');
           if(!g||!c) return;
           var cs=getComputedStyle(sec);

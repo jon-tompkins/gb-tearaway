@@ -16,6 +16,7 @@ import { pickRecord } from "./content/records";
 import { pickTwister, twisterLines } from "./content/twisters";
 import { pickCryptogram } from "./content/cryptograms";
 import { generateCryptogram } from "./puzzles/cryptogram";
+import { buildNumberCross } from "./puzzles/numbercross";
 import { pickJoke } from "./content/jokes";
 import { pickRiddle } from "./content/riddles";
 import { pickSpanish } from "./content/spanish";
@@ -97,6 +98,11 @@ export function moduleExample(id: ModuleId): ModuleExample {
     case "fact": {
       const f = pickFact(BAND, rng);
       return { text: [f.fact, f.extra], note: "One a day from the bank — this is a sample." };
+    }
+    case "numbercross": {
+      const nc = buildNumberCross(mulberry32(5), BAND, "full");
+      if (!nc) return { text: ["Number Cross"] };
+      return { text: [], svg: crosswordToSvg(nc.cw), note: "Each clue's answer is a number; crossing squares share a digit." };
     }
     case "cryptogram": {
       const cg = generateCryptogram(pickCryptogram(BAND, rng), BAND, rng);

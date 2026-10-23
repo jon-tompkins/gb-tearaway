@@ -110,6 +110,12 @@ export const MODULE_INFO: Record<ModuleId, ModuleInfo> = {
       "Real 'on this day' events from Wikipedia — inventions, science, space, sports, famous battles, arts and births — picked and written for kids by AI, cached per date. No made-up history.",
     config: [DIAL + " Picks the age band."],
   },
+  numbercross: {
+    source:
+      "Fully procedural: a real criss-cross grid where every answer is a number and every clue is a quick calculation. Little kids add, subtract, double and halve; middle ages use times tables and day/hour facts; olders get squares, cubes, roots, percents and perimeters. Crossing squares must share a digit, so you can check yourself. Answers show in the app only.",
+    config: [DIAL + " Picks the age band (which kinds of clues appear)."],
+    answerInApp: true,
+  },
   cryptogram: {
     source:
       "Short kid-safe messages encoded fresh each day. Ages 4–6 crack a number code (A=1…) with the key printed; 7–9 decode a letter shift and get one clue letter; 10–12 solve a random substitution cipher with two letters given. Decoded message shows in the app only.",
