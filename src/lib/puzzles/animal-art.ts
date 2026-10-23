@@ -4,6 +4,8 @@
  * template covers a whole family. Black outlines on white, thick round strokes —
  * made to be colored in with crayons, so the shapes are simple and cartoon-like.
  */
+import { customSvg } from "./animal-art-custom";
+
 export type Ears = "none" | "point" | "round" | "long" | "floppy" | "small";
 export type Tail = "none" | "curl" | "thin" | "bushy" | "tuft" | "stub" | "long";
 
@@ -49,7 +51,11 @@ export interface FishSpec {
 export interface MiscSpec {
   plan: "octopus" | "jelly" | "crab" | "star" | "turtle" | "frog" | "snake" | "butterfly" | "ladybug" | "bee" | "spider" | "snail";
 }
-export type AnimalSpec = QuadSpec | BirdSpec | FishSpec | MiscSpec;
+export interface CustomSpec {
+  plan: "custom";
+  id: string;
+}
+export type AnimalSpec = QuadSpec | BirdSpec | FishSpec | MiscSpec | CustomSpec;
 
 const S = `fill="#fff" stroke="#111" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"`;
 const SK = `fill="none" stroke="#111" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"`;
@@ -357,6 +363,7 @@ function misc(p: MiscSpec, label: string): string {
 
 export function animalSvg(spec: AnimalSpec, label: string): string {
   switch (spec.plan) {
+    case "custom": return customSvg(spec.id, label);
     case "quad": return quad(spec, label);
     case "bird": return bird(spec, label);
     case "fish": return fish(spec, label);
