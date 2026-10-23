@@ -65,7 +65,7 @@ const poly = (pts: number[][], fill = true) =>
 const rrect = (x: number, y: number, w: number, h: number, r: number) =>
   `<rect x="${f(x)}" y="${f(y)}" width="${f(w)}" height="${f(h)}" rx="${f(r)}" ${S}/>`;
 
-const wrap = (inner: string, label: string, vb = "0 0 240 160") =>
+const wrap = (inner: string, label: string, vb = "0 -36 240 196") =>
   `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb}" role="img" aria-label="${label}">${inner}</svg>`;
 
 // ── four-legged ──────────────────────────────────────────────────────────────
@@ -187,7 +187,13 @@ function quad(p: QuadSpec, label: string): string {
   out.push(eye(fx - hr * 0.05 + hr * 0.25, hy - hr * 0.15, 2.8));
   out.push(path(`M${f(hx - hr * 0.45)},${f(hy + hr * 0.55)} q${hr * 0.25},${hr * 0.2} ${hr * 0.55},0`));
   void fy;
-  return wrap(out.join(""), label);
+  // Zoom small animals so they fill the frame; tall ones (giraffe) keep headroom.
+  const totW = 2 * p.rx + 2 * p.headR + 50;
+  const totH = p.legH + 2 * p.ry + (p.neckUp ?? 0) + p.headR * 2 + 40;
+  const sc = Math.min(2.2, 232 / totW, 150 / totH);
+  const vw = 240 / sc, vh = 150 / sc;
+  const vx = cx - vw / 2 - 6 / sc, vy = 154 - vh;
+  return wrap(out.join(""), label, `${f(vx)} ${f(vy)} ${f(vw)} ${f(vh)}`);
 }
 
 // ── bird ─────────────────────────────────────────────────────────────────────

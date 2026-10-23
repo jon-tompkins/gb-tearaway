@@ -13,6 +13,7 @@ import { pickWord } from "./content/words";
 import { pickFactForDay } from "./content/facts";
 import { pickRecordForDay } from "./content/records";
 import { pickTwisterForDay, twisterLines } from "./content/twisters";
+import { pickAnimalForDay } from "./content/animals";
 import { pickCryptogramForDay } from "./content/cryptograms";
 import { generateCryptogram } from "./puzzles/cryptogram";
 import { buildNumberCross } from "./puzzles/numbercross";
@@ -165,6 +166,18 @@ export function generateStrip(
         title: meta.name,
         kind: "text",
         lines: [rec.category, rec.record, rec.extra],
+      });
+      continue;
+    }
+    if (moduleId === "animal") {
+      const an = pickAnimalForDay(band, { dateISO: date, kid: firstName, nonce });
+      sections.push({
+        id: `animal-${hashish(an.name)}`,
+        moduleId,
+        title: meta.name,
+        kind: "text",
+        lines: an.lines,
+        svg: an.svg,
       });
       continue;
     }

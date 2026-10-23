@@ -122,6 +122,11 @@ export const MODULE_INFO: Record<ModuleId, ModuleInfo> = {
     config: [DIAL + " Picks the age band and cipher type."],
     answerInApp: true,
   },
+  animal: {
+    source:
+      "A bank of ~55 animals, each with a simple coloring-page drawing, where it lives, its size and a true fun fact. Each kid works through the bank one a day in their own order.",
+    config: [DIAL + " Picks the age band (prompt wording)."],
+  },
   tonguetwister: {
     source:
       "A bank of ~125 tongue twisters (classics plus originals), tagged by the sound they drill — a nice bonus for speech practice. Little kids get short one-sound twisters; olders get the hard ones. Each kid works through the bank one a day in their own order.",

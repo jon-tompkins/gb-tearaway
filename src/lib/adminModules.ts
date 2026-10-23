@@ -3,6 +3,7 @@ import { JOKES } from "./content/jokes";
 import { FACTS } from "./content/facts";
 import { RECORDS } from "./content/records";
 import { TWISTERS } from "./content/twisters";
+import { ANIMALS } from "./content/animals";
 import { CRYPTOGRAMS } from "./content/bank/cryptograms";
 import { WORDS } from "./content/words";
 import { WORDS as SPANISH } from "./content/spanish";
@@ -160,6 +161,14 @@ export const ADMIN_MODULES: Record<ModuleId, AdminModule> = {
     bank: () => ({
       columns: ["Message"],
       rows: CRYPTOGRAMS.map((c) => ({ cells: [c.text], bands: c.bands })),
+    }),
+  },
+  animal: {
+    kind: "bank",
+    how: "Static bank of ~55 animals with generated line art. Each kid works through it one a day in their own shuffled order.",
+    bank: () => ({
+      columns: ["Animal", "Lives", "Size", "Fun fact"],
+      rows: ANIMALS.map((a) => ({ cells: [a.name, a.lives, a.size, a.fact], bands: a.bands })),
     }),
   },
   tonguetwister: {
