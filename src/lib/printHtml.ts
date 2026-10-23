@@ -216,6 +216,39 @@ export function buildPrintHtml(
       window.addEventListener('beforeprint',fit);
     })();
   </script>`;
+  // News cards: stories use a small type size that is fit to the card. Shrink
+  // (down to 6.4pt) until everything fits; if it still overflows, drop the
+  // last paragraph of the last story, then the last story. Spare room grows
+  // the type back up (cap 8.6pt) so short cards aren't left half empty.
+  const newsFit = `<script>
+    (function(){
+      if(!${isLetter ? "true" : "false"}) return;
+      function fit(){
+        document.querySelectorAll('.nfit').forEach(function(box){
+          var stories=[].slice.call(box.querySelectorAll('.nstory'));
+          stories.forEach(function(s){s.style.display='';s.querySelectorAll('p').forEach(function(p){p.style.display=''})});
+          function over(){return box.scrollHeight>box.clientHeight+1}
+          var lo=6.4, hi=8.6;
+          box.style.fontSize=hi+'pt';
+          if(over()){
+            for(var i=0;i<14;i++){var mid=(lo+hi)/2;box.style.fontSize=mid+'pt';if(over()) hi=mid; else lo=mid}
+            box.style.fontSize=lo+'pt';
+          }
+          var guard=0;
+          while(over()&&guard++<12){
+            var vis=stories.filter(function(s){return s.style.display!=='none'});
+            var last=vis[vis.length-1]; if(!last) break;
+            var ps=[].slice.call(last.querySelectorAll('p')).filter(function(p){return p.style.display!=='none'});
+            if(ps.length>1) ps[ps.length-1].style.display='none';
+            else if(vis.length>1) last.style.display='none';
+            else break;
+          }
+        });
+      }
+      if(document.readyState==='complete') fit(); else window.addEventListener('load',fit);
+      window.addEventListener('beforeprint',fit);
+    })();
+  </script>`;
   // Embed mode (on-screen preview inside an iframe): no toolbar, no auto-print,
   // no top padding — just the sheet, so the preview is pixel-identical to print.
   const embed = !!opts.embed;
@@ -244,6 +277,7 @@ export function buildPrintHtml(
 <body>
   <div class="sheet">${inner}</div>
   ${crosswordFit}
+  ${newsFit}
   ${auto}
 </body></html>`;
 }

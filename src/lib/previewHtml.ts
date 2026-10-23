@@ -197,18 +197,18 @@ export function sectionHtml(section: StripSection): string {
           ? `<span style="font-weight:700;text-transform:uppercase;letter-spacing:.02em">${esc(i.location)}</span> — `
           : "";
         const body = paras
-          .map((p, n) => `<p style="margin:${n ? ".9mm" : "0"} 0 0">${n === 0 ? dateline : ""}${esc(p)}</p>`)
+          .map((p, n) => `<p style="font-size:1em;line-height:inherit;margin:${n ? ".9mm" : "0"} 0 0">${n === 0 ? dateline : ""}${esc(p)}</p>`)
           .join("");
-        return `<div><div style="font-weight:700;font-size:9.5pt;line-height:1.15;margin-bottom:.6mm">${esc(
+        return `<div class="nstory"><div style="font-weight:700;font-size:1.15em;line-height:1.15;margin-bottom:.6mm">${esc(
           i.headline,
-        )}</div><div style="font-size:8.4pt;line-height:1.32">${body}</div></div>`;
+        )}</div><div class="nbody" style="line-height:1.28">${body}</div></div>`;
       })
       .join("");
     // Stretch stories to fill the card — 3 in a 4-slot card spread out instead
     // of leaving a gap at the bottom.
     return `<section class="sec${sizeClass} mod-${section.moduleId}">
     <h3>${esc(section.title)}</h3>
-    <div style="flex:1;min-height:0;display:flex;flex-direction:column;justify-content:space-between;gap:1.6mm">${items}</div>
+    <div class="nfit" style="flex:1;min-height:0;overflow:hidden;font-size:7.4pt;display:flex;flex-direction:column;justify-content:space-between;gap:1.6mm">${items}</div>
   </section>`;
   }
 
