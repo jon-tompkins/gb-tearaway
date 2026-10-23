@@ -41,6 +41,7 @@ export const MODULE_CATALOG: ModuleMeta[] = [
   { id: "joke", name: "Breakfast Joke", blurb: "One groaner a day. Age-checked, no mean stuff.", category: "words", defaultOn: true, size: "half" },
   { id: "spanish", name: "Spanish Word", blurb: "A second language bite beside English Word of the Day.", category: "words", defaultOn: false, size: "half" },
   { id: "tonguetwister", name: "Tongue Twister", blurb: "A tongue twister to say fast, with a tally box. Easy ones for little kids, tricky ones for olders.", category: "words", defaultOn: false, size: "half" },
+  { id: "cryptogram", name: "Secret Code", blurb: "Crack a coded message: a number code for little kids, a letter shift for middle, a real cryptogram for olders. Answer shows in the app.", category: "play", defaultOn: false, size: "half" },
   { id: "scramble", name: "Word Scramble", blurb: "Unscramble the letters with a hint — answer shows in the app, never on paper.", category: "words", defaultOn: false, size: "half" },
   // Curious facts
   { id: "usstate", name: "Name the State", blurb: "A US state outline, with a small US map showing where it is. Easy names the state + marks its capital with a star; harder shows just the outline (answer in the app).", category: "facts", defaultOn: false, size: "full" },
@@ -96,6 +97,7 @@ const MODULE_SIZES: Partial<Record<ModuleId, SlotSize[]>> = {
   riddle: ["half", "full"],
   sequence: ["half", "full"],
   scramble: ["half", "full"],
+  cryptogram: ["half", "full"],
   tonguetwister: ["half", "full"],
   spanish: ["half", "full"],
   fact: ["half", "full"],

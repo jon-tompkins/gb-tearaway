@@ -14,6 +14,8 @@ import { pickWord } from "./content/words";
 import { pickFact } from "./content/facts";
 import { pickRecord } from "./content/records";
 import { pickTwister, twisterLines } from "./content/twisters";
+import { pickCryptogram } from "./content/cryptograms";
+import { generateCryptogram } from "./puzzles/cryptogram";
 import { pickJoke } from "./content/jokes";
 import { pickRiddle } from "./content/riddles";
 import { pickSpanish } from "./content/spanish";
@@ -95,6 +97,10 @@ export function moduleExample(id: ModuleId): ModuleExample {
     case "fact": {
       const f = pickFact(BAND, rng);
       return { text: [f.fact, f.extra], note: "One a day from the bank — this is a sample." };
+    }
+    case "cryptogram": {
+      const cg = generateCryptogram(pickCryptogram(BAND, rng), BAND, rng);
+      return { text: cg.lines, note: `Answer (in the app): ${cg.answer}` };
     }
     case "tonguetwister": {
       return { text: twisterLines(pickTwister(BAND, rng), BAND), note: "One a day from the bank — this is a sample." };

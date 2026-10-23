@@ -13,6 +13,8 @@ import { pickWord } from "./content/words";
 import { pickFactForDay } from "./content/facts";
 import { pickRecordForDay } from "./content/records";
 import { pickTwisterForDay, twisterLines } from "./content/twisters";
+import { pickCryptogramForDay } from "./content/cryptograms";
+import { generateCryptogram } from "./puzzles/cryptogram";
 import { pickHistory } from "./content/history";
 import { pickJokeForDay } from "./content/jokes";
 import {
@@ -173,6 +175,20 @@ export function generateStrip(
         title: meta.name,
         kind: "text",
         lines: twisterLines(tw, band),
+      });
+      continue;
+    }
+    if (moduleId === "cryptogram") {
+      const msg = pickCryptogramForDay(band, { dateISO: date, kid: firstName, nonce });
+      const cg = generateCryptogram(msg, band, rng);
+      sections.push({
+        id: `crypto-${hashish(msg)}`,
+        moduleId,
+        title: meta.name,
+        kind: "text",
+        lines: cg.lines,
+        // Decoded message lives only in the app (Parent key) — never printed.
+        answer: cg.answer,
       });
       continue;
     }

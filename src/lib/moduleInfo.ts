@@ -110,6 +110,12 @@ export const MODULE_INFO: Record<ModuleId, ModuleInfo> = {
       "Real 'on this day' events from Wikipedia — inventions, science, space, sports, famous battles, arts and births — picked and written for kids by AI, cached per date. No made-up history.",
     config: [DIAL + " Picks the age band."],
   },
+  cryptogram: {
+    source:
+      "Short kid-safe messages encoded fresh each day. Ages 4–6 crack a number code (A=1…) with the key printed; 7–9 decode a letter shift and get one clue letter; 10–12 solve a random substitution cipher with two letters given. Decoded message shows in the app only.",
+    config: [DIAL + " Picks the age band and cipher type."],
+    answerInApp: true,
+  },
   tonguetwister: {
     source:
       "A bank of ~125 tongue twisters (classics plus originals), tagged by the sound they drill — a nice bonus for speech practice. Little kids get short one-sound twisters; olders get the hard ones. Each kid works through the bank one a day in their own order.",

@@ -3,6 +3,7 @@ import { JOKES } from "./content/jokes";
 import { FACTS } from "./content/facts";
 import { RECORDS } from "./content/records";
 import { TWISTERS } from "./content/twisters";
+import { CRYPTOGRAMS } from "./content/bank/cryptograms";
 import { WORDS } from "./content/words";
 import { WORDS as SPANISH } from "./content/spanish";
 import { SCRAMBLES } from "./content/scramble";
@@ -147,6 +148,14 @@ export const ADMIN_MODULES: Record<ModuleId, AdminModule> = {
     bank: () => ({
       columns: ["Fact", "Extra"],
       rows: FACTS.map((f) => ({ cells: [f.fact, f.extra], bands: f.bands })),
+    }),
+  },
+  cryptogram: {
+    kind: "bank",
+    how: "Bank of ~70 short messages, encoded fresh each day: number code (4–6), letter shift with one clue letter (7–9), random substitution cipher with two letters revealed (10–12). Decoded message shows in the app only.",
+    bank: () => ({
+      columns: ["Message"],
+      rows: CRYPTOGRAMS.map((c) => ({ cells: [c.text], bands: c.bands })),
     }),
   },
   tonguetwister: {
