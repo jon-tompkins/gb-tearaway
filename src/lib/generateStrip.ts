@@ -12,6 +12,7 @@ import { mulberry32, pick, stripSeed, uid } from "./rng";
 import { pickWord } from "./content/words";
 import { pickFactForDay } from "./content/facts";
 import { pickRecordForDay } from "./content/records";
+import { pickTwisterForDay, twisterLines } from "./content/twisters";
 import { pickHistory } from "./content/history";
 import { pickJokeForDay } from "./content/jokes";
 import {
@@ -161,6 +162,17 @@ export function generateStrip(
         title: meta.name,
         kind: "text",
         lines: [rec.category, rec.record, rec.extra],
+      });
+      continue;
+    }
+    if (moduleId === "tonguetwister") {
+      const tw = pickTwisterForDay(band, { dateISO: date, kid: firstName, nonce });
+      sections.push({
+        id: `tt-${hashish(tw.text)}`,
+        moduleId,
+        title: meta.name,
+        kind: "text",
+        lines: twisterLines(tw, band),
       });
       continue;
     }

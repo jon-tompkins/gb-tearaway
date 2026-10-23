@@ -5,6 +5,7 @@ export type ModuleId =
   | "word"
   | "fact"
   | "records"
+  | "tonguetwister"
   | "maze"
   | "sudoku"
   | "battleship"

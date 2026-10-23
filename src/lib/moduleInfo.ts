@@ -110,6 +110,11 @@ export const MODULE_INFO: Record<ModuleId, ModuleInfo> = {
       "Real 'on this day' events from Wikipedia — inventions, science, space, sports, famous battles, arts and births — picked and written for kids by AI, cached per date. No made-up history.",
     config: [DIAL + " Picks the age band."],
   },
+  tonguetwister: {
+    source:
+      "A bank of ~125 tongue twisters (classics plus originals), tagged by the sound they drill — a nice bonus for speech practice. Little kids get short one-sound twisters; olders get the hard ones. Each kid works through the bank one a day in their own order.",
+    config: [DIAL + " Picks the age band and how many times to say it."],
+  },
   records: {
     source:
       "A bank of 250+ real, current world records — animals, space, weather, sports, buildings, giant food and human feats. Disputed or fast-changing records are left out. Each kid works through it one a day in their own order.",

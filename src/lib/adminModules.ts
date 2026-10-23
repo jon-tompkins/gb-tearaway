@@ -2,6 +2,7 @@ import type { AgeBand, ModuleId } from "./types";
 import { JOKES } from "./content/jokes";
 import { FACTS } from "./content/facts";
 import { RECORDS } from "./content/records";
+import { TWISTERS } from "./content/twisters";
 import { WORDS } from "./content/words";
 import { WORDS as SPANISH } from "./content/spanish";
 import { SCRAMBLES } from "./content/scramble";
@@ -146,6 +147,14 @@ export const ADMIN_MODULES: Record<ModuleId, AdminModule> = {
     bank: () => ({
       columns: ["Fact", "Extra"],
       rows: FACTS.map((f) => ({ cells: [f.fact, f.extra], bands: f.bands })),
+    }),
+  },
+  tonguetwister: {
+    kind: "bank",
+    how: "Static bank of ~125 twisters tagged by the sound they drill. Each kid works through their age band one a day, in their own shuffled order.",
+    bank: () => ({
+      columns: ["Sound", "Twister"],
+      rows: TWISTERS.map((t) => ({ cells: [t.sound, t.text], bands: t.bands })),
     }),
   },
   records: {

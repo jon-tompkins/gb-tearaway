@@ -13,6 +13,7 @@ import { generateCountryQuiz, type Continent } from "./puzzles/countries";
 import { pickWord } from "./content/words";
 import { pickFact } from "./content/facts";
 import { pickRecord } from "./content/records";
+import { pickTwister, twisterLines } from "./content/twisters";
 import { pickJoke } from "./content/jokes";
 import { pickRiddle } from "./content/riddles";
 import { pickSpanish } from "./content/spanish";
@@ -94,6 +95,9 @@ export function moduleExample(id: ModuleId): ModuleExample {
     case "fact": {
       const f = pickFact(BAND, rng);
       return { text: [f.fact, f.extra], note: "One a day from the bank — this is a sample." };
+    }
+    case "tonguetwister": {
+      return { text: twisterLines(pickTwister(BAND, rng), BAND), note: "One a day from the bank — this is a sample." };
     }
     case "records": {
       const r = pickRecord(BAND, rng);
