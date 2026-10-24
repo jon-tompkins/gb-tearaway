@@ -4,7 +4,7 @@
  * black round-cap outlines on white, drawn in a 240×150 box (ground ≈ y 140),
  * animals face left.
  */
-const SW = 2.4;
+const SW = 4.6;
 const S = `fill="#fff" stroke="#111" stroke-width="${SW}" stroke-linejoin="round" stroke-linecap="round"`;
 const SK = `fill="none" stroke="#111" stroke-width="${SW}" stroke-linejoin="round" stroke-linecap="round"`;
 const f = (n: number) => Math.round(n * 10) / 10;
@@ -115,7 +115,7 @@ const art: Record<string, string> = {
     poly([[84, 14], [94, 8], [92, 22]]), poly([[76, 14], [68, 8], [70, 22]]),
     dot(76, 26, 2.8), dot(48, 44, 2.6),
     p("M80,14 q-2,-14 4,-26 M82,-2 l-10,-8 M84,-12 l8,-8 M90,12 q8,-8 12,-24 M100,-2 l-8,-6 M102,-12 l8,-6"),
-    ...[[130, 64], [150, 58], [166, 70], [120, 80], [146, 82]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="3" fill="#fff" stroke="#111" stroke-width="2"/>`),
+    ...[[130, 64], [150, 58], [166, 70], [120, 80], [146, 82]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="3" fill="#fff" stroke="#111" stroke-width="3.4"/>`),
   ].join(""),
 
   kangaroo: [
@@ -372,6 +372,88 @@ const art: Record<string, string> = {
     p("M120,34 q-28,10 -38,26 M120,34 q28,10 38,26"),
   ].join(""),
 };
+
+const canine = (wolf: boolean) => {
+  const by = wolf ? 82 : 88, top = wolf ? 98 : 100;
+  return [
+    wolf
+      ? P("M180,76 C216,80 224,110 216,132 C200,128 190,106 178,94z")
+      : P("M174,82 C216,52 234,100 206,124 C190,136 170,110 172,98z"),
+    wolf ? "" : p("M204,66 C214,84 210,104 198,118"),
+    leg(98, top, 8), leg(112, top, 8), leg(160, top, 8), leg(172, top, 8),
+    E(136, by, wolf ? 50 : 46, wolf ? 24 : 20),
+    poly([[76, 58], [74, 28], [98, 50]]), poly([[92, 62], [102, 32], [116, 58]]),
+    P("M96,60 C86,50 60,50 22,86 C40,100 70,98 98,92z"),
+    dot(22, 86, 5), dot(66, 72, 3.2), p("M30,92 q22,8 44,-2"),
+  ].join("");
+};
+
+const quadStripes = (cx: number, cy: number, rx: number, ry: number, n: number, xs: number) => {
+  const o: string[] = [];
+  for (let i = 0; i < n; i++) {
+    const x = cx - rx * 0.62 + i * ((rx * 1.24) / (n - 1));
+    const h = ry * Math.sqrt(Math.max(0, 1 - ((x - cx) / rx) ** 2));
+    o.push(p(`M${f(x)},${f(cy - h + 5)} q${xs},${f(h)} 0,${f(h * 1.4)}`));
+  }
+  return o.join("");
+};
+
+const art2: Record<string, string> = {
+  cat: [
+    tube("M176,134 C216,142 230,96 204,82", 9),
+    P("M90,72 C66,96 62,124 70,140 L170,140 C196,140 200,108 178,90 C160,74 124,68 108,70z"),
+    p("M92,112 v28"),
+    poly([[66, 42], [60, 10], [88, 30]]), poly([[110, 42], [116, 10], [90, 30]]),
+    C(88, 54, 27),
+    dot(78, 50, 3.2), dot(98, 50, 3.2), poly([[84, 60], [92, 60], [88, 65]]),
+    p("M88,65 q-4,5 -9,3 M88,65 q4,5 9,3"), p("M62,60 h-18 M62,67 l-16,6 M114,60 h18 M114,67 l16,6"),
+  ].join(""),
+
+  rabbit: [
+    C(190, 118, 11),
+    P("M96,76 C70,96 70,134 82,140 L170,140 C196,138 198,100 174,82 C156,68 120,66 96,76z"),
+    p("M142,98 C164,100 172,122 160,140"), p("M98,110 v30"),
+    E(84, 22, 8, 28, -8), E(106, 24, 8, 28, 12),
+    C(92, 62, 24),
+    dot(82, 58, 3.2), dot(70, 68, 3.4), p("M70,70 q4,6 10,4"), p("M68,62 h-16 M68,70 l-14,6"),
+  ].join(""),
+
+  fox: canine(false),
+  wolf: canine(true),
+
+  lion: [
+    p("M190,82 C214,78 216,108 210,122"), E(210, 128, 8, 11),
+    leg(100, 98, 12), leg(116, 98, 12), leg(166, 98, 12), leg(182, 98, 12),
+    E(146, 86, 50, 26),
+    cloud(Array.from({ length: 10 }, (_, i) => { const a = (i / 10) * Math.PI * 2; return [f(76 + Math.cos(a) * 34), f(66 + Math.sin(a) * 34), 15]; })),
+    C(58, 40, 8), C(94, 40, 8),
+    E(76, 68, 24, 24),
+    dot(67, 62, 3.2), dot(85, 62, 3.2), poly([[70, 72], [82, 72], [76, 79]]), p("M76,79 v6 M68,88 q8,6 16,0"),
+  ].join(""),
+
+  tiger: [
+    tube("M188,84 C226,78 228,44 206,32", 9),
+    leg(98, 98, 12), leg(114, 98, 12), leg(166, 98, 12), leg(182, 98, 12),
+    E(144, 86, 52, 26),
+    quadStripes(144, 86, 52, 26, 6, -5),
+    C(58, 44, 9), C(96, 44, 9),
+    C(77, 68, 26), E(70, 80, 13, 10), dot(62, 78, 3.6),
+    dot(70, 62, 3.2), dot(88, 62, 3.2), p("M77,46 v10 M69,48 l2,8 M85,48 l-2,8"), p("M64,88 q5,4 12,0"),
+  ].join(""),
+
+  monkey: [
+    tube("M170,124 C214,134 226,84 198,68 C186,62 178,72 188,78", 9),
+    E(122, 98, 30, 36),
+    E(122, 104, 18, 22),
+    p("M100,84 q-24,14 -12,38"), p("M146,84 q24,14 12,38"),
+    E(100, 138, 17, 8), E(144, 138, 17, 8),
+    C(80, 52, 11), C(142, 52, 11),
+    C(111, 48, 27), E(111, 56, 18, 16),
+    dot(103, 50, 3.2), dot(119, 50, 3.2), dot(107, 60, 2.2), dot(115, 60, 2.2), p("M102,68 q9,6 18,0"),
+  ].join(""),
+};
+Object.assign(art, art2);
+art.zebra = art.horse + quadStripes(142, 78, 52, 24, 7, 4) + p("M82,40 l8,-2 M80,50 l9,-2 M86,60 l8,-2");
 
 export const CUSTOM_IDS = Object.keys(art);
 

@@ -197,4 +197,4 @@ Private prototype — dad + kid project.
 
 ## Credits
 
-Some animal line art (elephant, giraffe, horse, pig, cow, dog, sheep, bear, deer, kangaroo, raccoon, hedgehog, rhino, camel, duck, flamingo, peacock, shark, dolphin, spider, sea turtle) is from [OpenMoji](https://openmoji.org), © OpenMoji contributors, licensed [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/). See `src/lib/puzzles/animal-art-openmoji.ts`.
+Some animal line art (elephant, giraffe, horse, sheep, deer, kangaroo, raccoon, hedgehog, rhino, camel, duck, flamingo, peacock, shark, dolphin, spider, sea turtle) is from [OpenMoji](https://openmoji.org), © OpenMoji contributors, licensed [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/). See `src/lib/puzzles/animal-art-openmoji.ts`.

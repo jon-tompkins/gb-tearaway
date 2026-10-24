@@ -58,8 +58,8 @@ export interface CustomSpec {
 }
 export type AnimalSpec = QuadSpec | BirdSpec | FishSpec | MiscSpec | CustomSpec;
 
-const S = `fill="#fff" stroke="#111" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"`;
-const SK = `fill="none" stroke="#111" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"`;
+const S = `fill="#fff" stroke="#111" stroke-width="4.6" stroke-linejoin="round" stroke-linecap="round"`;
+const SK = `fill="none" stroke="#111" stroke-width="4.6" stroke-linejoin="round" stroke-linecap="round"`;
 const F = `fill="#111"`;
 const f = (n: number) => Math.round(n * 10) / 10;
 const ell = (cx: number, cy: number, rx: number, ry: number, extra = "") =>
