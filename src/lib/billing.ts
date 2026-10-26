@@ -15,6 +15,8 @@ import { periodEnd, stripeConfigured, type StripeSubscription } from "./stripe";
  * way to pay, so expired trials keep working (the clock still runs).
  */
 export const PRICE_CENTS = 500;
+/** Annual plan: two months free vs. paying monthly. */
+export const ANNUAL_PRICE_CENTS = 4800;
 export const TRIAL_DAYS = 30;
 
 const DAY = 86_400_000;
@@ -45,6 +47,7 @@ export interface Access {
   cancelAtPeriodEnd: boolean;
   codes: string[];
   priceCents: number;
+  annualPriceCents: number;
 }
 
 export interface AccessCode {
@@ -94,7 +97,7 @@ export function accessFrom(b: Billing, opts: { admin?: boolean; now?: number } =
     subscribed,
     cancelAtPeriodEnd: !!b.cancelAtPeriodEnd,
     codes: b.codes ?? [],
-    priceCents: PRICE_CENTS,
+    priceCents: PRICE_CENTS, annualPriceCents: ANNUAL_PRICE_CENTS,
   };
   const later = (iso?: string | null) => !!iso && Date.parse(iso) > now;
   let reason: Access["reason"] = "expired";
@@ -114,7 +117,7 @@ export async function accessFor(userKey: string): Promise<Access> {
   if (!email) {
     return {
       active: true, enforced: stripeConfigured, reason: "demo", until: null, trialEndsAt: null,
-      subscribed: false, cancelAtPeriodEnd: false, codes: [], priceCents: PRICE_CENTS,
+      subscribed: false, cancelAtPeriodEnd: false, codes: [], priceCents: PRICE_CENTS, annualPriceCents: ANNUAL_PRICE_CENTS,
     };
   }
   return accessFrom(await getBilling(email), { admin: isAdminEmail(email) });

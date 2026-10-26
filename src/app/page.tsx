@@ -30,7 +30,7 @@ const STEPS = [
 const FAQ = [
   {
     q: "What does it cost?",
-    a: "Your first month is free. After that it’s $5 a month, with every kid in your house included. You can try it without signing up, and you sign in with Google to save your setup and get a page every morning.",
+    a: "Your first month is free. After that it’s $5 a month, or $48 a year (two months free), with every kid in your house included. You can try it without signing up, and you sign in with Google to save your setup and get a page every morning.",
   },
   {
     q: "What do I need to print it?",

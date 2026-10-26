@@ -235,11 +235,11 @@ function familiesFor(d: number): Family[] {
   if (d <= 12)
     return [growingStep(2, 6, 2, 3, 20), multiply(3, 4, 2, 7), divide(2), squares(3, 9, 0, 5), alternating(5, 15), fibLike(4, 8), primes(0, 5), cubes(1, 2)];
   if (d <= 14)
-    return [squares(3, 8, 3, 5), fibLike(5, 12), affine(2, 2, 5), alternatingOps(), interleaved(false), primes(4, 15), cubes(2, 4), doublingGaps()];
+    return [squares(3, 8, 3, 5), fibLike(5, 12), affine(2, 3, 7), alternatingOps(), interleaved(false), primes(4, 15), cubes(2, 4), doublingGaps()];
   if (d <= 16)
-    return [affine(2, 3, 7), alternatingOps(), interleaved(true), squareGaps(), doublingGaps(), primeGaps(), primes(10, 30), tribonacci(), growingMultiplier(), polynomial()];
+    return [interleaved(true), squareGaps(), primeGaps(), primes(10, 30), tribonacci(), growingMultiplier(), polynomial(), fibGaps()];
   if (d <= 18)
-    return [affine(3, 3, 9), interleaved(true), squareGaps(), primeGaps(), fibGaps(), tribonacci(), growingMultiplier(), polynomial(), disguisedPrimes()];
+    return [interleaved(true), squareGaps(), primeGaps(), fibGaps(), tribonacci(), growingMultiplier(), polynomial(), disguisedPrimes()];
   return [fibGaps(), primeGaps(), polynomial(), disguisedPrimes(), interleaved(true), growingMultiplier(), affine(3, 4, 9, 5), squareGaps()];
 }
 

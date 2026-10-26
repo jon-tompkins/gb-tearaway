@@ -36,9 +36,9 @@ function BillingInner() {
   );
   const [busy, setBusy] = useState(false);
 
-  async function stripeGo(path: "/api/billing/checkout" | "/api/billing/portal") {
+  async function stripeGo(path: "/api/billing/checkout" | "/api/billing/portal", interval?: "year") {
     setBusy(true);
-    const err = await goToStripe(path);
+    const err = await goToStripe(path, interval);
     if (err) setMsg({ ok: false, text: err });
     setBusy(false);
   }
@@ -99,6 +99,9 @@ function BillingInner() {
           <>
             <button type="button" className="btn-primary" disabled={busy} onClick={() => void stripeGo("/api/billing/checkout")}>
               Subscribe for {price}/month
+            </button>
+            <button type="button" className="btn-secondary ml-2" disabled={busy} onClick={() => void stripeGo("/api/billing/checkout", "year")}>
+              Or ${a.annualPriceCents / 100}/year (2 months free)
             </button>
             {a.reason === "trial" || a.reason === "code" ? (
               <p className="text-xs text-ink-soft">
