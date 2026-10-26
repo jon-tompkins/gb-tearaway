@@ -31,6 +31,48 @@ export async function sendEmail(opts: {
   }
 }
 
+/** Names as "A", "A and B", "A, B and C". */
+export function joinNames(names: string[]): string {
+  return names.length < 2 ? (names[0] ?? "") : `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}`;
+}
+
+/** Branded morning email for a family: one button per kid, one PDF each. */
+export function familyEmailHtml(opts: {
+  kids: Array<{ name: string; openUrl: string }>;
+  dateLabel: string;
+}): string {
+  const { kids, dateLabel } = opts;
+  const buttons = kids
+    .map(
+      (k) => `<tr><td align="center" style="padding:8px 0">
+          <a href="${k.openUrl}" style="display:inline-block;background:#1c1915;color:#faf6ec;text-decoration:none;font-family:ui-monospace,Menlo,monospace;font-size:14px;font-weight:700;letter-spacing:.02em;padding:14px 26px;border-radius:999px">
+            ${k.name}&rsquo;s dispatch &rarr;
+          </a></td></tr>`,
+    )
+    .join("");
+  return `<!DOCTYPE html><html><body style="margin:0;background:#f4eee3;font-family:Georgia,'Times New Roman',serif;color:#1c1915">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4eee3;padding:28px 16px">
+    <tr><td align="center">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#faf6ec;border:1px solid #e3d9c4;border-radius:14px;padding:32px">
+        <tr><td align="center" style="padding-bottom:8px">
+          <div style="font-size:26px;font-weight:700;letter-spacing:-.01em">Back of the Box</div>
+          <div style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#8a7d63;margin-top:4px">${dateLabel}</div>
+        </td></tr>
+        <tr><td align="center" style="padding:18px 0 6px;font-size:16px;line-height:1.5">
+          Good morning! Today&rsquo;s pages for <strong>${joinNames(kids.map((k) => k.name))}</strong> are ready to print.
+        </td></tr>
+        ${buttons}
+        <tr><td align="center" style="padding-top:10px;font-size:12px;color:#8a7d63;line-height:1.5">
+          Each paper is attached as a PDF, or tap a button for a print-ready page.<br/>
+          Kids get paper only. Scan the QR on the page for answers.
+        </td></tr>
+      </table>
+      <div style="max-width:520px;margin-top:14px;font-size:11px;color:#a99e86;text-align:center">Made for the fridge, not the feed.</div>
+    </td></tr>
+  </table>
+</body></html>`;
+}
+
 /** Branded morning email — one button to open today's printable dispatch. */
 export function dispatchEmailHtml(opts: {
   kidName: string;

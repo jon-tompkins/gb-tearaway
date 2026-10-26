@@ -6,6 +6,7 @@ import { signIn } from "next-auth/react";
 import { AppShell } from "@/components/AppNav";
 import { daysLeft, goToStripe, shortDate, useBilling } from "@/lib/useBilling";
 import type { Access } from "@/lib/billing";
+import { ANNUAL_PLANS } from "@/lib/plans";
 
 function planLine(a: Access): string {
   const left = daysLeft(a.until);
@@ -36,9 +37,9 @@ function BillingInner() {
   );
   const [busy, setBusy] = useState(false);
 
-  async function stripeGo(path: "/api/billing/checkout" | "/api/billing/portal", interval?: "year") {
+  async function stripeGo(path: "/api/billing/checkout" | "/api/billing/portal", interval?: "year", plan?: string) {
     setBusy(true);
-    const err = await goToStripe(path, interval);
+    const err = await goToStripe(path, interval, plan);
     if (err) setMsg({ ok: false, text: err });
     setBusy(false);
   }
@@ -85,10 +86,10 @@ function BillingInner() {
       ) : null}
 
       <section className="card space-y-3">
-        <h2 className="font-display text-xl text-ink">{price} a month</h2>
+        <h2 className="font-display text-xl text-ink">Pick a plan</h2>
         <p className="text-sm text-ink-soft">
-          Every account starts with a free month. After that it&rsquo;s {price} a month for all your dispatches, every
-          kid included. Cancel any time.
+          Every account starts with a free month. After that it&rsquo;s $15 a year for one kid, $20 for up to two or $30 for up to five.
+          Prefer monthly? It&rsquo;s {price} a month. Cancel any time.
         </p>
         <p className="font-semibold text-ink">{planLine(a)}</p>
         {a.reason === "admin" ? null : a.subscribed ? (
@@ -97,11 +98,22 @@ function BillingInner() {
           </button>
         ) : (
           <>
-            <button type="button" className="btn-primary" disabled={busy} onClick={() => void stripeGo("/api/billing/checkout")}>
-              Subscribe for {price}/month
-            </button>
-            <button type="button" className="btn-secondary ml-2" disabled={busy} onClick={() => void stripeGo("/api/billing/checkout", "year")}>
-              Or ${a.annualPriceCents / 100}/year (2 months free)
+            <div className="space-y-2">
+              <p className="text-sm font-semibold text-ink">Yearly (best value)</p>
+              {ANNUAL_PLANS.map((p) => (
+                <button
+                  key={p.id}
+                  type="button"
+                  className={`${p.id === "kids2" ? "btn-primary" : "btn-secondary"} mr-2`}
+                  disabled={busy}
+                  onClick={() => void stripeGo("/api/billing/checkout", "year", p.id)}
+                >
+                  {p.label}: ${p.cents / 100}/year
+                </button>
+              ))}
+            </div>
+            <button type="button" className="btn-secondary" disabled={busy} onClick={() => void stripeGo("/api/billing/checkout")}>
+              Or monthly: {price}/month
             </button>
             {a.reason === "trial" || a.reason === "code" ? (
               <p className="text-xs text-ink-soft">

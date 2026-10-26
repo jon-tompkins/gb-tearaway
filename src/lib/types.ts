@@ -195,6 +195,8 @@ export interface AppSettings {
    * Do not enforce payments here — structure only.
    */
   modulePoolLimit: number | null;
+  /** Send all of a family's dispatches in one email (one PDF per kid). */
+  combineEmails?: boolean;
 }
 
 export interface MazeCell {

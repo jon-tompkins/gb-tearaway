@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { GetStartedButton } from "@/components/GetStartedButton";
 import { HomeHeaderActions } from "@/components/HomeHeaderActions";
 import { MODULE_CATALOG, MODULE_CATEGORIES } from "@/lib/modules";
 import { getHiddenModules } from "@/lib/visibility";
@@ -30,7 +31,7 @@ const STEPS = [
 const FAQ = [
   {
     q: "What does it cost?",
-    a: "Your first month is free. After that it’s $5 a month, or $48 a year (two months free), with every kid in your house included. You can try it without signing up, and you sign in with Google to save your setup and get a page every morning.",
+    a: "Your first month is free. After that it’s $15 a year for one kid, $20 a year for up to two, or $30 a year for up to five (or $5 a month if you prefer). Sign in with Google to save your setup and get a page every morning.",
   },
   {
     q: "What do I need to print it?",
@@ -89,15 +90,13 @@ export default async function HomePage() {
               It lands at breakfast, ready to print.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <Link href="/app/setup" className="btn-primary">
-                Make your kid’s page
-              </Link>
-              <Link href="#sample" className="btn-secondary">
-                See a real page
+              <GetStartedButton className="btn-primary" />
+              <Link href="/modules" className="btn-secondary">
+                See Modules
               </Link>
             </div>
             <p className="mt-4 text-sm text-ink-soft">
-              First month free, then $5 a month. Try it without signing up.
+              First month free. Then $15 a year for one kid, $20 for two, $30 for up to five.
             </p>
           </div>
 
@@ -150,6 +149,7 @@ export default async function HomePage() {
               <h2 className="font-display text-2xl text-ink sm:text-3xl">
                 {visible.length} cards to build with
               </h2>
+              <p className="mt-1 text-sm font-semibold text-stamp">Over 25 modules and growing</p>
               <p className="mt-2 max-w-2xl text-ink-soft">
                 Mix and match cards in three sizes, from a quick joke to a big crossword. One card
                 can also rotate through a few modules, like sudoku one day and battleship the next.
@@ -220,12 +220,7 @@ export default async function HomePage() {
             <h2 className="font-display text-2xl sm:text-3xl">Tomorrow’s page could be on the table.</h2>
             <p className="mt-2 text-cream/75">Set it up tonight, and it arrives with breakfast.</p>
           </div>
-          <Link
-            href="/app/setup"
-            className="inline-flex items-center rounded-full bg-cream px-6 py-3 font-semibold text-ink transition hover:bg-paper"
-          >
-            Make your kid’s page
-          </Link>
+          <GetStartedButton className="inline-flex items-center rounded-full bg-cream px-6 py-3 font-semibold text-ink transition hover:bg-paper" />
         </div>
       </section>
 

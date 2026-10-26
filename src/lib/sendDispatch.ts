@@ -1,7 +1,7 @@
 import { readStore, writeStore } from "./store";
 import { claimPayload, deletePayload, loadPayload } from "./persist";
 import { dateISOInZone, formatStripDate, partsInZone } from "./dates";
-import { sendEmail, dispatchEmailHtml } from "./email";
+import { sendEmail, dispatchEmailHtml, familyEmailHtml, joinNames } from "./email";
 import { renderPdfFromUrl } from "./pdf";
 import { logEvent } from "./events";
 import { createRun, markRunEmailed, runUrls } from "./runs";
@@ -66,6 +66,82 @@ export async function emailRun(opts: {
   return { ok, withPdf: !!attachments };
 }
 
+const pdfName = (kidName: string, date: string) =>
+  `back-of-the-box-${kidName.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${date}.pdf`;
+
+/**
+ * Settings → "one email for the family": every email-delivery kid on this
+ * address that hasn't been sent today goes out in a single message (one PDF
+ * each). Triggered by whichever kid's job gets there first; a group claim
+ * makes the other kids' jobs skip.
+ */
+async function sendCombined(
+  job: SendJob,
+  state: AppState,
+  to: string,
+  localDate: string,
+  opts: { force?: boolean; noEmail?: boolean },
+): Promise<SendResult> {
+  const group = state.kids.filter(
+    (k) => deliveryOf(k) === "email" && k.deliveryEmail === to && (opts.force || k.lastEmailedDate !== localDate),
+  );
+  const claimKey = `sendlock:${job.userKey}:combo:${localDate}${opts.force ? `:force:${Date.now()}` : ""}`;
+  if (!(await claim(claimKey))) return { status: "skipped", reason: "another send in progress" };
+  try {
+    const runs = [];
+    for (const k of group) {
+      const { token } = await createRun({ userKey: job.userKey, kidId: k.id, date: localDate, kidName: k.name, delivery: "email" });
+      runs.push({ kid: k, token });
+    }
+    const mine = runs.find((r) => r.kid.id === job.kidId) ?? runs[0];
+    let result: SendResult = { status: "saved", token: mine.token };
+    if (!opts.noEmail) {
+      const { weekday, dateLabel } = formatStripDate(localDate);
+      const pdfs = await Promise.all(runs.map((r) => renderPdfFromUrl(runUrls(r.token).view)));
+      const attachments = runs.flatMap((r, i) =>
+        pdfs[i] ? [{ filename: pdfName(r.kid.name, localDate), content: pdfs[i]!.toString("base64") }] : [],
+      );
+      const names = runs.map((r) => r.kid.name);
+      const ok = await sendEmail({
+        to,
+        subject: `${joinNames(names)}'s Back of the Box — ${weekday}`,
+        html:
+          runs.length === 1
+            ? dispatchEmailHtml({ kidName: names[0], dateLabel: `${weekday} · ${dateLabel}`, openUrl: runUrls(runs[0].token).print })
+            : familyEmailHtml({
+                kids: runs.map((r) => ({ name: r.kid.name, openUrl: runUrls(r.token).print })),
+                dateLabel: `${weekday} · ${dateLabel}`,
+              }),
+        attachments: attachments.length ? attachments : undefined,
+      });
+      if (!ok) {
+        await deletePayload(claimKey);
+        return { status: "failed", reason: "email provider rejected the send" };
+      }
+      for (let i = 0; i < runs.length; i++) {
+        const ref = { userKey: job.userKey, kidId: runs[i].kid.id, date: localDate };
+        await markRunEmailed(ref, to, !!pdfs[i]);
+        await logEvent({
+          type: "email_sent",
+          user_key: job.userKey,
+          meta: { kidId: runs[i].kid.id, kidName: runs[i].kid.name, withPdf: !!pdfs[i], date: localDate, forced: !!opts.force, combined: runs.length },
+        });
+      }
+      result = { status: "sent", withPdf: pdfs.some(Boolean), token: mine.token };
+    }
+    const fresh = await readStore(job.userKey);
+    for (const r of runs) {
+      const fk = fresh.kids.find((k) => k.id === r.kid.id);
+      if (fk) fk.lastEmailedDate = localDate;
+    }
+    await writeStore(job.userKey, fresh);
+    return result;
+  } catch (e) {
+    await deletePayload(claimKey);
+    return { status: "failed", reason: e instanceof Error ? e.message : "error" };
+  }
+}
+
 export type SendResult =
   | { status: "sent"; withPdf: boolean; token: string }
   | { status: "saved"; token: string }
@@ -88,6 +164,10 @@ export async function sendOneDispatch(
   const { localDate, delivery, due } = dueInfo(kid, state);
   if (!delivery) return { status: "skipped", reason: "no delivery method set" };
   if (!opts.force && !due) return { status: "skipped", reason: "not due / already delivered" };
+
+  if (delivery === "email" && state.settings.combineEmails) {
+    return sendCombined(job, state, kid.deliveryEmail!, localDate, opts);
+  }
 
   const claimKey = `sendlock:${job.userKey}:${kid.id}:${localDate}${opts.force ? `:force:${Date.now()}` : ""}`;
   if (!(await claim(claimKey))) return { status: "skipped", reason: "another send in progress" };

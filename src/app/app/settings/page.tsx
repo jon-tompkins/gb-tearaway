@@ -19,6 +19,7 @@ export default function SettingsPage() {
   const [printTime, setPrintTime] = useState(DEFAULT_SETTINGS.printTime);
   const [weatherCity, setWeatherCity] = useState(DEFAULT_SETTINGS.weatherCity);
   const [weatherZip, setWeatherZip] = useState(DEFAULT_SETTINGS.weatherZip);
+  const [combineEmails, setCombineEmails] = useState(false);
   const [watchlist, setWatchlist] = useState("AAPL, DIS, NKE");
   const [teams, setTeams] = useState("");
   const [events, setEvents] = useState<CalendarEvent[]>([]);
@@ -41,6 +42,7 @@ export default function SettingsPage() {
     if (!activeKid || !store) return;
     setTimezone(activeKid.timezone || store.settings.timezone);
     setPrintTime(activeKid.printTime || store.settings.printTime);
+    setCombineEmails(!!store.settings.combineEmails);
     setWeatherCity(store.settings.weatherCity || "");
     setWeatherZip(store.settings.weatherZip || "");
     setWatchlist((activeKid.watchlist || []).join(", "));
@@ -87,6 +89,7 @@ export default function SettingsPage() {
           printTime,
           weatherCity: weatherCity.trim(),
           weatherZip: weatherZip.trim(),
+          combineEmails,
         },
         kid: {
           id: activeKid.id,
@@ -254,6 +257,24 @@ export default function SettingsPage() {
             />
           </div>
         </section>
+
+        {store && store.kids.length > 1 ? (
+          <section className="card space-y-2">
+            <h2 className="font-display text-lg">One email for the family</h2>
+            <label className="flex items-start gap-2 text-sm text-ink">
+              <input
+                type="checkbox"
+                checked={combineEmails}
+                onChange={(e) => setCombineEmails(e.target.checked)}
+                className="mt-1"
+              />
+              <span>
+                Send every kid&rsquo;s page in a single morning email, with one PDF each. Kids on the same
+                email address go together; it goes out at the earliest delivery time.
+              </span>
+            </label>
+          </section>
+        ) : null}
 
         <section className="card space-y-4">
           <h2 className="font-display text-lg">Calendar sync</h2>

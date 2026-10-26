@@ -6,19 +6,21 @@ import { AuthButton } from "./AuthButton";
 
 /**
  * Home-page header actions. Signed in: a clear Dashboard button (no sign-out
- * clutter on the landing page). Signed out: Sign in + a dashboard peek.
+ * clutter on the landing page). Signed out: just Sign in.
  */
 export function HomeHeaderActions() {
   const { data: session, status } = useSession();
   const signedIn = status === "authenticated" && !!session?.user;
   return (
     <div className="flex shrink-0 items-center gap-3">
-      <Link
-        href="/modules"
-        className="hidden whitespace-nowrap text-sm font-semibold text-ink-soft hover:text-ink sm:inline"
-      >
-        Modules
-      </Link>
+      {signedIn ? (
+        <Link
+          href="/modules"
+          className="hidden whitespace-nowrap text-sm font-semibold text-ink-soft hover:text-ink sm:inline"
+        >
+          Modules
+        </Link>
+      ) : null}
       {signedIn ? (
         <Link
           href="/app"
@@ -31,16 +33,7 @@ export function HomeHeaderActions() {
           Dashboard →
         </Link>
       ) : (
-        <>
-          <AuthButton compact />
-          <Link
-            href="/app"
-            className="whitespace-nowrap text-sm font-semibold text-ink-soft hover:text-ink"
-          >
-            <span className="sm:hidden">Demo →</span>
-            <span className="hidden sm:inline">Open dashboard →</span>
-          </Link>
-        </>
+        <AuthButton compact />
       )}
     </div>
   );

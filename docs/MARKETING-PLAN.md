@@ -25,12 +25,12 @@ Facts used: live at tearaway.vercel.app / www.backofthebox.xyz; 25+ modules; Let
 
 ## 3. Launch offer mechanics
 
-- **Free first month**, no card up front (trial starts at first app load). Then $5/mo, all kids included.
+- **Free first month**, no card up front (trial starts at first app load). Then yearly: $15 (1 kid), $20 (up to 2), $30 (up to 5); $5/mo as the alternative.
 - **Access codes** (already built: `BOX-XXXX-XXXX`, set months, max uses, once per user). Use three kinds:
   - `ALPHA-...` batch: 2 months free, capped ~40 uses, for Alpha/Discord families (seeds word of mouth and tells you which community converts).
   - **Referral codes:** each paying or active user gets one code worth +1 free month to a friend and +1 month to themselves. Needs a small build (per-user code generation + credit on redeem); until then Jon hand-issues codes from Admin to anyone who asks.
   - `FOUNDING-...`: 3 months, 20 uses, for the first creators/influencers and testimonial givers.
-- **Annual plan:** price at $48/yr ("2 months free") or $50. Offer it at month-1 day 20 and on the paywall. Cuts the Stripe 30-cent fee.
+- **Annual-led plans:** $15/yr (1 kid), $20/yr (up to 2), $30/yr (up to 5); monthly stays at $5. Offer them at month-1 day 20 and on the paywall. Yearly billing cuts the Stripe per-charge fee.
 - **Do not turn on enforcement until** Stripe keys are in and Checkout is tested in test mode. Announce "free month" in launch posts regardless; users already in trial keep the date they started.
 - Pricing wording is in flux (see decision on annual-led pricing); keep landing, billing page and support bot in sync.
 
@@ -75,7 +75,7 @@ Facts used: live at tearaway.vercel.app / www.backofthebox.xyz; 25+ modules; Let
 ## 6. Pre-written launch copy (drafts, unposted)
 
 **A. Parent community (Alpha hub / Discord / group)**
-> Hey parents. I built something for my kid and some of you asked about it. It's called Back of the Box: every morning it emails a fresh one-page puzzle sheet (maze, crossword, sudoku, a real kid-safe news story from NASA/Smithsonian, a joke, the weather) tuned to your kid's age. You print it on any normal printer, and answers sit behind a QR code so they solve first. No kid accounts, no ads, no screen. First month's free, then $5/mo for all your kids. Here's a code for Alpha families (2 months free): ALPHA-XXXX. I'd love honest feedback, especially on difficulty. Link: [url]
+> Hey parents. I built something for my kid and some of you asked about it. It's called Back of the Box: every morning it emails a fresh one-page puzzle sheet (maze, crossword, sudoku, a real kid-safe news story from NASA/Smithsonian, a joke, the weather) tuned to your kid's age. You print it on any normal printer, and answers sit behind a QR code so they solve first. No kid accounts, no ads, no screen. First month's free, then from $15 a year. Here's a code for Alpha families (2 months free): ALPHA-XXXX. I'd love honest feedback, especially on difficulty. Link: [url]
 
 **B. X post (thread opener, then 3 follow-ups: sample image, how it works, offer)**
 > I built a tiny daily newspaper for my kid.
@@ -119,7 +119,7 @@ Targets to watch: visit->signup 5-10%; signup->dispatch created 70%; created->fi
 ## 9. Jon must decide
 
 1. Go-live date and who is the "face": personal account vs. a @backofthebox account.
-2. Final pricing: $5/mo, annual price ($48 or $50?), and whether free month needs a card (card up front lifts conversion but cuts signups).
+2. Final pricing: yearly tiers $15/$20/$30 (the 1-kid price is my placeholder) and whether to keep $5/mo, and whether free month needs a card (card up front lifts conversion but cuts signups).
 3. Turn on Stripe enforcement: when, and grandfather rules for existing users.
 4. Referral reward (+1 month each side?) and caps; approve building the referral code feature.
 5. Which families/photos/videos you're comfortable showing (Max's page, photos of Max, fridge shots), and ask parents for consent.

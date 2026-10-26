@@ -1,5 +1,6 @@
 import { randomInt } from "node:crypto";
 import { isAdminEmail } from "./admin";
+import { ANNUAL_PLANS } from "./plans";
 import { listPayloadFields, loadPayload, savePayload } from "./persist";
 import { periodEnd, stripeConfigured, type StripeSubscription } from "./stripe";
 
@@ -15,8 +16,8 @@ import { periodEnd, stripeConfigured, type StripeSubscription } from "./stripe";
  * way to pay, so expired trials keep working (the clock still runs).
  */
 export const PRICE_CENTS = 500;
-/** Annual plan: two months free vs. paying monthly. */
-export const ANNUAL_PRICE_CENTS = 4800;
+/** Entry annual price (1 kid). Tiers for 2 and 5 kids live in plans.ts. */
+export const ANNUAL_PRICE_CENTS = ANNUAL_PLANS[0].cents;
 export const TRIAL_DAYS = 30;
 
 const DAY = 86_400_000;
