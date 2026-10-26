@@ -1,5 +1,6 @@
 "use client";
 
+import { MODULE_LEVELS } from "@/lib/moduleLevels";
 import { useEffect, useState, type ReactNode } from "react";
 import type { AgeBand, ModuleCategoryId, ModuleId, ModuleSlot, PaperSize, SlotMode, SlotSize } from "@/lib/types";
 import { COLUMN_CAPACITY_UNITS, PAPER_SIZE_META, slotSizeUnits } from "@/lib/types";
@@ -85,6 +86,7 @@ function DifficultyDial({
   onDark = false,
   compact = false,
   min = DIFFICULTY_MIN,
+  levels,
 }: {
   value: number;
   onChange: (v: number) => void;
@@ -92,6 +94,8 @@ function DifficultyDial({
   compact?: boolean;
   /** Lowest level this module allows (news starts at 5). */
   min?: number;
+  /** Short note on what the dial changes for this module. */
+  levels?: string;
 }) {
   const [open, setOpen] = useState(false);
   return (
@@ -128,6 +132,7 @@ function DifficultyDial({
               <span>Younger</span>
               <span>Older</span>
             </span>
+            {levels ? <span className="text-[0.6rem] leading-snug text-ink-soft">{levels}</span> : null}
           </span>
         </>
       ) : null}
@@ -186,7 +191,7 @@ function ModuleOption({
       </span>
       <span className="flex-1 truncate text-sm font-semibold">{name}</span>
       {inCard ? (
-        <DifficultyDial value={difficulty} onChange={onDifficulty} onDark min={minDifficultyFor(id)} />
+        <DifficultyDial value={difficulty} onChange={onDifficulty} onDark min={minDifficultyFor(id)} levels={MODULE_LEVELS[id]} />
       ) : (
         <span
           className={`rounded px-1 py-px text-[0.6rem] font-bold ${

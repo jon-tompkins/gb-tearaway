@@ -1,3 +1,5 @@
+import { MODULE_LEVELS } from "@/lib/moduleLevels";
+import type { ModuleId } from "@/lib/types";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { auth } from "@/auth";
@@ -101,6 +103,9 @@ export default async function ModuleDetail({ params }: { params: Promise<{ id: s
             </li>
           ))}
         </ul>
+        <p className="mt-3 text-sm text-ink-soft">
+          <span className="font-semibold text-ink">Age dial (1–20):</span> {MODULE_LEVELS[id as ModuleId]}
+        </p>
       </section>
 
       <div className="mt-10 border-t border-rule/60 pt-6">

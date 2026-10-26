@@ -1,7 +1,7 @@
 # Back of the Box (BotB) Marketing Plan
 
 Status: draft for Jon, Oct 26 2026. Nothing here has been posted or sent.
-Facts used: live at tearaway.vercel.app / www.backofthebox.xyz; ~30 modules; Letter (default) + 58mm strip; daily email with PDF + QR answer key; real kid-safe news; $5/mo after a free first month; billing and access codes built but enforcement OFF until Stripe keys are set.
+Facts used: live at tearaway.vercel.app / www.backofthebox.xyz; 25+ modules; Letter (default) + 58mm strip; daily email with PDF + QR answer key; real kid-safe news; $5/mo after a free first month; billing and access codes built but enforcement OFF until Stripe keys are set.
 
 ## 1. Audiences (ranked)
 
@@ -32,7 +32,7 @@ Facts used: live at tearaway.vercel.app / www.backofthebox.xyz; ~30 modules; Let
   - `FOUNDING-...`: 3 months, 20 uses, for the first creators/influencers and testimonial givers.
 - **Annual plan:** price at $48/yr ("2 months free") or $50. Offer it at month-1 day 20 and on the paywall. Cuts the Stripe 30-cent fee.
 - **Do not turn on enforcement until** Stripe keys are in and Checkout is tested in test mode. Announce "free month" in launch posts regardless; users already in trial keep the date they started.
-- Landing FAQ still says "free during beta" in one place (flagged Oct 21). Reconcile to "first month free, then $5/mo."
+- Pricing wording is in flux (see decision on annual-led pricing); keep landing, billing page and support bot in sync.
 
 ## 4. Channels ranked (effort vs payoff)
 
@@ -48,7 +48,7 @@ Facts used: live at tearaway.vercel.app / www.backofthebox.xyz; ~30 modules; Let
 | 8 | Paid ads | High | Low now | Skip until paid conversion is known |
 
 ### Week 1 (get 20-30 real families)
-1. Mon: Enable a public **Try it free without signing up** path check; confirm landing sample, OG card, and signup work on iPhone. Fix the "free during beta" line.
+1. Mon: Enable a public **Try it free without signing up** path check; confirm landing sample, OG card, and signup work on iPhone.
 2. Mon: Create the three code batches in Admin. Add a `?ref=` or `?code=` param to the landing URL if cheap, otherwise just give codes in text.
 3. Tue: Post to Alpha hub + Discord (copy A). DM 10 parents Jon knows, with a code.
 4. Tue-Wed: Record 3 print videos (see section 5). Post one to X, one to TikTok/Reels.
@@ -107,12 +107,12 @@ Targets to watch: visit->signup 5-10%; signup->dispatch created 70%; created->fi
 
 ## 8. Risks
 
-- **Kid privacy / COPPA:** Kids never log in; parents are the users; only a first name is collected, no ads, no tracking of kids. Say this plainly on landing and in a short privacy page (does one exist? if not, add one before wide launch). Do not use kid names/photos in marketing without parent consent. Avoid wording like "collects child data"; say "profiles, not accounts."
+- **Kid privacy / COPPA:** Kids never log in; parents are the users; only a name and age range are collected for a kid; "no ads, no tracking" refers to the paper itself. Say this plainly on landing (a separate terms page isn't needed: parents only connect an email). Do not use kid names/photos in marketing without parent consent. Avoid wording like "collects child data"; say "profiles, not accounts."
 - **Printer requirement:** the biggest perceived friction. Message: "Letter works with any printer, no special hardware. 58mm strip is optional." Offer "email it, print it at the library/office" as fallback. Include a 1-line "no printer? read it on screen" if that holds.
-- **Daily reliability:** news, PDF attachment and email already broke once each. A missed morning kills trust. Keep the outage monitor, send a status note when something fails.
+- **Daily reliability:** a missed morning kills trust. Keep the outage monitor, send a status note when something fails.
 - **News safety/accuracy:** one bad story is a screenshot on social media. Keep the fact-check pass; add a "report a story" link.
 - **Ink/paper cost** and "one more thing to do every morning": counter with a "print 3 days at once" option.
-- **Churn / novelty decay:** variety across ~30 modules and age-dial tuning are the defense; track day-30 retention.
+- **Churn / novelty decay:** variety across 25+ modules and age-dial tuning are the defense; track day-30 retention.
 - **Single founder bandwidth:** keep to 2 channels at a time.
 - **Name/domain confusion:** repo and Vercel URL still say tearaway; ensure all public links use backofthebox.xyz.
 
@@ -125,5 +125,5 @@ Targets to watch: visit->signup 5-10%; signup->dispatch created 70%; created->fi
 5. Which families/photos/videos you're comfortable showing (Max's page, photos of Max, fridge shots), and ask parents for consent.
 6. Whether to post in the Alpha hub / school channels (check school's rules on promotion to parents) and tone, since you are a parent, not a vendor, there.
 7. Whether to approach bloggers/influencers and what free-access you'll offer.
-8. Press the privacy/terms page: write it before wide launch.
+8. Optional later: a short privacy note.
 9. Product Hunt/HN: yes or no, and when.

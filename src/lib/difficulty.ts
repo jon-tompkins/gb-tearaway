@@ -24,11 +24,15 @@ export function defaultDifficultyForBand(band: AgeBand): number {
   return 11;
 }
 
-/** Difficulty → age band, for content that is age-graded (words, jokes, news…). */
+/**
+ * Difficulty → age band, for content that is age-graded (words, jokes, news…).
+ * 1–6 → 4–6, 7–10 → 7–9, 11+ → 10–12, so each band's default dial (3 / 7 / 11)
+ * lands in its own range.
+ */
 export function bandFromDifficulty(d: number): AgeBand {
   const x = clampDifficulty(d);
   if (x <= 6) return "4-6";
-  if (x <= 12) return "7-9";
+  if (x <= 10) return "7-9";
   return "10-12";
 }
 

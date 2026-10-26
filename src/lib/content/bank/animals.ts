@@ -10,6 +10,8 @@ export interface AnimalEntry {
   fact: string;
 }
 const ALL: AgeBand[] = ["4-6", "7-9", "10-12"];
+/** Creepy, fierce or abstract (extinct) animals skip the youngest band. */
+const OLDER: AgeBand[] = ["7-9", "10-12"];
 
 export const ANIMALS: AnimalEntry[] = [
   { bands: ALL, name: "Elephant", spec: { plan: "openmoji", id: "1F418" }, lives: "African and Asian grasslands and forests", size: "Up to 3.5 m tall; the biggest land animal", fact: "An elephant’s trunk has around 40,000 muscles and can pick up a single peanut." },
@@ -45,7 +47,7 @@ export const ANIMALS: AnimalEntry[] = [
   { bands: ALL, name: "Duck", spec: { plan: "openmoji", id: "1F986" }, lives: "Ponds, rivers and lakes", size: "About 50 cm long", fact: "A duck’s feathers are waterproofed with oil so it stays dry." },
   { bands: ALL, name: "Eagle", spec: { plan: "openmoji", id: "1F985" }, lives: "Mountains, forests and coasts", size: "Wings stretch up to 2.3 m", fact: "An eagle can spot a rabbit from more than 3 km away." },
   { bands: ALL, name: "Swan", spec: { plan: "openmoji", id: "1F9A2" }, lives: "Lakes, rivers and ponds", size: "Up to 1.5 m long; wings span about 2.4 m", fact: "A baby swan is called a cygnet, and swans often stay with the same partner for life." },
-  { bands: ALL, name: "Shark", spec: { plan: "openmoji", id: "1F988" }, lives: "Oceans all over the world", size: "From 20 cm to 12 m (the whale shark)", fact: "Sharks have skeletons made of cartilage, like the tip of your nose, not bone." },
+  { bands: OLDER, name: "Shark", spec: { plan: "openmoji", id: "1F988" }, lives: "Oceans all over the world", size: "From 20 cm to 12 m (the whale shark)", fact: "Sharks have skeletons made of cartilage, like the tip of your nose, not bone." },
   { bands: ALL, name: "Angelfish", spec: { plan: "openmoji", id: "1F420" }, lives: "Warm rivers and coral reefs", size: "About 15 cm long", fact: "Angelfish are tall and thin, which helps them slip between plants and coral." },
   { bands: ALL, name: "Blue Whale", spec: { plan: "openmoji", id: "1F433" }, lives: "Oceans worldwide", size: "Up to 30 m long; the biggest animal ever", fact: "A blue whale’s heart is about as big as a small car." },
   { bands: ALL, name: "Dolphin", spec: { plan: "openmoji", id: "1F42C" }, lives: "Oceans and some rivers", size: "About 2.5 m long", fact: "Dolphins sleep with half their brain awake so they can keep breathing." },
@@ -57,14 +59,14 @@ export const ANIMALS: AnimalEntry[] = [
   { bands: ALL, name: "Squirrel", spec: { plan: "openmoji", id: "1F43F" }, lives: "Forests, parks and gardens", size: "About 20 cm long, plus a tail nearly as long", fact: "Squirrels bury thousands of nuts each autumn and forget some, which grow into new trees." },
   { bands: ALL, name: "Sea Turtle", spec: { plan: "openmoji", id: "1F422" }, lives: "Warm oceans", size: "Up to 1.8 m long", fact: "Sea turtles return to the very beach where they hatched to lay their own eggs." },
   { bands: ALL, name: "Frog", spec: { plan: "openmoji", id: "1F438" }, lives: "Ponds, forests and wetlands", size: "From 1 cm to 30 cm", fact: "A frog blinks to push food down its throat — its eyes help it swallow!" },
-  { bands: ALL, name: "Snake", spec: { plan: "openmoji", id: "1F40D" }, lives: "Nearly every continent except Antarctica", size: "From 10 cm to 9 m", fact: "Snakes smell with their tongues, flicking them out to taste the air." },
+  { bands: OLDER, name: "Snake", spec: { plan: "openmoji", id: "1F40D" }, lives: "Nearly every continent except Antarctica", size: "From 10 cm to 9 m", fact: "Snakes smell with their tongues, flicking them out to taste the air." },
   { bands: ALL, name: "Butterfly", spec: { plan: "openmoji", id: "1F98B" }, lives: "Gardens and meadows worldwide", size: "Wings span 2 cm to 30 cm", fact: "Butterflies taste with their feet." },
   { bands: ALL, name: "Ladybug", spec: { plan: "openmoji", id: "1F41E" }, lives: "Gardens and fields", size: "About 8 mm long", fact: "One ladybug can eat thousands of tiny aphids in its life." },
   { bands: ALL, name: "Honeybee", spec: { plan: "openmoji", id: "1F41D" }, lives: "Hives, gardens and meadows", size: "About 1.5 cm long", fact: "A honeybee visits about 2 million flowers to make one jar of honey with its hive." },
-  { bands: ALL, name: "Spider", spec: { plan: "openmoji", id: "1F577" }, lives: "Almost everywhere on land", size: "From 0.5 mm to 30 cm leg span", fact: "A spider has eight legs and is not an insect; insects have six." },
+  { bands: OLDER, name: "Spider", spec: { plan: "openmoji", id: "1F577" }, lives: "Almost everywhere on land", size: "From 0.5 mm to 30 cm leg span", fact: "A spider has eight legs and is not an insect; insects have six." },
   { bands: ALL, name: "Snail", spec: { plan: "openmoji", id: "1F40C" }, lives: "Gardens, forests and seas", size: "From 1 mm to 30 cm", fact: "A snail has thousands of tiny teeth on its tongue." },
-  { bands: ALL, name: "Bat", spec: { plan: "openmoji", id: "1F987" }, lives: "Caves, forests and towns worldwide", size: "Wingspan from 15 cm to 1.7 m", fact: "Bats are the only mammals that truly fly, and many find food in the dark using echoes." },
-  { bands: ALL, name: "Crocodile", spec: { plan: "openmoji", id: "1F40A" }, lives: "Rivers, lakes and swamps in warm places", size: "Up to 6 m long", fact: "A crocodile can’t stick out its tongue, but it can stay underwater for over an hour." },
+  { bands: OLDER, name: "Bat", spec: { plan: "openmoji", id: "1F987" }, lives: "Caves, forests and towns worldwide", size: "Wingspan from 15 cm to 1.7 m", fact: "Bats are the only mammals that truly fly, and many find food in the dark using echoes." },
+  { bands: OLDER, name: "Crocodile", spec: { plan: "openmoji", id: "1F40A" }, lives: "Rivers, lakes and swamps in warm places", size: "Up to 6 m long", fact: "A crocodile can’t stick out its tongue, but it can stay underwater for over an hour." },
   { bands: ALL, name: "Lizard", spec: { plan: "openmoji", id: "1F98E" }, lives: "Deserts, forests and gardens", size: "From 2 cm to 3 m long", fact: "Many lizards can drop their tail to escape a predator, then grow a new one." },
   { bands: ALL, name: "Rooster", spec: { plan: "openmoji", id: "1F413" }, lives: "Farms around the world", size: "About 60 cm tall", fact: "A rooster crows to claim its patch of land, and not only at sunrise." },
   { bands: ALL, name: "Turkey", spec: { plan: "openmoji", id: "1F983" }, lives: "Forests and farms of North America", size: "Up to 1.2 m long", fact: "A male turkey, called a tom, fans out his tail feathers to impress others." },
@@ -76,11 +78,11 @@ export const ANIMALS: AnimalEntry[] = [
   { bands: ALL, name: "Bison", spec: { plan: "openmoji", id: "1F9AC" }, lives: "Grasslands of North America", size: "Up to 1.9 m tall at the shoulder", fact: "A bison can weigh a tonne, yet it can run up to 55 km/h." },
   { bands: ALL, name: "Goat", spec: { plan: "openmoji", id: "1F410" }, lives: "Mountains and farms worldwide", size: "About 0.8 m tall", fact: "Goats have rectangular pupils, which give them a wide view of the world around them." },
   { bands: ALL, name: "Seal", spec: { plan: "openmoji", id: "1F9AD" }, lives: "Cold coasts and oceans", size: "From 1.2 m to 4 m long", fact: "Many seals can hold their breath for half an hour." },
-  { bands: ALL, name: "Scorpion", spec: { plan: "openmoji", id: "1F982" }, lives: "Deserts and dry places", size: "From 1 cm to 20 cm long", fact: "Some scorpions glow blue-green under ultraviolet light." },
+  { bands: OLDER, name: "Scorpion", spec: { plan: "openmoji", id: "1F982" }, lives: "Deserts and dry places", size: "From 1 cm to 20 cm long", fact: "Some scorpions glow blue-green under ultraviolet light." },
   { bands: ALL, name: "Ant", spec: { plan: "openmoji", id: "1F41C" }, lives: "Almost everywhere on land", size: "From 1 mm to 5 cm long", fact: "An ant can carry something about 50 times heavier than itself." },
   { bands: ALL, name: "Chick", spec: { plan: "openmoji", id: "1F425" }, lives: "Farms around the world", size: "About 10 cm tall", fact: "A chick cracks out of its egg using a tiny “egg tooth” on its beak." },
-  { bands: ALL, name: "Squid", spec: { plan: "openmoji", id: "1F991" }, lives: "Oceans worldwide", size: "From 2 cm to 12 m long", fact: "Squid squirt ink to hide from predators, and giant squid have eyes as big as dinner plates." },
-  { bands: ALL, name: "Woolly Mammoth", spec: { plan: "openmoji", id: "1F9A3" }, lives: "Cold grasslands of the Ice Age (extinct)", size: "Up to 4 m tall", fact: "Woolly mammoths lived alongside early people, and most died out about 10,000 years ago." },
-  { bands: ALL, name: "Dodo", spec: { plan: "openmoji", id: "1F9A4" }, lives: "The island of Mauritius (extinct)", size: "About 1 m tall", fact: "The dodo couldn’t fly, and it died out in the 1600s after people arrived on its island." },
-  { bands: ALL, name: "Beetle", spec: { plan: "openmoji", id: "1FAB2" }, lives: "Almost everywhere on land", size: "From 0.5 mm to 15 cm long", fact: "About 1 in every 4 animal species is a beetle." },
+  { bands: OLDER, name: "Squid", spec: { plan: "openmoji", id: "1F991" }, lives: "Oceans worldwide", size: "From 2 cm to 12 m long", fact: "Squid squirt ink to hide from predators, and giant squid have eyes as big as dinner plates." },
+  { bands: OLDER, name: "Woolly Mammoth", spec: { plan: "openmoji", id: "1F9A3" }, lives: "Cold grasslands of the Ice Age (extinct)", size: "Up to 4 m tall", fact: "Woolly mammoths lived alongside early people, and most died out about 10,000 years ago." },
+  { bands: OLDER, name: "Dodo", spec: { plan: "openmoji", id: "1F9A4" }, lives: "The island of Mauritius (extinct)", size: "About 1 m tall", fact: "The dodo couldn’t fly, and it died out in the 1600s after people arrived on its island." },
+  { bands: OLDER, name: "Beetle", spec: { plan: "openmoji", id: "1FAB2" }, lives: "Almost everywhere on land", size: "From 0.5 mm to 15 cm long", fact: "About 1 in every 4 animal species is a beetle." },
 ];

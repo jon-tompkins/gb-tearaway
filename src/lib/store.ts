@@ -38,7 +38,7 @@ function migratePaperSize(settings: Partial<AppSettings> | undefined, kid?: Part
 
 export function seedKid(overrides: Partial<KidProfile> = {}): KidProfile {
   const timezone = overrides.timezone || DEFAULT_SETTINGS.timezone;
-  const name = overrides.name || "Sam";
+  const name = overrides.name || "Matt";
   const paperSize = isPaperSize(overrides.paperSize)
     ? overrides.paperSize
     : DEFAULT_SETTINGS.paperSize;

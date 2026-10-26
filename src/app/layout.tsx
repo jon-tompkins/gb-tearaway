@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Fraunces, Source_Serif_4, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/Providers";
+import { SupportChat } from "@/components/SupportChat";
 
 const display = Fraunces({
   variable: "--font-display",
@@ -59,7 +60,10 @@ export default function RootLayout({
       className={`${display.variable} ${body.variable} ${mono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-cream text-ink">
-        <Providers>{children}</Providers>
+        <Providers>
+          {children}
+          <SupportChat />
+        </Providers>
       </body>
     </html>
   );
