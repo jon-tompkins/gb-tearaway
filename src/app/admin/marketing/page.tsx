@@ -6,7 +6,8 @@ import { requireAdmin } from "@/lib/admin";
 import { accessFrom, listCodes, type Billing } from "@/lib/billing";
 import { eventsSince } from "@/lib/events";
 import { MARKETING_PLAN } from "@/lib/marketingPlan";
-import { getGoals, type GoalMetric } from "@/lib/marketingGoals";
+import { getGoals } from "@/lib/marketingGoals";
+import type { GoalMetric } from "@/lib/marketingGoalTypes";
 import { listPayloadFields, listUserStates } from "@/lib/persist";
 
 export const dynamic = "force-dynamic";

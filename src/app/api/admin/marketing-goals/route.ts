@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { isAdminEmail } from "@/lib/admin";
-import { getGoals, isGoalMetric, saveGoals, type Goal } from "@/lib/marketingGoals";
+import { getGoals, saveGoals } from "@/lib/marketingGoals";
+import { isGoalMetric, type Goal } from "@/lib/marketingGoalTypes";
 
 export const dynamic = "force-dynamic";
 

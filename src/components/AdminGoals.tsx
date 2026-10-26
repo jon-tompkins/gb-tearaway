@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { GOAL_METRICS, type Goal, type GoalMetric } from "@/lib/marketingGoals";
+import { GOAL_METRICS, type Goal, type GoalMetric } from "@/lib/marketingGoalTypes";
 
 export function AdminGoals({ initial, values }: { initial: Goal[]; values: Record<GoalMetric, number> }) {
   const [goals, setGoals] = useState(initial);
