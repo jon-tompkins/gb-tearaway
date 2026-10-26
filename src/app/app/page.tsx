@@ -100,7 +100,7 @@ export default function DashboardPage() {
       <div className="grid gap-4 sm:grid-cols-2">
         {kids.map((kid) => {
           const schedule = nextPrintLabel(kid.printTime, kid.timezone);
-          const paper = PAPER_SIZE_META.find((p) => p.id === (kid.paperSize || "strip58"))?.label;
+          const paper = PAPER_SIZE_META.find((p) => p.id === (kid.paperSize || "letter"))?.label;
           return (
             <div key={kid.id} className="card flex flex-col gap-3">
               <div className="flex items-start justify-between gap-3">

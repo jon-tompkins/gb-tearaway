@@ -88,7 +88,7 @@ function BillingInner() {
       <section className="card space-y-3">
         <h2 className="font-display text-xl text-ink">Pick a plan</h2>
         <p className="text-sm text-ink-soft">
-          Every account starts with a free month. After that it&rsquo;s $15 a year for one kid, $20 for up to two or $30 for up to five.
+          Every account starts with a free month. After that it&rsquo;s $20 a year for up to two kids or $30 for up to five.
           Prefer monthly? It&rsquo;s {price} a month. Cancel any time.
         </p>
         <p className="font-semibold text-ink">{planLine(a)}</p>

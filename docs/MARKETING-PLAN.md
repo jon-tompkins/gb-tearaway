@@ -1,7 +1,7 @@
 # Back of the Box (BotB) Marketing Plan
 
 Status: draft for Jon, Oct 26 2026. Nothing here has been posted or sent.
-Facts used: live at tearaway.vercel.app / www.backofthebox.xyz; 25+ modules; Letter (default) + 58mm strip; daily email with PDF + QR answer key; real kid-safe news; $5/mo after a free first month; billing and access codes built but enforcement OFF until Stripe keys are set.
+Facts used: live at tearaway.vercel.app / www.backofthebox.xyz; 25+ modules; Letter; daily email with PDF + QR answer key; real kid-safe news; $5/mo after a free first month; billing and access codes built but enforcement OFF until Stripe keys are set.
 
 ## 1. Audiences (ranked)
 
@@ -10,7 +10,7 @@ Facts used: live at tearaway.vercel.app / www.backofthebox.xyz; 25+ modules; Let
 3. **Homeschool and microschool parents/teachers.** Daily morning-work habit fits perfectly; one family or a pod of 5-15 kids. Good for annual plan.
 4. **Gifted/enrichment parents** (IQ-style reasoning puzzles, crosswords, sudoku, Battleship). Niche but loud and shareable.
 5. **Grandparents and gift buyers.** Later; needs a gift flow. Skip for now.
-6. Receipt-printer hobbyists (58mm). Great for viral video, tiny for revenue. Use as a content angle, not a target.
+6. Ink-free printer fans. Content angle ("no ink, ever"), not a target audience.
 
 ## 2. Positioning
 
@@ -21,16 +21,16 @@ Facts used: live at tearaway.vercel.app / www.backofthebox.xyz; 25+ modules; Let
 - "A smarter breakfast, printed on paper."
 - "Made for the fridge, not the feed."
 
-**Proof points to repeat:** no kid account, no ads, no screen. Real news from NASA/Smithsonian, rewritten and fact-checked. New page daily. Letter works on any printer; 58mm strip is optional. Answers behind a QR code so the kid solves first.
+**Proof points to repeat:** no kid account, no ads, no screen. Real news from NASA/Smithsonian, rewritten and fact-checked. New page daily. Letter works on any printer; no printer? see the supplies page (ink-free thermal). Answers behind a QR code so the kid solves first.
 
 ## 3. Launch offer mechanics
 
-- **Free first month**, no card up front (trial starts at first app load). Then yearly: $15 (1 kid), $20 (up to 2), $30 (up to 5); $5/mo as the alternative.
+- **Free first month**, no card up front (trial starts at first app load). Then yearly: $20 (up to 2 kids), $30 (up to 5); $5/mo as the alternative.
 - **Access codes** (already built: `BOX-XXXX-XXXX`, set months, max uses, once per user). Use three kinds:
   - `ALPHA-...` batch: 2 months free, capped ~40 uses, for Alpha/Discord families (seeds word of mouth and tells you which community converts).
   - **Referral codes:** each paying or active user gets one code worth +1 free month to a friend and +1 month to themselves. Needs a small build (per-user code generation + credit on redeem); until then Jon hand-issues codes from Admin to anyone who asks.
   - `FOUNDING-...`: 3 months, 20 uses, for the first creators/influencers and testimonial givers.
-- **Annual-led plans:** $15/yr (1 kid), $20/yr (up to 2), $30/yr (up to 5); monthly stays at $5. Offer them at month-1 day 20 and on the paywall. Yearly billing cuts the Stripe per-charge fee.
+- **Annual-led plans:** $20/yr (up to 2 kids), $30/yr (up to 5); monthly stays at $5. Offer them at month-1 day 20 and on the paywall. Yearly billing cuts the Stripe per-charge fee.
 - **Do not turn on enforcement until** Stripe keys are in and Checkout is tested in test mode. Announce "free month" in launch posts regardless; users already in trial keep the date they started.
 - Pricing wording is in flux (see decision on annual-led pricing); keep landing, billing page and support bot in sync.
 
@@ -75,11 +75,11 @@ Facts used: live at tearaway.vercel.app / www.backofthebox.xyz; 25+ modules; Let
 ## 6. Pre-written launch copy (drafts, unposted)
 
 **A. Parent community (Alpha hub / Discord / group)**
-> Hey parents. I built something for my kid and some of you asked about it. It's called Back of the Box: every morning it emails a fresh one-page puzzle sheet (maze, crossword, sudoku, a real kid-safe news story from NASA/Smithsonian, a joke, the weather) tuned to your kid's age. You print it on any normal printer, and answers sit behind a QR code so they solve first. No kid accounts, no ads, no screen. First month's free, then from $15 a year. Here's a code for Alpha families (2 months free): ALPHA-XXXX. I'd love honest feedback, especially on difficulty. Link: [url]
+> Hey parents. I built something for my kid and some of you asked about it. It's called Back of the Box: every morning it emails a fresh one-page puzzle sheet (maze, crossword, sudoku, a real kid-safe news story from NASA/Smithsonian, a joke, the weather) tuned to your kid's age. You print it on any normal printer, and answers sit behind a QR code so they solve first. No kid accounts, no ads, no screen. First month's free, then from $20 a year. Here's a code for Alpha families (2 months free): ALPHA-XXXX. I'd love honest feedback, especially on difficulty. Link: [url]
 
 **B. X post (thread opener, then 3 follow-ups: sample image, how it works, offer)**
 > I built a tiny daily newspaper for my kid.
-> Every morning: maze, crossword, sudoku, a real news story rewritten for kids, weather. Prints on any home printer (or a 58mm receipt printer if you're like me).
+> Every morning: maze, crossword, sudoku, a real news story rewritten for kids, weather. Prints on any home printer.
 > No screens, no ads, no kid accounts.
 > First month free. [url] 🧵
 
@@ -108,7 +108,7 @@ Targets to watch: visit->signup 5-10%; signup->dispatch created 70%; created->fi
 ## 8. Risks
 
 - **Kid privacy / COPPA:** Kids never log in; parents are the users; only a name and age range are collected for a kid; "no ads, no tracking" refers to the paper itself. Say this plainly on landing (a separate terms page isn't needed: parents only connect an email). Do not use kid names/photos in marketing without parent consent. Avoid wording like "collects child data"; say "profiles, not accounts."
-- **Printer requirement:** the biggest perceived friction. Message: "Letter works with any printer, no special hardware. 58mm strip is optional." Offer "email it, print it at the library/office" as fallback. Include a 1-line "no printer? read it on screen" if that holds.
+- **Printer requirement:** the biggest perceived friction. Message: "Letter works with any printer, no special hardware. No printer? Point to the supplies page." Offer "email it, print it at the library/office" as fallback. Include a 1-line "no printer? read it on screen" if that holds.
 - **Daily reliability:** a missed morning kills trust. Keep the outage monitor, send a status note when something fails.
 - **News safety/accuracy:** one bad story is a screenshot on social media. Keep the fact-check pass; add a "report a story" link.
 - **Ink/paper cost** and "one more thing to do every morning": counter with a "print 3 days at once" option.
@@ -119,7 +119,7 @@ Targets to watch: visit->signup 5-10%; signup->dispatch created 70%; created->fi
 ## 9. Jon must decide
 
 1. Go-live date and who is the "face": personal account vs. a @backofthebox account.
-2. Final pricing: yearly tiers $15/$20/$30 (the 1-kid price is my placeholder) and whether to keep $5/mo, and whether free month needs a card (card up front lifts conversion but cuts signups).
+2. Final pricing: yearly tiers $20 (up to 2 kids) / $30 (up to 5) and whether to keep $5/mo, and whether free month needs a card (card up front lifts conversion but cuts signups).
 3. Turn on Stripe enforcement: when, and grandfather rules for existing users.
 4. Referral reward (+1 month each side?) and caps; approve building the referral code feature.
 5. Which families/photos/videos you're comfortable showing (Max's page, photos of Max, fridge shots), and ask parents for consent.

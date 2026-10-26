@@ -28,7 +28,7 @@ export const MODULE_CATEGORIES: ModuleCategoryMeta[] = [
 export const MODULE_CATALOG: ModuleMeta[] = [
   // Play / puzzles
   { id: "maze", name: "Maze", blurb: "A fresh, solvable maze. Harder as they grow.", category: "play", defaultOn: true, size: "double" },
-  { id: "wordfind", name: "Word Find", blurb: "Tiny word-search that fits the 58mm strip.", category: "play", defaultOn: false, size: "double" },
+  { id: "wordfind", name: "Word Find", blurb: "A word-search tuned to your kid's age.", category: "play", defaultOn: false, size: "double" },
   { id: "dots", name: "Connect the Dots", blurb: "Funny numbered dots + a silly caption.", category: "play", defaultOn: false, size: "double" },
   { id: "riddle", name: "Riddle", blurb: "Think first — answer shows in the app, never on paper.", category: "play", defaultOn: false, size: "half" },
   { id: "sudoku", name: "Sudoku", blurb: "4×4 for little kids, 6×6, then easy 9×9 — always one unique solution. Answer key stays off the paper.", category: "play", defaultOn: false, size: "full" },

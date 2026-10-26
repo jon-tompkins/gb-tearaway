@@ -61,7 +61,6 @@ export type DeliveryMethod = "email" | "app" | "print" | "sms";
 export const DELIVERY_METHODS: { id: DeliveryMethod; label: string; blurb: string; enabled: boolean }[] = [
   { id: "email", label: "Email", blurb: "Sent to the account-holder inbox each morning.", enabled: true },
   { id: "app", label: "In the app", blurb: "Ready on your dashboard each morning to print — no email.", enabled: true },
-  { id: "print", label: "Thermal print", blurb: "Print locally on a 58mm strip.", enabled: false },
   { id: "sms", label: "Text message", blurb: "A link by SMS.", enabled: false },
 ];
 
@@ -432,7 +431,7 @@ export const DEFAULT_MODULES: ModuleId[] = [
 export const DEFAULT_WATCHLIST = ["AAPL", "DIS", "NKE"];
 
 export const DEFAULT_SETTINGS: AppSettings = {
-  paperSize: "strip58",
+  paperSize: "letter",
   timezone: "America/New_York",
   printTime: "07:00",
   weatherCity: "Brooklyn",

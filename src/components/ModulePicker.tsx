@@ -490,7 +490,8 @@ export function SlotEditor({
 
   return (
     <div className="space-y-9">
-      {/* PAPER SIZE */}
+      {/* PAPER SIZE: only for older dispatches still on the narrow layout */}
+      {isStrip ? (
       <section>
         <h2 className="font-display text-xl text-ink">Paper size</h2>
         <p className="mb-3 text-sm text-ink-soft">
@@ -498,6 +499,7 @@ export function SlotEditor({
         </p>
         <PaperSizeToggle value={paperSize} onChange={onChangePaperSize} />
       </section>
+      ) : null}
 
       {/* STEP 1 — CARD GRID */}
       <section>
@@ -517,7 +519,7 @@ export function SlotEditor({
           <div className="mb-2 border-b border-dashed border-rule pb-2 text-center">
             <div className="font-display text-base text-ink">Back of the Box</div>
             <div className="text-[0.6rem] uppercase tracking-widest text-ink-soft">
-              {isStrip ? "58mm strip" : "US Letter"} · {slots.length} card{slots.length === 1 ? "" : "s"}
+              {isStrip ? "Narrow layout" : "US Letter"} · {slots.length} card{slots.length === 1 ? "" : "s"}
             </div>
           </div>
 

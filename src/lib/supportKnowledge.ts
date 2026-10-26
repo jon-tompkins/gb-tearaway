@@ -5,8 +5,9 @@ export const SUPPORT_FALLBACK_EMAIL = "hello@backofthebox.xyz";
 
 // Mirrors the FAQ on the landing page (src/app/page.tsx); keep in sync.
 const FAQ: Array<[string, string]> = [
-  ["What does it cost?", "Your first month is free. After that it's $15 a year for one kid, $20 a year for up to two, or $30 a year for up to five (or $5 a month if you prefer). You sign in with Google and you sign in with Google to save your setup and get a page every morning."],
-  ["What do I need to print it?", "Any home printer works, since the page is made for US Letter. If you have a 58mm thermal receipt printer, there's also a narrow strip layout."],
+  ["What does it cost?", "Your first month is free. After that it's $20 a year for up to two kids, or $30 a year for up to five (or $5 a month if you prefer). You sign in with Google and you sign in with Google to save your setup and get a page every morning."],
+  ["I don't have a printer. How do I get started?", "An ink-free thermal printer is cheap to run and never needs ink. The supplies page at /supplies explains how they work and lists printers and paper."],
+  ["What do I need to print it?", "Any home printer works, since the page is made for US Letter."],
   ["What ages is it for?", "About 4 to 12. You set an age when you make the page, and each card has its own 1-20 dial. Sudoku goes from 4x4 up to 9x9, mazes grow, and news cards start at level 5."],
   ["Where does the news come from?", "From real outlets: Smithsonian, NASA, Science News Explores, Mongabay, Popular Science, IEEE Spectrum, Good News Network, and others. Each story is rewritten for kids, checked against the source article, and printed with its location. Crime, politics, and anything scary are left out."],
   ["Does my kid need an account or a screen?", "No. Parents set it up, and kids just get the paper. We only ask for the kid's first name, and there are no ads."],
@@ -14,7 +15,7 @@ const FAQ: Array<[string, string]> = [
 ];
 
 const FACTS = `PRICING
-- First month free. Then yearly: $15 for 1 kid, $20 for up to 2, $30 for up to 5. Or $5/month. Cancel anytime. Parents can also get all kids in one morning email (Settings).
+- First month free. Then yearly: $20 for up to 2 kids, $30 for up to 5. Or $5/month. Cancel anytime. Parents can also get all kids in one morning email (Settings).
 - Access codes (format BOX-XXXX-XXXX) add free months; they can be redeemed on the billing page in the app.
 
 HOW IT WORKS
@@ -24,7 +25,7 @@ HOW IT WORKS
 - Each kid has their own page, cards, difficulty and delivery time.
 
 PRINTING
-- Any home printer on US Letter paper. Optional narrow strip layout for 58mm thermal receipt printers.
+- Any home printer on US Letter paper. No printer? An ink-free thermal printer works and never needs ink; details at /supplies.
 
 AGES AND DIFFICULTY
 - Roughly ages 4-12. Each card has its own 1-20 difficulty dial.

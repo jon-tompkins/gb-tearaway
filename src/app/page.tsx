@@ -18,7 +18,7 @@ const PILLARS = [
   },
   {
     title: "Paper, not a screen",
-    body: "Print it on a home printer or a little 58mm thermal strip. Answers sit behind a QR code for you to check, so the kid solves first. Kids never need an account.",
+    body: "Print it on any home printer. Answers sit behind a QR code for you to check, so the kid solves first. Kids never need an account.",
   },
 ];
 
@@ -31,11 +31,17 @@ const STEPS = [
 const FAQ = [
   {
     q: "What does it cost?",
-    a: "Your first month is free. After that it’s $15 a year for one kid, $20 a year for up to two, or $30 a year for up to five (or $5 a month if you prefer). Sign in with Google to save your setup and get a page every morning.",
+    a: "Your first month is free. After that it’s $20 a year for up to two kids, or $30 a year for up to five (or $5 a month if you prefer). Sign in with Google to save your setup and get a page every morning.",
   },
   {
     q: "What do I need to print it?",
-    a: "Any home printer works, since the page is made for US Letter. If you have a 58mm thermal receipt printer, there’s also a narrow strip layout.",
+    a: "Any home printer works, since the page is made for US Letter.",
+  },
+  {
+    q: "I don’t have a printer. How do I get started?",
+    a: "No problem. An ink-free thermal printer costs less than a tank of ink and never runs dry, which is the real selling point. Our supplies page explains how they work and lists printers and paper we like.",
+    href: "/supplies",
+    cta: "See printers and paper →",
   },
   {
     q: "What ages is it for?",
@@ -96,7 +102,7 @@ export default async function HomePage() {
               </Link>
             </div>
             <p className="mt-4 text-sm text-ink-soft">
-              First month free. Then $15 a year for one kid, $20 for two, $30 for up to five.
+              First month free. Then $20 a year for up to two kids, $30 for up to five.
             </p>
           </div>
 
@@ -104,8 +110,8 @@ export default async function HomePage() {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/cereal-box.png"
-              alt="Back of the Box, morning brain cereal: a real puzzle page with weather, a crossword, a maze and a number grid"
-              className="w-full drop-shadow-2xl"
+              alt="A Back of the Box cereal box, morning brain cereal, with a real puzzle page on the front"
+              className="mx-auto w-full max-w-[420px] drop-shadow-2xl"
             />
           </div>
         </div>
@@ -208,6 +214,11 @@ export default async function HomePage() {
                   <span className="text-ink-soft transition group-open:rotate-45">+</span>
                 </summary>
                 <p className="mt-2 text-sm leading-relaxed text-ink-soft">{f.a}</p>
+                {"href" in f && f.href ? (
+                  <Link href={f.href} className="mt-2 inline-block text-sm font-semibold text-ink underline-offset-4 hover:underline">
+                    {"cta" in f ? f.cta : "Learn more →"}
+                  </Link>
+                ) : null}
               </details>
             ))}
           </div>
@@ -228,6 +239,7 @@ export default async function HomePage() {
         <span>Back of the Box · made for the fridge, not the feed</span>
         <nav className="flex gap-4">
           <Link href="/modules" className="hover:text-ink">Modules</Link>
+          <Link href="/supplies" className="hover:text-ink">Supplies</Link>
           <Link href="/app" className="hover:text-ink">Dashboard</Link>
           <Link href="/app/setup" className="hover:text-ink">Get started</Link>
         </nav>

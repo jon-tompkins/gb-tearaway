@@ -34,7 +34,7 @@ export default function EditDispatchPage() {
   const [deliveryMethod, setDeliveryMethod] = useState<"email" | "app">("email");
 
   // Layout
-  const [paperSize, setPaperSize] = useState<PaperSize>("strip58");
+  const [paperSize, setPaperSize] = useState<PaperSize>("letter");
   const [slots, setSlots] = useState<ModuleSlot[]>([]);
   const [access, setAccess] = useState<ModuleId[]>([]);
   const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null);
@@ -60,7 +60,7 @@ export default function EditDispatchPage() {
       setDeliveryTime(activeKid.printTime || "07:00");
       setDeliveryEmail(activeKid.deliveryEmail || "");
       setDeliveryMethod(activeKid.deliveryMethod === "app" ? "app" : "email");
-      const size = activeKid.paperSize || "strip58";
+      const size = activeKid.paperSize || "letter";
       const nextSlots = resizeSlotsForPaper(activeKid.slots || [], size);
       setPaperSize(size);
       setSlots(nextSlots);
