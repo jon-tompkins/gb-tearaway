@@ -84,7 +84,7 @@ export function wordFindConfigForDifficulty(d: number): {
 
 /** How many candidate mazes to score when selecting the hardest (more = harder). */
 export function mazeCandidatesForDifficulty(d: number): number {
-  return Math.min(44, 6 + clampDifficulty(d) * 2);
+  return Math.min(14, 4 + Math.round(clampDifficulty(d) * 0.5));
 }
 
 /** News isn't written for the youngest readers — its dial starts at 5. */

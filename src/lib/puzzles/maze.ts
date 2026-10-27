@@ -8,8 +8,28 @@ function sizeForBand(band: AgeBand): { cols: number; rows: number } {
   return { cols: 25, rows: 33 };
 }
 
-/** One recursive-backtracker perfect maze for a given seed — always solvable. */
-function buildPerfectMaze(seed: number, cols: number, rows: number): MazeData {
+/** Shape knobs derived from difficulty (1–20). */
+interface MazeShape {
+  /** Chance of extending the newest cell (long corridors) vs a random one (more forks). */
+  newest: number;
+  /** Walls to knock out afterwards, making wrong turns that loop instead of dead-ending. */
+  loops: number;
+}
+
+function shapeFor(difficulty: number, cols: number, rows: number): MazeShape {
+  const x = Math.max(1, Math.min(20, difficulty));
+  // Easy: near-pure backtracker. Harder: lots of forks, then loops on top.
+  const newest = x <= 4 ? 0.9 : Math.max(0.72, 0.9 - (x - 4) * 0.012);
+  const loops = x <= 5 ? 0 : Math.round(cols * rows * Math.min(0.05, (x - 5) * 0.004));
+  return { newest, loops };
+}
+
+/**
+ * One spanning-tree maze for a given seed — always solvable. Growing-tree
+ * generation blends "newest cell" (long winding corridors) with "random cell"
+ * (many forks), so false branches are plentiful and not all stubby.
+ */
+function buildMaze(seed: number, cols: number, rows: number, shape: MazeShape): MazeData {
   const rng = mulberry32(seed);
 
   const cells: MazeCell[][] = Array.from({ length: rows }, () =>
@@ -32,28 +52,71 @@ function buildPerfectMaze(seed: number, cols: number, rows: number): MazeData {
     return list;
   }
 
-  // Iterative DFS (avoids deep recursion on big grids).
-  const stack: [number, number][] = [[0, 0]];
+  // Growing tree (iterative, so big grids are fine).
+  const active: [number, number][] = [[0, 0]];
   visited[0][0] = true;
-  while (stack.length) {
-    const [r, c] = stack[stack.length - 1];
+  while (active.length) {
+    const idx = rng() < shape.newest ? active.length - 1 : Math.floor(rng() * active.length);
+    const [r, c] = active[idx];
     let advanced = false;
     for (const [nr, nc, wallHere, wallThere] of neighbors(r, c)) {
       if (visited[nr][nc]) continue;
       cells[r][c][wallHere] = false;
       cells[nr][nc][wallThere] = false;
       visited[nr][nc] = true;
-      stack.push([nr, nc]);
+      active.push([nr, nc]);
       advanced = true;
       break;
     }
-    if (!advanced) stack.pop();
+    if (!advanced) active.splice(idx, 1);
   }
+
+  addLoops(cells, shape.loops, rng);
 
   const start: [number, number] = [0, 0];
   const end: [number, number] = [rows - 1, cols - 1];
   const path = solvePath(cells, start, end);
   return { cols, rows, cells, start, end, path };
+}
+
+/**
+ * Knock out walls between cells that are far apart through the maze, so a wrong
+ * turn can loop round and rejoin instead of simply dead-ending. Short shortcuts
+ * are skipped: they'd just be clutter, or flatten the real route.
+ */
+function addLoops(cells: MazeCell[][], count: number, rng: () => number): void {
+  const rows = cells.length;
+  const cols = cells[0].length;
+  const minGap = Math.max(10, Math.round((rows + cols) / 3));
+  let added = 0;
+  for (let tries = 0; added < count && tries < count * 25; tries++) {
+    const r = Math.floor(rng() * rows);
+    const c = Math.floor(rng() * cols);
+    const horiz = rng() < 0.5;
+    const nr = horiz ? r : r + 1;
+    const nc = horiz ? c + 1 : c;
+    if (nr >= rows || nc >= cols) continue;
+    if (horiz ? !cells[r][c].e : !cells[r][c].s) continue; // already open
+    // BFS distance between the two cells through the existing maze.
+    const dist = new Map<number, number>([[r * cols + c, 0]]);
+    const q: [number, number][] = [[r, c]];
+    let found = -1;
+    for (let h = 0; h < q.length && found < 0; h++) {
+      const [qr, qc] = q[h];
+      const d = dist.get(qr * cols + qc)!;
+      for (const [ar, ac] of openNeighbors(cells, qr, qc)) {
+        const k = ar * cols + ac;
+        if (dist.has(k)) continue;
+        dist.set(k, d + 1);
+        if (ar === nr && ac === nc) { found = d + 1; break; }
+        q.push([ar, ac]);
+      }
+    }
+    if (found < minGap) continue;
+    if (horiz) { cells[r][c].e = false; cells[nr][nc].w = false; }
+    else { cells[r][c].s = false; cells[nr][nc].n = false; }
+    added++;
+  }
 }
 
 /** Open (wall-free) orthogonal neighbours of a cell. */
@@ -99,19 +162,26 @@ function difficultyScore(maze: MazeData): number {
 
   let score = path.length; // a longer solution is windier
   let longBranches = 0;
+  let stubs = 0;
+  let forks = 0;
   for (const [r, c] of path) {
+    let offPath = 0;
     for (const [nr, nc] of openNeighbors(cells, r, c)) {
       if (onPath.has(`${nr},${nc}`)) continue;
+      offPath++;
       const d = branchDepth(nr, nc);
       score += d; // total wrong-turn territory
       if (d >= thresh) {
         longBranches++;
         score += thresh; // extra weight for genuinely long false branches
+      } else if (d <= 2) {
+        stubs++; // obvious little nubs: they don't make you think
       }
     }
+    if (offPath) forks++; // every fork is a decision the solver must make
   }
-  // Strongly favour mazes that have several long false branches.
-  return score + longBranches * longBranches * 3;
+  // Favour many decisions and several long false branches; punish stubby ones.
+  return score + forks * 4 + longBranches * longBranches * 3 - stubs * 3;
 }
 
 /**
@@ -137,12 +207,14 @@ export function generateMaze(
       : band === "4-6"
         ? 6
         : band === "7-9"
-          ? 28
-          : 40;
-  let best = buildPerfectMaze(seed >>> 0, cols, rows);
+          ? 10
+          : 14;
+  const effective = difficulty ?? (band === "4-6" ? 3 : band === "7-9" ? 9 : 15);
+  const shape = shapeFor(effective, cols, rows);
+  let best = buildMaze(seed >>> 0, cols, rows, shape);
   let bestScore = difficultyScore(best);
   for (let i = 1; i < candidates; i++) {
-    const m = buildPerfectMaze((seed + i * 0x9e3779b1) >>> 0, cols, rows);
+    const m = buildMaze((seed + i * 0x9e3779b1) >>> 0, cols, rows, shape);
     const s = difficultyScore(m);
     if (s > bestScore) {
       bestScore = s;
