@@ -30,9 +30,10 @@ export const SUPPLY_GROUPS: SupplyGroup[] = [
   {
     id: "thermal-paper",
     title: "Thermal paper",
-    intro: "Match the paper to your printer: check its sheet size and whether it takes fan-fold or single sheets. Thermal prints fade over a few months, which is fine for a daily page that ends up on the fridge.",
+    intro: "Match the paper to your printer. Many Letter thermal printers use black-mark fanfold paper: a zig-zag stack with small black marks on the back that tell the printer where each page starts. In the printer's app, choose \"Black Mark Fanfold\" and the Letter size. Thermal prints fade over a few months, which is fine for a daily page that ends up on the fridge.",
     items: [
-      { name: "Letter-size thermal paper", blurb: "Single sheets or fan-fold, for Letter thermal printers.", query: "thermal paper 8.5x11 letter size" },
+      { name: "Black-mark fanfold thermal paper, 8.5×11", blurb: "The zig-zag stack with black marks on the back. Check your printer takes it.", query: "black mark fanfold thermal paper 8.5x11" },
+      { name: "Single-sheet thermal paper, 8.5×11", blurb: "Loose sheets with no marks, for printers set to sheet-fed.", query: "thermal paper sheets 8.5x11 letter" },
     ],
   },
   {
