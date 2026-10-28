@@ -23,6 +23,7 @@ export type ModuleId =
   | "weather"
   | "stocks"
   | "sports"
+  | "sportsnews"
   | "calendar"
   | "joke"
   | "riddle"
@@ -165,7 +166,7 @@ export interface KidProfile {
   /** The palette the user has chosen to have available. Cards can only pull from this. */
   accessModules: ModuleId[];
   watchlist: string[];
-  /** Favorite sports teams (names) for the Sports module. */
+  /** Favorite sports teams (names) — shared by Sports Scores + Team News. */
   sportsTeams?: string[];
   events: CalendarEvent[];
   /**

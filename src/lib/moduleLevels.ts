@@ -45,5 +45,6 @@ export const MODULE_LEVELS: Record<ModuleId, string> = {
   weather: FLAT,
   stocks: FLAT,
   sports: FLAT,
+  sportsnews: FLAT,
   calendar: FLAT,
 };

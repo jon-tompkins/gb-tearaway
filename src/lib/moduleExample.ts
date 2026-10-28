@@ -174,6 +174,14 @@ export function moduleExample(id: ModuleId): ModuleExample {
         text: ["Arsenal · English Premier League", "Last: 2–1 vs Chelsea · Sep 6", "Next: vs Leeds United · Oct 10"],
         note: "Live results for your favorite teams.",
       };
+    case "sportsnews":
+      return {
+        text: [
+          "Your team wins its home opener",
+          "YOUR TEAM — Your team won its first home game of the season. Fans cheered as the players waved to the crowd.",
+        ],
+        note: "Example only. Live daily: real recent headlines about your favorite team, summarized kid-safe. Injuries, betting and rumors are left out.",
+      };
     case "calendar":
       return {
         text: ["9:00 AM · Soccer practice", "3:30 PM · Library trip"],

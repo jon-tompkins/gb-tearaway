@@ -191,6 +191,11 @@ export const MODULE_INFO: Record<ModuleId, ModuleInfo> = {
     source: "Live results from TheSportsDB — each favorite team's last result and next game, cached daily.",
     config: ["Add up to 3 favorite teams in Settings (use full names, e.g. Los Angeles Lakers)."],
   },
+  sportsnews: {
+    source:
+      "Recent real headlines about your favorite team from Google News, summarized for kids by AI from the headline alone — no made-up scores or quotes. Injuries, crime, betting, fights, scandals and rumors are always left out. Cached daily.",
+    config: ["Uses the same favorite-teams list as Sports Scores (the first 2 teams), set in Settings."],
+  },
   calendar: {
     source: "Your family's day — pulled from a Google Calendar you connect, or events you type in.",
     config: ["Connect a Google Calendar, or add events by hand, in Settings."],

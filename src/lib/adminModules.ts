@@ -311,6 +311,10 @@ export const ADMIN_MODULES: Record<ModuleId, AdminModule> = {
     kind: "live",
     how: "Live last result + next game for each favorite team from TheSportsDB, fetched at print time.",
   },
+  sportsnews: {
+    kind: "live",
+    how: "Google News RSS search per favorite team (first 2, last 3 days) → keyword safety pre-filter → one Haiku 4.5 call per team picks ≤3 kid-safe items, summarized from the headline only. Cached per team per UTC day (empty results ≤1h); capped at ~12s at render time.",
+  },
   calendar: {
     kind: "live",
     how: "Today's events from the parent's connected Google Calendar, or events typed in by hand.",
