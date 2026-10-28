@@ -1,13 +1,11 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/auth";
-import { isAdminEmail } from "@/lib/admin";
+import { isAdmin } from "@/lib/admin";
 import { createCode, listCodes, setCodeDisabled } from "@/lib/billing";
 
 export const dynamic = "force-dynamic";
 
 async function admin() {
-  const session = await auth().catch(() => null);
-  return isAdminEmail(session?.user?.email);
+  return isAdmin();
 }
 const notFound = () => NextResponse.json({ error: "not found" }, { status: 404 });
 

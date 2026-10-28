@@ -2,8 +2,7 @@ import { MODULE_LEVELS } from "@/lib/moduleLevels";
 import type { ModuleId } from "@/lib/types";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { auth } from "@/auth";
-import { isAdminEmail } from "@/lib/admin";
+import { isAdmin } from "@/lib/admin";
 import { isModuleId, moduleById, moduleSize, MODULE_CATEGORIES } from "@/lib/modules";
 import { getHiddenModules } from "@/lib/visibility";
 import type { SlotSize } from "@/lib/types";
@@ -21,8 +20,7 @@ export default async function ModuleDetail({ params }: { params: Promise<{ id: s
   const { id } = await params;
   if (!isModuleId(id)) notFound();
   if ((await getHiddenModules().catch((): string[] => [])).includes(id)) {
-    const session = await auth().catch(() => null);
-    if (!isAdminEmail(session?.user?.email)) notFound();
+    if (!(await isAdmin())) notFound();
   }
   const meta = moduleById(id);
   const info = MODULE_INFO[id];

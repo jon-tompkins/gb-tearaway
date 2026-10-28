@@ -92,7 +92,7 @@ export default async function AdminModule({
 
   return (
     <AppShell title={meta.name} subtitle={SOURCE_LABEL[info.kind]}>
-      <Link href="/admin" className="text-sm font-semibold text-ink-soft hover:text-ink">
+      <Link href="/admin/modules" className="text-sm font-semibold text-ink-soft hover:text-ink">
         ← All modules
       </Link>
       <p className="mt-3 max-w-3xl text-ink">{info.how}</p>

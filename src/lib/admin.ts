@@ -1,5 +1,6 @@
-import { createHash } from "node:crypto";
-import { notFound } from "next/navigation";
+import { createHash, createHmac, timingSafeEqual } from "node:crypto";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 
 /**
@@ -21,10 +22,40 @@ export function isAdminEmail(email: string | null | undefined): boolean {
   return extra.includes(e) || ADMIN_EMAIL_HASHES.has(sha256(e));
 }
 
-/** For admin pages: the signed-in admin's email, or a 404 for everyone else. */
-export async function requireAdmin(): Promise<string> {
+/**
+ * The admin console is also behind a shared password (ADMIN_PASSWORD on Vercel;
+ * the default is the one Jon picked). Entering it sets a signed cookie. The
+ * owner's Google account skips the password.
+ */
+export const ADMIN_COOKIE = "botb_admin";
+const adminPassword = () => process.env.ADMIN_PASSWORD || "nimda";
+const adminToken = () =>
+  createHmac("sha256", process.env.AUTH_SECRET || "botb-admin").update(`admin:${adminPassword()}`).digest("hex");
+
+export function passwordOk(candidate: string): boolean {
+  const a = createHash("sha256").update(candidate).digest();
+  const b = createHash("sha256").update(adminPassword()).digest();
+  return timingSafeEqual(a, b);
+}
+
+export const adminCookieValue = adminToken;
+
+/** True for a valid admin-password cookie or the owner's signed-in Google account. */
+export async function isAdmin(): Promise<boolean> {
+  const jar = await cookies();
+  const c = jar.get(ADMIN_COOKIE)?.value;
+  if (c) {
+    const a = Buffer.from(c);
+    const b = Buffer.from(adminToken());
+    if (a.length === b.length && timingSafeEqual(a, b)) return true;
+  }
   const session = await auth().catch(() => null);
-  const email = session?.user?.email;
-  if (!isAdminEmail(email)) notFound();
-  return email!;
+  return isAdminEmail(session?.user?.email);
+}
+
+/** For admin pages: returns the admin's email (or "admin"), or sends everyone else to the password screen. */
+export async function requireAdmin(): Promise<string> {
+  if (!(await isAdmin())) redirect("/admin/login");
+  const session = await auth().catch(() => null);
+  return session?.user?.email ?? "admin";
 }

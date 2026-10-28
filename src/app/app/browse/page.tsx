@@ -60,7 +60,11 @@ export default function BrowseModulesPage() {
       ) : (
         <div className="grid gap-2 sm:grid-cols-2">
           {shown.map((m) => (
-            <div key={m.id} className="rounded-xl border border-rule bg-paper px-3 py-2.5">
+            <Link
+              key={m.id}
+              href={`/modules/${m.id}`}
+              className="block rounded-xl border border-rule bg-paper px-3 py-2.5 transition hover:border-ink/40 hover:bg-cream"
+            >
               <div className="flex items-center gap-2">
                 <span className="flex-1 truncate text-sm font-semibold text-ink">{m.name}</span>
                 <span
@@ -74,7 +78,7 @@ export default function BrowseModulesPage() {
               <span className="mt-1 inline-block text-[0.6rem] font-semibold uppercase tracking-wide text-ink-soft/70">
                 {catName(m.category)}
               </span>
-            </div>
+            </Link>
           ))}
         </div>
       )}

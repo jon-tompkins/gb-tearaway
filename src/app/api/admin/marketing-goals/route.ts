@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/auth";
-import { isAdminEmail } from "@/lib/admin";
+import { isAdmin } from "@/lib/admin";
 import { getGoals, saveGoals } from "@/lib/marketingGoals";
 import { isGoalMetric, type Goal } from "@/lib/marketingGoalTypes";
 
@@ -8,8 +7,7 @@ export const dynamic = "force-dynamic";
 
 /** Admin: replace the goal list. Body: { goals: [{ id?, metric, target, by? }] }. */
 export async function POST(req: Request) {
-  const session = await auth().catch(() => null);
-  if (!isAdminEmail(session?.user?.email)) return NextResponse.json({ error: "not found" }, { status: 404 });
+  if (!(await isAdmin())) return NextResponse.json({ error: "not found" }, { status: 404 });
   const body = (await req.json().catch(() => ({}))) as { goals?: Partial<Goal>[] };
   const goals: Goal[] = (body.goals ?? [])
     .filter((g) => isGoalMetric(g.metric) && Number.isFinite(Number(g.target)) && Number(g.target) > 0)
