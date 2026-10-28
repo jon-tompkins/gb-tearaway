@@ -7,6 +7,7 @@ import { isModuleId, moduleById, moduleSize, MODULE_CATEGORIES } from "@/lib/mod
 import { getHiddenModules } from "@/lib/visibility";
 import type { SlotSize } from "@/lib/types";
 import { MODULE_INFO } from "@/lib/moduleInfo";
+import { MODULE_HOW_TO } from "@/lib/moduleHowTo";
 import { moduleExample } from "@/lib/moduleExample";
 
 function sizeLabel(sz: SlotSize): string {
@@ -25,6 +26,7 @@ export default async function ModuleDetail({ params }: { params: Promise<{ id: s
   const meta = moduleById(id);
   const info = MODULE_INFO[id];
   const ex = moduleExample(id);
+  const howTo = MODULE_HOW_TO[id];
   const catName = MODULE_CATEGORIES.find((c) => c.id === meta.category)?.name ?? meta.category;
 
   return (
@@ -81,6 +83,17 @@ export default async function ModuleDetail({ params }: { params: Promise<{ id: s
           </p>
         ) : null}
       </section>
+
+      {howTo ? (
+        <section className="mt-8">
+          <h2 className="mb-2 text-xs font-bold uppercase tracking-wider text-ink-soft">How to play</h2>
+          <ol className="list-decimal space-y-1.5 pl-5 text-ink marker:text-ink-soft">
+            {howTo.map((step, i) => (
+              <li key={i}>{step}</li>
+            ))}
+          </ol>
+        </section>
+      ) : null}
 
       {/* How it works */}
       <section className="mt-8">
