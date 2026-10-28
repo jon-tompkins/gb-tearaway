@@ -75,7 +75,7 @@ export default function DashboardPage() {
       {trialLeft !== null ? (
         <div className="mb-4 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-rule bg-paper px-4 py-2 text-sm">
           <span className="text-ink">
-            Free month: {trialLeft} day{trialLeft === 1 ? "" : "s"} left. Then ${billing!.access.priceCents / 100}/month.
+            Free month: {trialLeft} day{trialLeft === 1 ? "" : "s"} left. Then from $20 a year.
           </span>
           <Link href="/app/billing" className="font-semibold text-stamp hover:underline">
             Subscribe or use a code

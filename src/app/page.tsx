@@ -31,7 +31,7 @@ const STEPS = [
 const FAQ = [
   {
     q: "What does it cost?",
-    a: "Your first month is free. After that it’s $20 a year for up to two kids, or $30 a year for up to five (or $5 a month if you prefer). Sign in with Google to save your setup and get a page every morning.",
+    a: "Your first month is free. After that it’s $20 a year for up to two kids, or $40 a year for up to five. Prefer to pay as you go? It’s $6 a quarter for up to two kids, or $12 a quarter for up to five. Sign in with Google to save your setup and get a page every morning.",
   },
   {
     q: "What do I need to print it?",
@@ -102,7 +102,7 @@ export default async function HomePage() {
               </Link>
             </div>
             <p className="mt-4 text-sm text-ink-soft">
-              First month free. Then $20 a year for up to two kids, $30 for up to five.
+              First month free. Then $20 a year for up to two kids, $40 for up to five (or $6 / $12 a quarter).
             </p>
           </div>
 

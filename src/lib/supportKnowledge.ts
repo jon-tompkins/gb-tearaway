@@ -5,7 +5,7 @@ export const SUPPORT_FALLBACK_EMAIL = "hello@backofthebox.xyz";
 
 // Mirrors the FAQ on the landing page (src/app/page.tsx); keep in sync.
 const FAQ: Array<[string, string]> = [
-  ["What does it cost?", "Your first month is free. After that it's $20 a year for up to two kids, or $30 a year for up to five (or $5 a month if you prefer). You sign in with Google and you sign in with Google to save your setup and get a page every morning."],
+  ["What does it cost?", "Your first month is free. After that it's $20 a year for up to two kids, or $40 a year for up to five. Prefer to pay as you go? It's $6 a quarter for up to two kids, or $12 a quarter for up to five. You sign in with Google and you sign in with Google to save your setup and get a page every morning."],
   ["I don't have a printer. How do I get started?", "An ink-free thermal printer is cheap to run and never needs ink. The supplies page at /supplies explains how they work and lists printers and paper."],
   ["What do I need to print it?", "Any home printer works, since the page is made for US Letter."],
   ["What ages is it for?", "About 4 to 12. You set an age when you make the page, and each card has its own 1-20 dial. Sudoku goes from 4x4 up to 9x9, mazes grow, and news cards start at level 5."],
@@ -15,7 +15,7 @@ const FAQ: Array<[string, string]> = [
 ];
 
 const FACTS = `PRICING
-- First month free. Then yearly: $20 for up to 2 kids, $30 for up to 5. Or $5/month. Cancel anytime. Parents can also get all kids in one morning email (Settings).
+- First month free. Then $20/year or $6/quarter for up to 2 kids; $40/year or $12/quarter for up to 5. Cancel anytime. Parents can also get all kids in one morning email (Settings).
 - Access codes (format BOX-XXXX-XXXX) add free months; they can be redeemed on the billing page in the app.
 
 HOW IT WORKS

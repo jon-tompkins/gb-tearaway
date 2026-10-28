@@ -6,7 +6,7 @@ import { signIn } from "next-auth/react";
 import { AppShell } from "@/components/AppNav";
 import { daysLeft, goToStripe, shortDate, useBilling } from "@/lib/useBilling";
 import type { Access } from "@/lib/billing";
-import { ANNUAL_PLANS } from "@/lib/plans";
+import { PLANS } from "@/lib/plans";
 
 function planLine(a: Access): string {
   const left = daysLeft(a.until);
@@ -17,7 +17,7 @@ function planLine(a: Access): string {
       return a.cancelAtPeriodEnd
         ? `Subscribed. Cancels on ${shortDate(a.until)}.`
         : a.until && Date.parse(a.until) <= Date.parse(a.trialEndsAt ?? "")
-          ? `Subscribed. Your first $${a.priceCents / 100} charge is on ${shortDate(a.until)}.`
+          ? `Subscribed. Your first charge is on ${shortDate(a.until)}.`
           : `Subscribed. Renews ${shortDate(a.until)}.`;
     case "code":
       return a.until ? `Free with a code until ${shortDate(a.until)} (${left} days left).` : "Free with a code. No end date.";
@@ -37,7 +37,7 @@ function BillingInner() {
   );
   const [busy, setBusy] = useState(false);
 
-  async function stripeGo(path: "/api/billing/checkout" | "/api/billing/portal", interval?: "year", plan?: string) {
+  async function stripeGo(path: "/api/billing/checkout" | "/api/billing/portal", interval?: "year" | "quarter", plan?: string) {
     setBusy(true);
     const err = await goToStripe(path, interval, plan);
     if (err) setMsg({ ok: false, text: err });
@@ -78,7 +78,6 @@ function BillingInner() {
   }
 
   const a = status.access;
-  const price = `$${a.priceCents / 100}`;
   return (
     <div className="max-w-xl space-y-4">
       {msg ? (
@@ -88,8 +87,7 @@ function BillingInner() {
       <section className="card space-y-3">
         <h2 className="font-display text-xl text-ink">Pick a plan</h2>
         <p className="text-sm text-ink-soft">
-          Every account starts with a free month. After that it&rsquo;s $20 a year for up to two kids or $30 for up to five.
-          Prefer monthly? It&rsquo;s {price} a month. Cancel any time.
+          Every account starts with a free month. After that, pick a plan by how many kids you have and how you&rsquo;d like to pay: yearly (best value) or quarterly. Cancel any time.
         </p>
         <p className="font-semibold text-ink">{planLine(a)}</p>
         {a.reason === "admin" ? null : a.subscribed ? (
@@ -98,23 +96,29 @@ function BillingInner() {
           </button>
         ) : (
           <>
-            <div className="space-y-2">
-              <p className="text-sm font-semibold text-ink">Yearly (best value)</p>
-              {ANNUAL_PLANS.map((p) => (
-                <button
-                  key={p.id}
-                  type="button"
-                  className={`${p.id === "kids2" ? "btn-primary" : "btn-secondary"} mr-2`}
-                  disabled={busy}
-                  onClick={() => void stripeGo("/api/billing/checkout", "year", p.id)}
-                >
-                  {p.label}: ${p.cents / 100}/year
-                </button>
+            <div className="space-y-3">
+              {PLANS.map((p) => (
+                <div key={p.id} className="space-y-1">
+                  <p className="text-sm font-semibold text-ink">{p.label}</p>
+                  <button
+                    type="button"
+                    className="btn-primary mr-2"
+                    disabled={busy}
+                    onClick={() => void stripeGo("/api/billing/checkout", "year", p.id)}
+                  >
+                    ${p.yearCents / 100}/year (best value)
+                  </button>
+                  <button
+                    type="button"
+                    className="btn-secondary"
+                    disabled={busy}
+                    onClick={() => void stripeGo("/api/billing/checkout", "quarter", p.id)}
+                  >
+                    ${p.quarterCents / 100}/quarter
+                  </button>
+                </div>
               ))}
             </div>
-            <button type="button" className="btn-secondary" disabled={busy} onClick={() => void stripeGo("/api/billing/checkout")}>
-              Or monthly: {price}/month
-            </button>
             {a.reason === "trial" || a.reason === "code" ? (
               <p className="text-xs text-ink-soft">
                 Subscribing now won&rsquo;t cut your free time short. The first charge is on {shortDate(a.until) || "the day it ends"}.

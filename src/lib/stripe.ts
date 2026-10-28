@@ -5,7 +5,7 @@ import { createHmac, timingSafeEqual } from "node:crypto";
  * subscription reads and webhook signature checks are all we need.
  *
  * Env: STRIPE_SECRET_KEY (sk_live_… / sk_test_…), STRIPE_WEBHOOK_SECRET (whsec_…),
- * optional STRIPE_PRICE_ID — without it Checkout creates the $5/month price inline.
+ * optional STRIPE_PRICE_ID_KIDS{2,5}_{YEAR,QUARTER} — without them Checkout creates the price inline from plans.ts.
  */
 const KEY = process.env.STRIPE_SECRET_KEY;
 

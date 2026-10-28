@@ -1,11 +1,10 @@
 import { randomInt } from "node:crypto";
 import { isAdminEmail } from "./admin";
-import { ANNUAL_PLANS } from "./plans";
 import { listPayloadFields, loadPayload, savePayload } from "./persist";
 import { periodEnd, stripeConfigured, type StripeSubscription } from "./stripe";
 
 /**
- * Plans: every account gets a free first month, then $5/month through Stripe.
+ * Plans: every account gets a free first month, then a yearly or quarterly plan through Stripe (see plans.ts).
  * Access codes grant free time (N months, or forever) on top of that.
  *
  * Billing lives beside each user's state in botb_state under `billing:<email>`;
@@ -19,9 +18,6 @@ import { periodEnd, stripeConfigured, type StripeSubscription } from "./stripe";
  * then, expired trials keep working even with Stripe live, so existing families
  * get time to subscribe instead of being cut off the day the key goes in.
  */
-export const PRICE_CENTS = 500;
-/** Entry annual price (1 kid). Tiers for 2 and 5 kids live in plans.ts. */
-export const ANNUAL_PRICE_CENTS = ANNUAL_PLANS[0].cents;
 export const TRIAL_DAYS = 30;
 
 const DAY = 86_400_000;
@@ -58,9 +54,7 @@ export interface Access {
   subscribed: boolean;
   cancelAtPeriodEnd: boolean;
   codes: string[];
-  priceCents: number;
-  annualPriceCents: number;
-  /** Most kids this account may have (null = no cap). */
+    /** Most kids this account may have (null = no cap). */
   maxKids: number | null;
   /** Expired, but still active because BILLING_GRACE_UNTIL hasn't passed. */
   inGrace?: boolean;
@@ -113,7 +107,7 @@ export function accessFrom(b: Billing, opts: { admin?: boolean; now?: number } =
     subscribed,
     cancelAtPeriodEnd: !!b.cancelAtPeriodEnd,
     codes: b.codes ?? [],
-    priceCents: PRICE_CENTS, annualPriceCents: ANNUAL_PRICE_CENTS,
+    
     maxKids: subscribed && b.maxKids ? b.maxKids : null,
   };
   const later = (iso?: string | null) => !!iso && Date.parse(iso) > now;
@@ -135,7 +129,7 @@ export async function accessFor(userKey: string): Promise<Access> {
   if (!email) {
     return {
       active: true, enforced: stripeConfigured, reason: "demo", until: null, trialEndsAt: null,
-      subscribed: false, cancelAtPeriodEnd: false, codes: [], priceCents: PRICE_CENTS, annualPriceCents: ANNUAL_PRICE_CENTS, maxKids: null,
+      subscribed: false, cancelAtPeriodEnd: false, codes: [], maxKids: null,
     };
   }
   return accessFrom(await getBilling(email), { admin: isAdminEmail(email) });

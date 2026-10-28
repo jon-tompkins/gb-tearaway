@@ -30,7 +30,7 @@ export const shortDate = (iso: string | null) =>
   iso ? new Date(iso).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }) : "";
 
 /** POST to a billing route that answers { url } and follow it (Checkout / portal). */
-export async function goToStripe(path: "/api/billing/checkout" | "/api/billing/portal", interval?: "year", plan?: string): Promise<string | null> {
+export async function goToStripe(path: "/api/billing/checkout" | "/api/billing/portal", interval?: "year" | "quarter", plan?: string): Promise<string | null> {
   const r = await fetch(path, {
     method: "POST",
     headers: { "content-type": "application/json" },

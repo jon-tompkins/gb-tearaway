@@ -25,7 +25,7 @@ export default async function AdminCodesPage() {
     <AppShell title="Admin">
       <AdminTabs active="codes" />
       <p className="-mt-2 mb-4 text-sm text-ink-soft">
-        Free first month, then $5/month. Codes add free months (or forever) on top.{" "}
+        Free first month, then $20/year or $6/quarter (up to 2 kids), $40/year or $12/quarter (up to 5). Codes add free months (or forever) on top.{" "}
         {stripeConfigured ? "Payments are on." : "Payments are off (no STRIPE_SECRET_KEY), so expired trials still get their pages."}
       </p>
       <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">

@@ -19,8 +19,7 @@ export function BillingGate({ children }: { children: React.ReactNode }) {
     <AppShell title="Your free month is up">
       <div className="card max-w-xl space-y-4">
         <p className="text-ink-soft">
-          Thanks for trying Back of the Box. Keep the morning pages coming for ${status.access.priceCents / 100} a
-          month. Your dispatches and settings are saved and pick up right where they left off.
+          Thanks for trying Back of the Box. Keep the morning pages coming from $20 a year (or $6 a quarter). Your dispatches and settings are saved and pick up right where they left off.
         </p>
         <div className="flex flex-wrap gap-2">
           <Link href="/app/billing" className="btn-primary">
