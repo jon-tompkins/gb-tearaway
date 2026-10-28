@@ -9,6 +9,7 @@ import type { SlotSize } from "@/lib/types";
 import { MODULE_INFO } from "@/lib/moduleInfo";
 import { MODULE_HOW_TO } from "@/lib/moduleHowTo";
 import { moduleExample } from "@/lib/moduleExample";
+import { AppNav } from "@/components/AppNav";
 
 function sizeLabel(sz: SlotSize): string {
   return sz === "half" ? "½ card" : sz === "double" ? "2× card (tall)" : "1× card";
@@ -30,6 +31,8 @@ export default async function ModuleDetail({ params }: { params: Promise<{ id: s
   const catName = MODULE_CATEGORIES.find((c) => c.id === meta.category)?.name ?? meta.category;
 
   return (
+    <>
+    <AppNav />
     <main className="mx-auto max-w-2xl px-4 py-10 sm:py-14">
       <Link href="/modules" className="text-sm font-semibold text-ink-soft hover:text-ink">
         ← All modules
@@ -125,5 +128,6 @@ export default async function ModuleDetail({ params }: { params: Promise<{ id: s
         </Link>
       </div>
     </main>
+    </>
   );
 }

@@ -5,6 +5,7 @@ import { useState } from "react";
 import type { ModuleCategoryId, SlotSize } from "@/lib/types";
 import { MODULE_CATALOG, MODULE_CATEGORIES, moduleSize } from "@/lib/modules";
 import { useModuleVisibility } from "@/lib/useModuleVisibility";
+import { AppNav } from "@/components/AppNav";
 
 function sizeLabel(sz: SlotSize): string {
   return sz === "half" ? "½" : sz === "double" ? "2×" : "1×";
@@ -39,6 +40,8 @@ export default function ModulesBrowse() {
   );
 
   return (
+    <>
+    <AppNav />
     <main className="mx-auto max-w-4xl px-4 py-10 sm:py-14">
       <header className="mb-8">
         <Link href="/" className="text-sm font-semibold text-ink-soft hover:text-ink">
@@ -94,5 +97,6 @@ export default function ModulesBrowse() {
         ))}
       </div>
     </main>
+    </>
   );
 }
