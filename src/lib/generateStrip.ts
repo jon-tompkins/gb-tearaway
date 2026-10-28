@@ -14,6 +14,7 @@ import { pickFactForDay } from "./content/facts";
 import { pickRecordForDay } from "./content/records";
 import { pickTwisterForDay, twisterLines } from "./content/twisters";
 import { pickAnimalForDay } from "./content/animals";
+import { pickPlaneForDay } from "./content/planes";
 import { pickCryptogramForDay } from "./content/cryptograms";
 import { generateCryptogram } from "./puzzles/cryptogram";
 import { generateLogicGrid } from "./puzzles/logicgrid";
@@ -192,6 +193,18 @@ export function generateStrip(
         kind: "text",
         lines: an.lines,
         svg: an.svg,
+      });
+      continue;
+    }
+    if (moduleId === "planes") {
+      const pl = pickPlaneForDay(band, { dateISO: date, kid: firstName, nonce });
+      sections.push({
+        id: `planes-${hashish(pl.name)}`,
+        moduleId,
+        title: meta.name,
+        kind: "text",
+        lines: pl.lines,
+        svg: pl.svg,
       });
       continue;
     }

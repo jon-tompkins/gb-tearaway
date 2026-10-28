@@ -133,6 +133,11 @@ export const MODULE_INFO: Record<ModuleId, ModuleInfo> = {
       "A bank of ~55 animals, each with a simple coloring-page drawing, where it lives, its size and a true fun fact. Each kid works through the bank one a day in their own order.",
     config: [DIAL + " Picks the age band (prompt wording)."],
   },
+  planes: {
+    source:
+      "A bank of ~26 military aircraft (fighters, bombers, cargo planes, helicopters), each drawn from above as a coloring page with its job, size, speed and a fun fact. Peaceful facts only — no weapons. Each kid works through the bank one a day in their own order.",
+    config: [DIAL + " Picks the age band: little kids get a school-bus size comparison, olders get length, wingspan, speed and first-flight year."],
+  },
   tonguetwister: {
     source:
       "A bank of ~125 tongue twisters (classics plus originals), tagged by the sound they drill — a nice bonus for speech practice. Little kids get short one-sound twisters; olders get the hard ones. Each kid works through the bank one a day in their own order.",

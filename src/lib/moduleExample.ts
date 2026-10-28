@@ -16,6 +16,7 @@ import { pickRecord } from "./content/records";
 import { pickTwister, twisterLines } from "./content/twisters";
 import { generateLogicGrid } from "./puzzles/logicgrid";
 import { pickAnimal } from "./content/animals";
+import { pickPlane } from "./content/planes";
 import { pickCryptogram } from "./content/cryptograms";
 import { generateCryptogram } from "./puzzles/cryptogram";
 import { buildNumberCross } from "./puzzles/numbercross";
@@ -116,6 +117,10 @@ export function moduleExample(id: ModuleId): ModuleExample {
     }
     case "animal": {
       const a = pickAnimal(BAND, rng);
+      return { text: a.lines, svg: a.svg, note: "One a day from the bank — this is a sample." };
+    }
+    case "planes": {
+      const a = pickPlane(BAND, rng);
       return { text: a.lines, svg: a.svg, note: "One a day from the bank — this is a sample." };
     }
     case "tonguetwister": {

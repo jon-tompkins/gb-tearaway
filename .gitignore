@@ -55,3 +55,4 @@ tsconfig.tsbuildinfo
 sample-*.pdf
 sample-*.png
 shots/
+.claude/worktrees/

@@ -152,13 +152,13 @@ export function buildPrintHtml(
   /* Square maze (1× card) keeps square cells: as tall as the card allows */
   .col .fig-square svg{width:auto;height:100%;max-width:100%;max-height:100%}
   /* Animal of the Day: text on the left, coloring drawing on the right */
-  .col .mod-logicgrid,.col .mod-animal{display:grid;grid-template-columns:1fr 46%;column-gap:2.5mm;align-content:start}
-  .col .mod-logicgrid h3,.col .mod-animal h3{grid-column:1 / -1}
-  .col .mod-logicgrid p,.col .mod-animal p{grid-column:1;font-size:7pt;line-height:1.25;margin:0 0 1mm}
-  .col .mod-animal p:first-of-type{font-size:9pt;font-weight:700;letter-spacing:.06em}
+  .col .mod-logicgrid,.col .mod-animal,.col .mod-planes{display:grid;grid-template-columns:1fr 46%;column-gap:2.5mm;align-content:start}
+  .col .mod-logicgrid h3,.col .mod-animal h3,.col .mod-planes h3{grid-column:1 / -1}
+  .col .mod-logicgrid p,.col .mod-animal p,.col .mod-planes p{grid-column:1;font-size:7pt;line-height:1.25;margin:0 0 1mm}
+  .col .mod-animal p:first-of-type,  .col .mod-planes p:first-of-type{font-size:9pt;font-weight:700;letter-spacing:.06em}
   .col .mod-logicgrid p{grid-column:1}
-  .col .mod-logicgrid .fig,.col .mod-animal .fig{grid-column:2;grid-row:2 / span 6;margin:0;align-self:center}
-  .col .mod-logicgrid .fig svg,.col .mod-animal .fig svg{width:100%;height:auto}
+  .col .mod-logicgrid .fig,.col .mod-animal .fig,.col .mod-planes .fig{grid-column:2;grid-row:2 / span 6;margin:0;align-self:center}
+  .col .mod-logicgrid .fig svg,.col .mod-animal .fig svg,.col .mod-planes .fig svg{width:100%;height:auto}
   /* Geography: outline takes the room, locator map sits beside it */
   .geo-row{flex:1;min-height:0;display:flex;gap:3mm;align-items:center;margin-top:1.2mm}
   .geo-row .fig{height:100%;margin-top:0}

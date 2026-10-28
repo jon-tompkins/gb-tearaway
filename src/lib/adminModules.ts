@@ -4,6 +4,7 @@ import { FACTS } from "./content/facts";
 import { RECORDS } from "./content/records";
 import { TWISTERS } from "./content/twisters";
 import { ANIMALS } from "./content/animals";
+import { PLANES } from "./content/planes";
 import { CRYPTOGRAMS } from "./content/bank/cryptograms";
 import { WORDS } from "./content/words";
 import { WORDS as SPANISH } from "./content/spanish";
@@ -173,6 +174,14 @@ export const ADMIN_MODULES: Record<ModuleId, AdminModule> = {
     bank: () => ({
       columns: ["Animal", "Lives", "Size", "Fun fact"],
       rows: ANIMALS.map((a) => ({ cells: [a.name, a.lives, a.size, a.fact], bands: a.bands })),
+    }),
+  },
+  planes: {
+    kind: "bank",
+    how: "Static bank of ~26 military aircraft with generated top-down line art. Each kid works through it one a day in their own shuffled order.",
+    bank: () => ({
+      columns: ["Aircraft", "Job", "Country", "Length (m)", "Wingspan (m)", "Speed", "Fun fact"],
+      rows: PLANES.map((p) => ({ cells: [p.name, p.job, p.country, String(p.lengthM), String(p.spanM), p.speed, p.fact], bands: p.bands })),
     }),
   },
   tonguetwister: {
