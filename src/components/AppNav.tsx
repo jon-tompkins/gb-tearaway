@@ -31,12 +31,7 @@ export function AppNav() {
     <header className="sticky top-0 z-40 border-b border-rule/70 bg-cream/90 backdrop-blur-md">
       <div className="mx-auto flex max-w-5xl flex-col items-center gap-2 px-4 py-3 sm:flex-row sm:justify-between sm:gap-3">
         <Link href="/" className="group flex items-center gap-2">
-          <span
-            aria-hidden
-            className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-ink text-[0.7rem] font-bold tracking-tight text-cream shadow-sm"
-          >
-            B
-          </span>
+          <img src="/logo-mark.png" alt="" width={32} height={32} className="h-8 w-8 shrink-0 rounded-md" />
           <span className="masthead-display text-lg leading-none text-ink group-hover:text-stamp">
             Back of the Box
           </span>

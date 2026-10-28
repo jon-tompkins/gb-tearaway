@@ -55,6 +55,7 @@ export function familyEmailHtml(opts: {
     <tr><td align="center">
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#faf6ec;border:1px solid #e3d9c4;border-radius:14px;padding:32px">
         <tr><td align="center" style="padding-bottom:8px">
+          <img src="https://www.backofthebox.xyz/logo-mark.png" width="44" height="44" alt="" style="display:block;margin:0 auto 10px;border-radius:10px">
           <div style="font-size:26px;font-weight:700;letter-spacing:-.01em">Back of the Box</div>
           <div style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#8a7d63;margin-top:4px">${dateLabel}</div>
         </td></tr>
@@ -85,6 +86,7 @@ export function dispatchEmailHtml(opts: {
     <tr><td align="center">
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#faf6ec;border:1px solid #e3d9c4;border-radius:14px;padding:32px">
         <tr><td align="center" style="padding-bottom:8px">
+          <img src="https://www.backofthebox.xyz/logo-mark.png" width="44" height="44" alt="" style="display:block;margin:0 auto 10px;border-radius:10px">
           <div style="font-size:26px;font-weight:700;letter-spacing:-.01em">Back of the Box</div>
           <div style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#8a7d63;margin-top:4px">${dateLabel}</div>
         </td></tr>

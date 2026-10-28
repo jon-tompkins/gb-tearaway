@@ -73,9 +73,7 @@ export default async function HomePage() {
     <div className="min-h-full bg-cream">
       <header className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-5">
         <Link href="/" className="flex min-w-0 items-center gap-2">
-          <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-ink text-[0.7rem] font-bold text-cream">
-            B
-          </span>
+          <img src="/logo-mark.png" alt="" width={32} height={32} className="h-8 w-8 shrink-0 rounded-md" />
           <span className="masthead-display whitespace-nowrap text-lg sm:text-xl">Back of the Box</span>
         </Link>
         <HomeHeaderActions />
