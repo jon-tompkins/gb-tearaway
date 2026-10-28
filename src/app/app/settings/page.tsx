@@ -186,7 +186,7 @@ export default function SettingsPage() {
             </div>
           </div>
           <p className="text-xs text-ink-soft">
-            Paper size and modules are chosen per kid when you add them. Dispatch schedule here is
+            Paper size and modules are chosen per kid when you add them. Page schedule here is
             shared defaults.
           </p>
         </section>
@@ -279,7 +279,7 @@ export default function SettingsPage() {
         <section className="card space-y-4">
           <h2 className="font-display text-lg">Calendar sync</h2>
           <p className="text-sm text-ink-soft">
-            Pick the Google calendar this dispatch&apos;s Calendar module pulls from. Have your kid
+            Pick the Google calendar this page&apos;s Calendar module pulls from. Have your kid
             share their calendar with you, then choose it here.
           </p>
           {calConnected ? (
@@ -300,7 +300,7 @@ export default function SettingsPage() {
               </select>
               <p className="mt-1 text-xs text-ink-soft">
                 {calendarId
-                  ? "Live events from this calendar will appear in the dispatch."
+                  ? "Live events from this calendar will appear in the page."
                   : "No calendar selected — the manual events below are used."}
               </p>
             </div>

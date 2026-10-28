@@ -599,7 +599,7 @@ export function SlotEditor({
             <div className="mb-3">
               <h2 className="font-display text-xl text-ink">Explore modules</h2>
               <p className="mt-1 text-sm text-ink-soft">
-                Everything you can print on a dispatch. To add one, tap a card slot above and pick it.
+                Everything you can print on a page. To add one, tap a card slot above and pick it.
               </p>
             </div>
             <div className="mb-4 space-y-2">

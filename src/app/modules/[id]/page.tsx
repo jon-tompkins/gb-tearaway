@@ -79,7 +79,7 @@ export default async function ModuleDetail({ params }: { params: Promise<{ id: s
         </div>
         {info.answerInApp ? (
           <p className="mt-2 text-xs text-ink-soft">
-            🔒 The answer is never printed — it shows in the app (and via the dispatch&apos;s QR code).
+            🔒 The answer is never printed — it shows in the app (and via the page&apos;s QR code).
           </p>
         ) : null}
       </section>
@@ -110,7 +110,7 @@ export default async function ModuleDetail({ params }: { params: Promise<{ id: s
 
       <div className="mt-10 border-t border-rule/60 pt-6">
         <Link href="/app" className="btn-primary">
-          Build a dispatch
+          Build a page
         </Link>
       </div>
     </main>

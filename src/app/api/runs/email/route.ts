@@ -20,14 +20,14 @@ export const maxDuration = 120;
  */
 export async function POST(req: Request) {
   const userKey = await currentUserKey();
-  if (userKey === DEMO_KEY) return NextResponse.json({ error: "Sign in to email a dispatch" }, { status: 401 });
+  if (userKey === DEMO_KEY) return NextResponse.json({ error: "Sign in to email a page" }, { status: 401 });
   const body = (await req.json().catch(() => ({}))) as { token?: string; kidId?: string };
   const store = await readStore(userKey);
 
   let token = body.token;
   if (!token && body.kidId) {
     const kid = store.kids.find((k) => k.id === body.kidId);
-    if (!kid) return NextResponse.json({ error: "Unknown dispatch" }, { status: 404 });
+    if (!kid) return NextResponse.json({ error: "Unknown page" }, { status: 404 });
     const date = dateISOInZone(kid.timezone || store.settings.timezone);
     token = await saveDispatchRef({ userKey, kidId: kid.id, date });
   }
@@ -36,7 +36,7 @@ export async function POST(req: Request) {
   const found = await loadRunByToken(token);
   if (!found || found.ref.userKey !== userKey) return NextResponse.json({ error: "Not found" }, { status: 404 });
   const kid = store.kids.find((k) => k.id === found.ref.kidId);
-  if (!kid) return NextResponse.json({ error: "Unknown dispatch" }, { status: 404 });
+  if (!kid) return NextResponse.json({ error: "Unknown page" }, { status: 404 });
 
   const session = await auth().catch(() => null);
   const to = kid.deliveryEmail || session?.user?.email;

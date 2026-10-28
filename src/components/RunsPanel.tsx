@@ -107,7 +107,7 @@ export function RunsPanel({ kid, timezone }: { kid: KidProfile; timezone: string
             className="text-xs font-semibold text-ink-soft hover:text-ink"
             onClick={() => setShowPast((v) => !v)}
           >
-            {showPast ? "▾" : "▸"} Past dispatches ({past.length})
+            {showPast ? "▾" : "▸"} Past pages ({past.length})
           </button>
           {showPast ? (
             <ul className="mt-2 divide-y divide-rule/60">
@@ -130,7 +130,7 @@ export function RunsPanel({ kid, timezone }: { kid: KidProfile; timezone: string
           ) : null}
         </div>
       ) : runs && signedIn ? (
-        <p className="mt-2 text-xs text-ink-soft">Past dispatches will appear here after each delivery.</p>
+        <p className="mt-2 text-xs text-ink-soft">Past pages will appear here after each delivery.</p>
       ) : null}
       {msg ? <p className="mt-2 text-xs text-ink-soft">{msg}</p> : null}
     </div>

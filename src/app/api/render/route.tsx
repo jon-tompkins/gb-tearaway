@@ -37,7 +37,7 @@ export async function GET(req: Request) {
   if (token) {
     const ref = await loadDispatchRef(token);
     if (!ref) {
-      return NextResponse.json({ error: "This dispatch link has expired." }, { status: 404 });
+      return NextResponse.json({ error: "This page link has expired." }, { status: 404 });
     }
     tokenUserKey = ref.userKey;
     kidId = ref.kidId;

@@ -46,7 +46,7 @@ export function familyEmailHtml(opts: {
     .map(
       (k) => `<tr><td align="center" style="padding:8px 0">
           <a href="${k.openUrl}" style="display:inline-block;background:#1c1915;color:#faf6ec;text-decoration:none;font-family:ui-monospace,Menlo,monospace;font-size:14px;font-weight:700;letter-spacing:.02em;padding:14px 26px;border-radius:999px">
-            ${k.name}&rsquo;s dispatch &rarr;
+            ${k.name}&rsquo;s page &rarr;
           </a></td></tr>`,
     )
     .join("");
@@ -93,7 +93,7 @@ export function dispatchEmailHtml(opts: {
         </td></tr>
         <tr><td align="center" style="padding:22px 0 8px">
           <a href="${openUrl}" style="display:inline-block;background:#1c1915;color:#faf6ec;text-decoration:none;font-family:ui-monospace,Menlo,monospace;font-size:14px;font-weight:700;letter-spacing:.02em;padding:14px 26px;border-radius:999px">
-            Open today&rsquo;s dispatch &rarr;
+            Open today&rsquo;s page &rarr;
           </a>
         </td></tr>
         <tr><td align="center" style="padding-top:10px;font-size:12px;color:#8a7d63;line-height:1.5">

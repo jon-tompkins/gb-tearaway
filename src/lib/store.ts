@@ -243,7 +243,7 @@ export async function patchStore(
     if (idx >= 0) {
       if (patch.kid.status === "active" && store.kids[idx].status === "inactive") {
         if (!(await accessFor(userKey)).active) {
-          throw new Error("Activating a dispatch needs a plan. Pick one on the Plan page.");
+          throw new Error("Activating a page needs a plan. Pick one on the Plan page.");
         }
       }
       if (patch.kid.status && patch.kid.status !== "active" && patch.kid.status !== "inactive") {

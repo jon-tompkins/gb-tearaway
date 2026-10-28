@@ -46,7 +46,7 @@ export default function ModulesBrowse() {
         </Link>
         <h1 className="mt-3 font-display text-3xl text-ink sm:text-4xl">Modules</h1>
         <p className="mt-2 max-w-2xl text-ink-soft">
-          Every block you can put on a morning dispatch — puzzles, real news, geography, weather, and
+          Every block you can put on a morning page — puzzles, real news, geography, weather, and
           more. Tap one to see how it works, an example, and what you can set.
         </p>
       </header>

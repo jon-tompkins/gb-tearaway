@@ -71,7 +71,7 @@ export default function DashboardPage() {
     return (
       <AppShell title="Dashboard">
         <div className="card space-y-3">
-          <p className="text-ink-soft">{storeError || "Could not load your dispatches."}</p>
+          <p className="text-ink-soft">{storeError || "Could not load your pages."}</p>
           <button type="button" className="btn-primary" onClick={() => void reload()}>
             Retry
           </button>

@@ -13,6 +13,6 @@ export async function GET(req: Request) {
   const userKey = await currentUserKey();
   if (userKey === DEMO_KEY) return NextResponse.json({ runs: [], signedIn: false });
   const store = await readStore(userKey);
-  if (!store.kids.some((k) => k.id === kidId)) return NextResponse.json({ error: "Unknown dispatch" }, { status: 404 });
+  if (!store.kids.some((k) => k.id === kidId)) return NextResponse.json({ error: "Unknown page" }, { status: 404 });
   return NextResponse.json({ runs: await listRuns(userKey, kidId), signedIn: true });
 }

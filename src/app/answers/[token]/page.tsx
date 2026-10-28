@@ -28,7 +28,7 @@ export default async function AnswersPage({
 
         {!data ? (
           <p className="text-center text-sm text-ink-soft">
-            These answers aren&apos;t available anymore. Print a fresh dispatch to get a new code.
+            These answers aren&apos;t available anymore. Print a fresh page to get a new code.
           </p>
         ) : data.items.length === 0 && !data.stories?.length ? (
           <p className="text-center text-sm text-ink-soft">

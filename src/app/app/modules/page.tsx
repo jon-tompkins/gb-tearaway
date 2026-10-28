@@ -113,7 +113,7 @@ export default function EditDispatchPage() {
   async function onSave(activate = false): Promise<boolean> {
     if (!activeKid) return false;
     if (!name.trim()) {
-      setStatus("Give the dispatch a name.");
+      setStatus("Give the page a name.");
       return false;
     }
     setBusy(true);

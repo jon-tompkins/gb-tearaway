@@ -69,7 +69,7 @@ export function StripPreview({
           ref={frameRef}
           key={`${job.kidId}:${version}`}
           src={src}
-          title="Dispatch preview"
+          title="Page preview"
           onLoad={onLoad}
           scrolling="no"
           style={{
