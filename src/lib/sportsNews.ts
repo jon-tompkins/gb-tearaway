@@ -341,7 +341,11 @@ export async function getTeamNews(team: string, deps: TeamNewsDeps = {}): Promis
  * undefined = no teams set (card asks the parent to add one).
  */
 export async function gatherTeamNews(teams: string[], deps: TeamNewsDeps = {}): Promise<TeamNewsResult[] | undefined> {
-  const list = [...new Set(teams.map((t) => t.trim()).filter(Boolean))].slice(0, TEAM_NEWS_MAX_TEAMS);
+  const seen = new Set<string>();
+  const list = teams
+    .map((t) => t.trim())
+    .filter((t) => t && !seen.has(t.toLowerCase()) && !!seen.add(t.toLowerCase()))
+    .slice(0, TEAM_NEWS_MAX_TEAMS);
   if (!list.length) return undefined;
   return Promise.all(list.map((t) => getTeamNews(t, deps)));
 }
