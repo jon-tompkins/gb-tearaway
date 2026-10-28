@@ -6,6 +6,8 @@ import type { Access } from "./billing";
 export interface BillingStatus {
   signedIn: boolean;
   access: Access;
+  /** Stripe is on sandbox keys. */
+  testMode?: boolean;
 }
 
 /** The signed-in user's plan, from /api/billing. null while loading or on error. */

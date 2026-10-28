@@ -10,6 +10,8 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 const KEY = process.env.STRIPE_SECRET_KEY;
 
 export const stripeConfigured = !!KEY;
+/** Sandbox keys (sk_test_…): checkout works with test cards only and nothing real is charged. */
+export const stripeTestMode = !!KEY && KEY.startsWith("sk_test_");
 
 /** Flatten nested params into Stripe's form encoding (a[b][0][c]=…). */
 function encode(params: Record<string, unknown>, prefix = "", out = new URLSearchParams()): URLSearchParams {

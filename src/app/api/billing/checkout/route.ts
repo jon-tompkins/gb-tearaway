@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { getBilling } from "@/lib/billing";
 import { PLANS, centsFor, planById, type PlanInterval } from "@/lib/plans";
-import { stripe, stripeConfigured } from "@/lib/stripe";
+import { stripe, stripeConfigured, stripeTestMode } from "@/lib/stripe";
 
 export const dynamic = "force-dynamic";
 
@@ -50,7 +50,17 @@ export async function POST(req: Request) {
         metadata: { userKey: `user:${email}`, plan: plan.id, maxKids: String(plan.kids) },
         ...(trialEnd ? { trial_end: Math.floor(trialEnd / 1000) } : {}),
       },
-      allow_promotion_codes: true,
+      // Access codes live in the app (Plan page), not on Stripe's page.
+      ...(stripeTestMode
+        ? {
+            custom_text: {
+              submit: {
+                message:
+                  "TEST MODE: Back of the Box is still in testing. Pay with the fake card 4242 4242 4242 4242, any future expiry, any CVC and ZIP. Real cards won't work and nothing is charged.",
+              },
+            },
+          }
+        : {}),
       success_url: `${SITE}/app/billing?status=success`,
       cancel_url: `${SITE}/app/billing?status=cancelled`,
     });

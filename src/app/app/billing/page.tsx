@@ -158,6 +158,12 @@ function BillingInner() {
                 </div>
               ))}
             </div>
+            {status.testMode ? (
+              <div className="rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+                <b>Still in testing.</b> Payments are in Stripe&rsquo;s sandbox, so real cards won&rsquo;t work and nothing is charged.
+                At checkout, use the fake card <code className="font-mono">4242 4242 4242 4242</code>, any future expiry, any 3-digit CVC and any ZIP.
+              </div>
+            ) : null}
             <button
               type="button"
               className="btn-primary"
