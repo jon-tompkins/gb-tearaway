@@ -1,4 +1,5 @@
-import Link from "next/link";
+import { AppNav } from "@/components/AppNav";
+import { SupplyArt } from "@/components/SupplyArt";
 import { amazonUrl, SUPPLY_GROUPS } from "@/lib/supplies";
 
 export const metadata = {
@@ -8,11 +9,10 @@ export const metadata = {
 
 export default function SuppliesPage() {
   return (
+    <>
+    <AppNav />
     <main className="mx-auto max-w-3xl px-4 py-10 sm:py-14">
-      <Link href="/" className="text-sm font-semibold text-ink-soft hover:text-ink">
-        ← Back of the Box
-      </Link>
-      <h1 className="mt-3 font-display text-3xl text-ink sm:text-4xl">Supplies</h1>
+      <h1 className="font-display text-3xl text-ink sm:text-4xl">Supplies</h1>
       <p className="mt-2 max-w-2xl text-ink-soft">
         Back of the Box prints on any home printer. If you don&rsquo;t have one, this is what we&rsquo;d buy.
       </p>
@@ -34,8 +34,11 @@ export default function SuppliesPage() {
           <p className="mt-2 text-ink-soft">{g.intro}</p>
           <ul className="mt-4 space-y-3">
             {g.items.map((it) => (
-              <li key={it.name} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-rule bg-paper px-4 py-3">
-                <div className="min-w-0">
+              <li key={it.name} className="flex flex-wrap items-center gap-3 rounded-xl border border-rule bg-paper px-4 py-3">
+                <div className="h-16 w-20 shrink-0 sm:h-[4.5rem] sm:w-24">
+                  <SupplyArt kind={it.art} />
+                </div>
+                <div className="min-w-0 flex-1">
                   <div className="font-semibold text-ink">{it.name}</div>
                   <div className="text-sm text-ink-soft">{it.blurb}</div>
                 </div>
@@ -57,5 +60,6 @@ export default function SuppliesPage() {
         As an Amazon Associate we earn from qualifying purchases. Links cost you nothing extra and help keep Back of the Box running.
       </p>
     </main>
+    </>
   );
 }

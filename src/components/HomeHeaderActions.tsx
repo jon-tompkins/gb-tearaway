@@ -13,14 +13,19 @@ export function HomeHeaderActions() {
   const signedIn = status === "authenticated" && !!session?.user;
   return (
     <div className="flex shrink-0 items-center gap-3">
-      {signedIn ? (
+      {[
+        { href: "/modules", label: "Modules" },
+        { href: "/supplies", label: "Supplies" },
+        { href: "/faq", label: "FAQ" },
+      ].map((l) => (
         <Link
-          href="/modules"
+          key={l.href}
+          href={l.href}
           className="hidden whitespace-nowrap text-sm font-semibold text-ink-soft hover:text-ink sm:inline"
         >
-          Modules
+          {l.label}
         </Link>
-      ) : null}
+      ))}
       {signedIn ? (
         <Link
           href="/app"
