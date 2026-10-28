@@ -1,7 +1,7 @@
 import { MODULE_CATALOG, MODULE_CATEGORIES } from "./modules";
 import { getHiddenModules } from "./visibility";
 
-export const SUPPORT_FALLBACK_EMAIL = "hello@backofthebox.xyz";
+export const SUPPORT_FALLBACK_EMAIL = "support@backofthebox.xyz";
 
 // Mirrors the FAQ on the landing page (src/app/page.tsx); keep in sync.
 const FAQ: Array<[string, string]> = [
