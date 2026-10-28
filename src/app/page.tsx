@@ -242,6 +242,8 @@ export default async function HomePage() {
           <Link href="/supplies" className="hover:text-ink">Supplies</Link>
           <Link href="/app" className="hover:text-ink">Dashboard</Link>
           <Link href="/app/setup" className="hover:text-ink">Get started</Link>
+          <Link href="/privacy" className="hover:text-ink">Privacy</Link>
+          <Link href="/terms" className="hover:text-ink">Terms</Link>
         </nav>
       </footer>
     </div>
