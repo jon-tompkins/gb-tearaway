@@ -3,6 +3,7 @@ import path from "path";
 import type { AppSettings, AppState, KidProfile, PrintJob } from "./types";
 import { loadState, persistenceMode, saveState } from "./persist";
 import { accessFor } from "./billing";
+import { countNoun } from "./copy";
 import {
   DEFAULT_MODULES,
   DEFAULT_SETTINGS,
@@ -61,6 +62,7 @@ export function seedKid(overrides: Partial<KidProfile> = {}): KidProfile {
     timezone,
     printTime: overrides.printTime || DEFAULT_SETTINGS.printTime,
     deliveryMethod: overrides.deliveryMethod || "email",
+    ...(overrides.status === "inactive" || overrides.status === "active" ? { status: overrides.status } : {}),
     ...(overrides.deliveryEmail ? { deliveryEmail: overrides.deliveryEmail } : {}),
     paperSize,
     slots,
@@ -214,9 +216,9 @@ export async function patchStore(
   const store = await readStore(userKey);
 
   if (patch.createKid) {
-    const { maxKids } = await accessFor(userKey);
+    const { maxKids, active: hasAccess } = await accessFor(userKey);
     if (maxKids && store.kids.length >= maxKids) {
-      throw new Error(`Your plan covers up to ${maxKids} kids. Switch to a bigger plan on the billing page to add more.`);
+      throw new Error(`Your plan covers up to ${countNoun(maxKids)}. Switch to a bigger plan on the billing page to add more.`);
     }
     const paperSize = isPaperSize(patch.createKid.paperSize)
       ? patch.createKid.paperSize
@@ -228,6 +230,7 @@ export async function patchStore(
         patch.createKid.slots ??
         defaultSlotsForNewKid(paperSize),
       id: patch.createKid.id || uid("kid"),
+      status: patch.createKid.status === "active" && hasAccess ? "active" : "inactive",
       createdAt: new Date().toISOString(),
     });
     store.kids.push(ensureKidSlots(kid));
@@ -238,6 +241,14 @@ export async function patchStore(
     const id = patch.kid.id || store.activeKidId;
     const idx = store.kids.findIndex((k) => k.id === id);
     if (idx >= 0) {
+      if (patch.kid.status === "active" && store.kids[idx].status === "inactive") {
+        if (!(await accessFor(userKey)).active) {
+          throw new Error("Activating a dispatch needs a plan. Pick one on the Plan page.");
+        }
+      }
+      if (patch.kid.status && patch.kid.status !== "active" && patch.kid.status !== "inactive") {
+        delete patch.kid.status;
+      }
       const merged = { ...store.kids[idx], ...patch.kid, id: store.kids[idx].id };
       // If paperSize changed, resize slots
       if (patch.kid.paperSize && patch.kid.paperSize !== store.kids[idx].paperSize) {

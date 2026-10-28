@@ -1,12 +1,15 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { AppShell } from "@/components/AppNav";
 import { daysLeft, goToStripe, shortDate, useBilling } from "@/lib/useBilling";
 import type { Access } from "@/lib/billing";
-import { PLANS } from "@/lib/plans";
+import { PLANS, type PlanInterval } from "@/lib/plans";
+import { useAppStore } from "@/lib/clientStore";
+import { NOUN } from "@/lib/copy";
 
 function planLine(a: Access): string {
   const left = daysLeft(a.until);
@@ -36,6 +39,27 @@ function BillingInner() {
     params.get("status") === "success" ? { ok: true, text: "You're subscribed. Thank you!" } : null,
   );
   const [busy, setBusy] = useState(false);
+  const [planId, setPlanId] = useState<string>(PLANS[0].id);
+  const [interval, setIntervalChoice] = useState<PlanInterval>("year");
+  const { save } = useAppStore();
+  const activated = useRef(false);
+
+  // A dispatch was waiting on a plan ("Save & activate" with no plan) → turn it on once they're back and covered.
+  const covered = !!status?.access.active;
+  useEffect(() => {
+    if (activated.current || !covered) return;
+    const id = sessionStorage.getItem("botb.activate");
+    if (!id) return;
+    activated.current = true;
+    save({ kid: { id, status: "active" } })
+      .then(() => {
+        sessionStorage.removeItem("botb.activate");
+        setMsg({ ok: true, text: `Your ${NOUN.one} is active.` });
+      })
+      .catch(() => {
+        // Stripe's webhook can lag a few seconds; the Activate button on the dashboard covers that.
+      });
+  }, [covered, save]);
 
   async function stripeGo(path: "/api/billing/checkout" | "/api/billing/portal", interval?: "year" | "quarter", plan?: string) {
     setBusy(true);
@@ -81,13 +105,20 @@ function BillingInner() {
   return (
     <div className="max-w-xl space-y-4">
       {msg ? (
-        <p className={`rounded-lg px-3 py-2 text-sm ${msg.ok ? "bg-paper text-ink" : "bg-stamp/10 text-stamp"}`}>{msg.text}</p>
+        <p className={`rounded-lg px-3 py-2 text-sm ${msg.ok ? "bg-paper text-ink" : "bg-stamp/10 text-stamp"}`}>
+          {msg.text}{" "}
+          {msg.ok ? (
+            <Link href="/app" className="font-semibold text-stamp hover:underline">
+              Go to dashboard
+            </Link>
+          ) : null}
+        </p>
       ) : null}
 
       <section className="card space-y-3">
         <h2 className="font-display text-xl text-ink">Pick a plan</h2>
         <p className="text-sm text-ink-soft">
-          Every account starts with a free month. After that, pick a plan by how many kids you have and how you&rsquo;d like to pay: yearly (best value) or quarterly. Cancel any time.
+          Every account starts with a free month. After that, pick a plan by how many {NOUN.many} you need and how you&rsquo;d like to pay: yearly (best value) or quarterly. Cancel any time.
         </p>
         <p className="font-semibold text-ink">{planLine(a)}</p>
         {a.reason === "admin" ? null : a.subscribed ? (
@@ -96,29 +127,45 @@ function BillingInner() {
           </button>
         ) : (
           <>
-            <div className="space-y-3">
+            <div className="space-y-2" role="radiogroup" aria-label="Plan">
               {PLANS.map((p) => (
-                <div key={p.id} className="space-y-1">
-                  <p className="text-sm font-semibold text-ink">{p.label}</p>
-                  <button
-                    type="button"
-                    className="btn-primary mr-2"
-                    disabled={busy}
-                    onClick={() => void stripeGo("/api/billing/checkout", "year", p.id)}
-                  >
-                    ${p.yearCents / 100}/year (best value)
-                  </button>
-                  <button
-                    type="button"
-                    className="btn-secondary"
-                    disabled={busy}
-                    onClick={() => void stripeGo("/api/billing/checkout", "quarter", p.id)}
-                  >
-                    ${p.quarterCents / 100}/quarter
-                  </button>
+                <div key={p.id} className="rounded-xl border border-rule bg-paper p-3">
+                  <p className="mb-2 text-sm font-semibold text-ink">{p.label}</p>
+                  <div className="flex flex-wrap gap-2">
+                    {(["year", "quarter"] as PlanInterval[]).map((iv) => {
+                      const on = planId === p.id && interval === iv;
+                      const cents = iv === "year" ? p.yearCents : p.quarterCents;
+                      return (
+                        <button
+                          key={iv}
+                          type="button"
+                          role="radio"
+                          aria-checked={on}
+                          onClick={() => {
+                            setPlanId(p.id);
+                            setIntervalChoice(iv);
+                          }}
+                          className={`rounded-full border px-4 py-2 text-sm font-semibold transition ${
+                            on ? "border-ink bg-ink text-cream" : "border-rule bg-cream text-ink hover:border-ink/40"
+                          }`}
+                        >
+                          ${cents / 100}/{iv === "year" ? "year" : "quarter"}
+                          {iv === "year" ? " · best value" : ""}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
               ))}
             </div>
+            <button
+              type="button"
+              className="btn-primary"
+              disabled={busy}
+              onClick={() => void stripeGo("/api/billing/checkout", interval, planId)}
+            >
+              Checkout with Stripe
+            </button>
             {a.reason === "trial" || a.reason === "code" ? (
               <p className="text-xs text-ink-soft">
                 Subscribing now won&rsquo;t cut your free time short. The first charge is on {shortDate(a.until) || "the day it ends"}.

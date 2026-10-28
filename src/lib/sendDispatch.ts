@@ -5,7 +5,7 @@ import { sendEmail, dispatchEmailHtml, familyEmailHtml, joinNames } from "./emai
 import { renderPdfFromUrl } from "./pdf";
 import { logEvent } from "./events";
 import { createRun, markRunEmailed, runUrls } from "./runs";
-import type { AppState, KidProfile } from "./types";
+import { isKidActive, type AppState, type KidProfile } from "./types";
 
 /** A claim older than this is assumed to belong to a send that crashed. */
 const STALE_CLAIM_MS = 10 * 60_000;
@@ -29,7 +29,7 @@ export function dueInfo(kid: KidProfile, state: AppState, now = new Date()) {
   const localDate = dateISOInZone(tz, now);
   const { hour } = partsInZone(tz, now);
   const deliverHour = Number((kid.printTime || "07:00").split(":")[0]);
-  const delivery = deliveryOf(kid);
+  const delivery = isKidActive(kid) ? deliveryOf(kid) : null;
   return { localDate, delivery, due: !!delivery && hour >= deliverHour && kid.lastEmailedDate !== localDate };
 }
 
@@ -83,7 +83,7 @@ async function sendCombined(
   opts: { force?: boolean; noEmail?: boolean },
 ): Promise<SendResult> {
   const group = state.kids.filter(
-    (k) => deliveryOf(k) === "email" && k.deliveryEmail === to && (opts.force || k.lastEmailedDate !== localDate),
+    (k) => isKidActive(k) && deliveryOf(k) === "email" && k.deliveryEmail === to && (opts.force || k.lastEmailedDate !== localDate),
   );
   const claimKey = `sendlock:${job.userKey}:combo:${localDate}${opts.force ? `:force:${Date.now()}` : ""}`;
   if (!(await claim(claimKey))) return { status: "skipped", reason: "another send in progress" };

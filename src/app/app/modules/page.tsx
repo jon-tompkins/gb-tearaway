@@ -20,11 +20,19 @@ import {
   type PaperSize,
   type PrintJob,
 } from "@/lib/types";
+import { useBilling } from "@/lib/useBilling";
+import { NOUN } from "@/lib/copy";
+import { detectTimezone, timezoneOptions } from "@/lib/tz";
+import { HowItWorks } from "@/components/HowItWorks";
+import { StatusBadge } from "@/components/StatusBadge";
+import { isKidActive } from "@/lib/types";
 import { flattenSlotModules, resizeSlotsForPaper, sanitizeModuleIds } from "@/lib/slots";
 
 export default function EditDispatchPage() {
   const router = useRouter();
   const { store, hydrated, activeKid, save, reload } = useAppStore();
+  const { status: billing } = useBilling();
+  const [timezone, setTimezone] = useState("America/New_York");
 
   // Dispatch details
   const [name, setName] = useState("");
@@ -51,13 +59,14 @@ export default function EditDispatchPage() {
   useEffect(() => {
     if (!hydrated) return;
     if (!store?.kids.length) {
-      router.replace("/app/setup");
+      router.replace("/app");
       return;
     }
     if (activeKid) {
       setName(activeKid.name);
       setAgeBand(activeKid.ageBand);
       setDeliveryTime(activeKid.printTime || "07:00");
+      setTimezone(activeKid.timezone || detectTimezone());
       setDeliveryEmail(activeKid.deliveryEmail || "");
       setDeliveryMethod(activeKid.deliveryMethod === "app" ? "app" : "email");
       const size = activeKid.paperSize || "letter";
@@ -101,7 +110,7 @@ export default function EditDispatchPage() {
     });
   }
 
-  async function onSave(): Promise<boolean> {
+  async function onSave(activate = false): Promise<boolean> {
     if (!activeKid) return false;
     if (!name.trim()) {
       setStatus("Give the dispatch a name.");
@@ -116,6 +125,7 @@ export default function EditDispatchPage() {
           name: name.trim(),
           ageBand,
           printTime: deliveryTime,
+          timezone,
           deliveryEmail: deliveryEmail.trim() || undefined,
           deliveryMethod,
           paperSize,
@@ -126,6 +136,17 @@ export default function EditDispatchPage() {
       });
       setStatus("Saved.");
       if (showPreview) await loadPreview();
+      if (activate && !isKidActive(activeKid)) {
+        // No plan yet → plan picker; it activates this one after checkout.
+        if (billing && !billing.access.active) {
+          sessionStorage.setItem("botb.activate", activeKid.id);
+          router.push("/app/billing");
+          return true;
+        }
+        await save({ kid: { id: activeKid.id, status: "active" } });
+        setStatus("Saved and activated.");
+        router.push("/app");
+      }
       return true;
     } catch (e) {
       setStatus(e instanceof Error ? e.message : "Save failed");
@@ -168,18 +189,22 @@ export default function EditDispatchPage() {
 
   if (!hydrated || !activeKid) {
     return (
-      <AppShell title="Edit dispatch">
+      <AppShell title={`Edit ${NOUN.one}`}>
         <p className="text-ink-soft">Loading…</p>
       </AppShell>
     );
   }
 
   return (
-    <AppShell title="Edit dispatch" subtitle="Update the details and lay out the page.">
-      <div className="mb-4">
+    <AppShell title={`Edit ${NOUN.one}`} subtitle="Update the details and lay out the page.">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <Link href="/app" className="text-sm font-semibold text-ink-soft hover:text-ink">
           ← Dashboard
         </Link>
+        <div className="flex items-center gap-3">
+          <StatusBadge status={activeKid.status} />
+          <HowItWorks />
+        </div>
       </div>
 
       {/* DISPATCH DETAILS */}
@@ -230,6 +255,16 @@ export default function EditDispatchPage() {
               <option value="app">In the app — I’ll print from the dashboard</option>
             </select>
           </div>
+          <div className="field">
+            <label htmlFor="tz">Time zone</label>
+            <select id="tz" value={timezone} onChange={(e) => setTimezone(e.target.value)}>
+              {timezoneOptions(timezone).map((z) => (
+                <option key={z} value={z}>
+                  {z.replace(/_/g, " ")}
+                </option>
+              ))}
+            </select>
+          </div>
           {deliveryMethod === "email" ? (
             <div className="field">
               <label htmlFor="de">Send to</label>
@@ -257,18 +292,27 @@ export default function EditDispatchPage() {
         onChangePaperSize={onPaperSize}
         actions={
           <div className="mt-6 flex flex-wrap items-center gap-3">
-            <button
-              type="button"
-              className="btn-primary"
-              disabled={busy}
-              onClick={() => void onSave().then((ok) => ok && router.push("/app"))}
-            >
-              {busy ? "Saving…" : "Save & back to dashboard"}
-            </button>
+            {isKidActive(activeKid) ? (
+              <button
+                type="button"
+                className="btn-primary"
+                disabled={busy}
+                onClick={() => void onSave().then((ok) => ok && router.push("/app"))}
+              >
+                {busy ? "Saving…" : "Save & back to dashboard"}
+              </button>
+            ) : (
+              <button type="button" className="btn-primary" disabled={busy} onClick={() => void onSave(true)}>
+                {busy ? "Saving…" : "Save & activate"}
+              </button>
+            )}
             <button type="button" className="btn-secondary" disabled={busy} onClick={() => void onSave()}>
               {busy ? "Saving…" : "Save"}
             </button>
             {status ? <span className="text-sm text-ink-soft">{status}</span> : null}
+            {!isKidActive(activeKid) ? (
+              <span className="text-xs text-ink-soft">Inactive until you activate. Nothing is delivered yet.</span>
+            ) : null}
           </div>
         }
       />

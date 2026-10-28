@@ -6,7 +6,10 @@ import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { AuthButton } from "./AuthButton";
 
-const LINKS = [{ href: "/app", label: "Dashboard", exact: true }];
+const LINKS = [
+  { href: "/app", label: "Dashboard", exact: true },
+  { href: "/app/browse", label: "Modules", exact: false },
+];
 
 export function AppNav() {
   const pathname = usePathname();

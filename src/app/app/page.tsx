@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AppShell } from "@/components/AppNav";
@@ -9,7 +9,10 @@ import { useAppStore } from "@/lib/clientStore";
 import { daysLeft, useBilling } from "@/lib/useBilling";
 import { formatTime12, nextPrintLabel } from "@/lib/dates";
 import { moduleById } from "@/lib/modules";
-import { AGE_BANDS, PAPER_SIZE_META, type KidProfile } from "@/lib/types";
+import { AGE_BANDS, PAPER_SIZE_META, isKidActive, type KidProfile } from "@/lib/types";
+import { NOUN } from "@/lib/copy";
+import { HowItWorks } from "@/components/HowItWorks";
+import { StatusBadge } from "@/components/StatusBadge";
 
 function ageLabel(band: KidProfile["ageBand"]): string {
   return AGE_BANDS.find((b) => b.id === band)?.label ?? band;
@@ -30,14 +33,26 @@ function moduleSummary(kid: KidProfile): string {
 
 export default function DashboardPage() {
   const router = useRouter();
-  const { store, hydrated, error: storeError, reload, setActiveKid } = useAppStore();
+  const { store, hydrated, error: storeError, reload, setActiveKid, save } = useAppStore();
   const { status: billing } = useBilling();
   const trialLeft = billing?.access.reason === "trial" ? daysLeft(billing.access.until) : null;
 
-  // If there are truly no dispatches yet, drop straight into Create.
-  useEffect(() => {
-    if (hydrated && store && store.kids.length === 0) router.replace("/app/setup");
-  }, [hydrated, store, router]);
+  const [actionMsg, setActionMsg] = useState<string | null>(null);
+
+  async function activate(id: string) {
+    setActionMsg(null);
+    // No plan (trial over, no subscription or code) → pick one first; the plan page activates it after checkout.
+    if (billing && !billing.access.active) {
+      sessionStorage.setItem("botb.activate", id);
+      router.push("/app/billing");
+      return;
+    }
+    try {
+      await save({ kid: { id, status: "active" } });
+    } catch (e) {
+      setActionMsg(e instanceof Error ? e.message : "Could not activate");
+    }
+  }
 
   async function editDispatch(id: string) {
     await setActiveKid(id);
@@ -47,7 +62,7 @@ export default function DashboardPage() {
   if (!hydrated) {
     return (
       <AppShell title="Dashboard">
-        <p className="text-ink-soft">Loading your dispatches…</p>
+        <p className="text-ink-soft">Loading…</p>
       </AppShell>
     );
   }
@@ -70,7 +85,7 @@ export default function DashboardPage() {
   return (
     <AppShell
       title="Dashboard"
-      subtitle="Your morning dispatches — preview, edit, or add another child."
+      subtitle={`Your morning ${NOUN.many}: preview, edit, or add another child.`}
     >
       {trialLeft !== null ? (
         <div className="mb-4 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-rule bg-paper px-4 py-2 text-sm">
@@ -83,16 +98,40 @@ export default function DashboardPage() {
         </div>
       ) : null}
 
+      {actionMsg ? <p className="mb-4 rounded-lg bg-stamp/10 px-3 py-2 text-sm text-stamp">{actionMsg}</p> : null}
+
+      {kids.length === 0 ? (
+        <div className="card mx-auto max-w-xl space-y-4 py-10 text-center">
+          <div className="text-4xl" aria-hidden>
+            📰
+          </div>
+          <h2 className="font-display text-2xl text-ink">No {NOUN.many} yet</h2>
+          <p className="text-sm text-ink-soft">
+            A {NOUN.one} is one child&rsquo;s daily page of puzzles, facts and news, emailed every morning. Create your first one
+            in about a minute.
+          </p>
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            <Link href="/app/setup" className="btn-primary">
+              Create {NOUN.one}
+            </Link>
+            <Link href="/app/browse" className="btn-secondary">
+              Browse modules
+            </Link>
+          </div>
+          <HowItWorks />
+        </div>
+      ) : (
+      <>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-ink-soft">
-          {kids.length} dispatch{kids.length === 1 ? "" : "es"}
+          {kids.length} {kids.length === 1 ? NOUN.one : NOUN.many} · <HowItWorks />
         </p>
         <div className="flex flex-wrap gap-2">
           <Link href="/app/settings" className="btn-secondary text-sm">
             Settings
           </Link>
           <Link href="/app/setup" className="btn-primary text-sm">
-            + Create new
+            + Create {NOUN.one}
           </Link>
         </div>
       </div>
@@ -105,7 +144,10 @@ export default function DashboardPage() {
             <div key={kid.id} className="card flex flex-col gap-3">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <h2 className="font-display text-xl text-ink">{kid.name}</h2>
+                  <div className="flex items-center gap-2">
+                    <h2 className="font-display text-xl text-ink">{kid.name}</h2>
+                    <StatusBadge status={kid.status} />
+                  </div>
                   <p className="text-xs text-ink-soft">
                     Age {ageLabel(kid.ageBand)} · {paper}
                   </p>
@@ -136,11 +178,18 @@ export default function DashboardPage() {
                 >
                   Edit
                 </button>
+                {isKidActive(kid) ? null : (
+                  <button type="button" className="btn-secondary text-sm" onClick={() => void activate(kid.id)}>
+                    Activate
+                  </button>
+                )}
               </div>
             </div>
           );
         })}
       </div>
+      </>
+      )}
     </AppShell>
   );
 }

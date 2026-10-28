@@ -141,11 +141,16 @@ export interface CalendarEvent {
   time?: string;
 }
 
+export type DispatchStatus = "active" | "inactive";
+export const isKidActive = (k: { status?: DispatchStatus }) => k.status !== "inactive";
+
 export interface KidProfile {
   id: string;
   name: string;
   ageBand: AgeBand;
   timezone: string;
+  /** Inactive dispatches are saved but never delivered. Missing = active (pre-existing dispatches). */
+  status?: DispatchStatus;
   /** Delivery time — when the morning dispatch goes out (HH:MM, 24h). */
   printTime: string;
   /** How the dispatch is delivered. Defaults to email. */

@@ -1,3 +1,4 @@
+import { countNoun } from "./copy";
 /** Client-safe plan table (billing.ts pulls in server-only modules). */
 export type PlanInterval = "year" | "quarter";
 
@@ -12,8 +13,8 @@ export interface Plan {
 }
 
 export const PLANS: Plan[] = [
-  { id: "kids2", kids: 2, yearCents: 2000, quarterCents: 600, label: "Up to 2 kids" },
-  { id: "kids5", kids: 5, yearCents: 4000, quarterCents: 1200, label: "Up to 5 kids" },
+  { id: "kids2", kids: 2, yearCents: 2000, quarterCents: 600, label: `Up to ${countNoun(2)}` },
+  { id: "kids5", kids: 5, yearCents: 4000, quarterCents: 1200, label: `Up to ${countNoun(5)}` },
 ];
 
 export const planById = (id: unknown): Plan | undefined => PLANS.find((p) => p.id === id);

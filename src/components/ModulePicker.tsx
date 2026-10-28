@@ -469,6 +469,24 @@ export function SlotEditor({
     );
   };
 
+  // The outline is a fixed-size sheet: every column is COLUMN_CAPACITY_UNITS tall (2 rows per unit)
+  // whatever is on it, and "+ Add card" fills the space that's left, so you can see how much room remains.
+  const colGrid = (col: number) => {
+    const freeRows = remainingUnits(col) * 2;
+    return (
+      <>
+      <div
+        className="grid grid-cols-1 gap-2"
+        style={{ gridTemplateRows: `repeat(${COLUMN_CAPACITY_UNITS * 2}, 46px)` }}
+      >
+        {slots.filter((s) => (s.column ?? 0) === col).map((slot) => renderCard(slot))}
+        {freeRows > 0 ? <div style={{ gridRow: `span ${freeRows}` }}>{addCardBtn(col)}</div> : null}
+      </div>
+      {freeRows <= 0 ? <p className="mt-1 text-center text-[0.6rem] font-semibold uppercase tracking-wide text-ink-soft">Page full</p> : null}
+      </>
+    );
+  };
+
   const addCardBtn = (col: number) => {
     const full = remainingUnits(col) <= 0;
     return (
@@ -524,10 +542,7 @@ export function SlotEditor({
           </div>
 
           {isStrip ? (
-            <div className="grid grid-cols-1 gap-2 [grid-auto-rows:46px]">
-              {slots.filter((s) => (s.column ?? 0) === 0).map((slot) => renderCard(slot))}
-              <div className="row-span-1">{addCardBtn(0)}</div>
-            </div>
+            colGrid(0)
           ) : (
             <div className="grid grid-cols-2 items-start gap-x-6 gap-y-3">
               {[0, 1].map((col) => (
@@ -535,10 +550,7 @@ export function SlotEditor({
                   <div className="mb-2 text-center text-[0.55rem] font-bold uppercase tracking-widest text-ink-soft">
                     Column {col + 1}
                   </div>
-                  <div className="grid grid-cols-1 gap-2 [grid-auto-rows:46px]">
-                    {slots.filter((s) => (s.column ?? 0) === col).map((slot) => renderCard(slot))}
-                    <div className="row-span-1">{addCardBtn(col)}</div>
-                  </div>
+                  {colGrid(col)}
                 </div>
               ))}
             </div>
