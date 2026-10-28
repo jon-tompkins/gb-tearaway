@@ -244,8 +244,8 @@ export default function SettingsPage() {
         <section className="card space-y-4">
           <h2 className="font-display text-lg">Favorite teams</h2>
           <p className="text-sm text-ink-soft">
-            Up to 3 teams for the Sports Scores module — real last result and next game.
-            Use full team names, comma-separated (e.g. Arsenal, Los Angeles Lakers, New York Yankees).
+            One list powers both team cards: Sports Scores (up to 3 teams — real last result and
+            next game) and Team News (the first 2 teams — kid-safe recent headlines). Use full team names, comma-separated (e.g. Arsenal, Los Angeles Lakers, New York Yankees).
           </p>
           <div className="field">
             <label htmlFor="teams">Teams</label>

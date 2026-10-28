@@ -8,6 +8,7 @@ import { fetchGoogleCalendarEvents } from "@/lib/googleCalendar";
 import { gatherDailyNews } from "@/lib/news/daily";
 import { gatherDailyHistory } from "@/lib/news/history-live";
 import { gatherSports } from "@/lib/sports";
+import { gatherTeamNews } from "@/lib/sportsNews";
 import { gatherDailyExtras } from "@/lib/content/live-extras";
 import { dateISOInZone } from "@/lib/dates";
 import { ensureKidSlots, flattenSlotModules } from "@/lib/slots";
@@ -60,6 +61,7 @@ export async function GET() {
   const historyLive = await gatherDailyHistory(pool, dateISOInZone(kid.timezone || settings.timezone));
   const sports = pool.includes("sports") ? await gatherSports(kid.sportsTeams ?? []) : undefined;
   const extras = await gatherDailyExtras(pool);
-  const job = generateStrip(kidNorm, settings, { nonce, weather, events, newsByFeed, historyLive, sports, extras });
+  const sportsNews = pool.includes("sportsnews") ? await gatherTeamNews(kid.sportsTeams ?? []) : undefined;
+  const job = generateStrip(kidNorm, settings, { nonce, weather, events, newsByFeed, historyLive, sports, extras, sportsNews });
   return NextResponse.json(job);
 }

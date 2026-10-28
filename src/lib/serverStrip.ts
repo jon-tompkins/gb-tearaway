@@ -5,6 +5,7 @@ import { gatherDailyNews } from "./news/daily";
 import { gatherDailyExtras } from "./content/live-extras";
 import { gatherDailyHistory } from "./news/history-live";
 import { gatherSports } from "./sports";
+import { gatherTeamNews } from "./sportsNews";
 import { dateISOInZone } from "./dates";
 import type { KidProfile, PrintJob } from "./types";
 import {
@@ -36,7 +37,7 @@ export async function buildJobForKid(
   // add up (weather + news RSS + Wikimedia history + sports + 6 Haiku content
   // calls). Serial awaits here pushed the uncached morning render past the PDF
   // render timeout, dropping the emailed attachment.
-  const [weather, newsByFeed, historyLive, sports, extras] = await Promise.all([
+  const [weather, newsByFeed, historyLive, sports, extras, sportsNews] = await Promise.all([
     pool.includes("weather")
       ? fetchWeather({
           city: settings.weatherCity,
@@ -51,6 +52,8 @@ export async function buildJobForKid(
     gatherDailyHistory(pool, opts.dateISO ?? dateISOInZone(kid.timezone || settings.timezone)),
     pool.includes("sports") ? gatherSports(kid.sportsTeams ?? []) : Promise.resolve(undefined),
     gatherDailyExtras(pool),
+    // Self-capped (~12s) so an uncached Haiku call can't sink the PDF render.
+    pool.includes("sportsnews") ? gatherTeamNews(kid.sportsTeams ?? []) : Promise.resolve(undefined),
   ]);
 
   const job = generateStrip(kidNorm, settings, {
@@ -61,6 +64,7 @@ export async function buildJobForKid(
     historyLive,
     sports,
     extras,
+    sportsNews,
   });
   if (opts.persistStatus) job.status = opts.persistStatus;
 

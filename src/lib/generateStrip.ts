@@ -35,6 +35,7 @@ import { pickPoemForDay, poemFontPt, poemLines } from "./content/poems";
 import { isNewsModule, newsListFromPool, type LiveNewsEntry, type NewsModuleId } from "./content/news";
 import type { LiveHistoryEntry } from "./news/history-live";
 import type { SportsTeamResult } from "./sports";
+import { teamNewsBlurb, type TeamNewsResult } from "./sportsNews";
 import { eventsForToday, formatEventLine } from "./content/stubs";
 import { mockStocks } from "./stocks";
 import { generateMaze, mazeToSvg } from "./puzzles/maze";
@@ -64,6 +65,8 @@ export interface GenerateOptions {
   historyLive?: LiveHistoryEntry[];
   /** Live favorite-team sports results (fetched by the route). */
   sports?: SportsTeamResult[];
+  /** Kid-safe favorite-team news (fetched by the route); undefined = no teams set. */
+  sportsNews?: TeamNewsResult[];
   /** Today's fresh Haiku-generated jokes/facts; falls back to the static bank. */
   extras?: DailyExtras;
 }
@@ -480,6 +483,52 @@ export function generateStrip(
           lines: ["Add a favorite team in Settings to see real scores here."],
         });
       }
+      continue;
+    }
+    if (moduleId === "sportsnews") {
+      // Real, kid-safe team headlines (fetched by the route). Short 1–2 sentence
+      // items, so a 1× card holds 3 and a 2× card 6; teams interleave.
+      const teams = opts.sportsNews;
+      if (!teams?.length) {
+        sections.push({
+          id: "sportsnews-none",
+          moduleId,
+          title: meta.name,
+          kind: "text",
+          lines: ["Add a favorite team in Settings to see their news here."],
+        });
+        continue;
+      }
+      const max = cardSize === "double" ? 6 : cardSize === "half" ? 1 : 3;
+      const picked: { team: string; item: TeamNewsResult["items"][number] }[] = [];
+      for (let i = 0; picked.length < max && teams.some((t) => t.items[i]); i++) {
+        for (const t of teams) if (t.items[i] && picked.length < max) picked.push({ team: t.team, item: t.items[i] });
+      }
+      if (!picked.length) {
+        sections.push({
+          id: `sportsnews-quiet-${hashish(teams.map((t) => t.team).join())}`,
+          moduleId,
+          title: meta.name,
+          kind: "text",
+          lines: [`Nothing fresh about the ${teams.map((t) => t.team).join(" or the ")} today.`],
+        });
+        continue;
+      }
+      sections.push({
+        id: `sportsnews-${hashish(picked[0].item.headline)}`,
+        moduleId,
+        title: meta.name,
+        kind: "text",
+        lines: [],
+        news: picked.map(({ team, item }) => ({
+          headline: item.headline,
+          location: team,
+          // FLAT module (dial doesn't change it) — word level follows the kid's age.
+          blurb: teamNewsBlurb(item, kid.ageBand),
+          url: item.url,
+          outlet: item.outlet,
+        })),
+      });
       continue;
     }
     if (moduleId === "calendar") {
