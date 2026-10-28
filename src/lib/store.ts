@@ -2,6 +2,7 @@ import { promises as fs } from "fs";
 import path from "path";
 import type { AppSettings, AppState, KidProfile, PrintJob } from "./types";
 import { loadState, persistenceMode, saveState } from "./persist";
+import { accessFor } from "./billing";
 import {
   DEFAULT_MODULES,
   DEFAULT_SETTINGS,
@@ -213,6 +214,10 @@ export async function patchStore(
   const store = await readStore(userKey);
 
   if (patch.createKid) {
+    const { maxKids } = await accessFor(userKey);
+    if (maxKids && store.kids.length >= maxKids) {
+      throw new Error(`Your plan covers up to ${maxKids} kids. Switch to a bigger plan on the billing page to add more.`);
+    }
     const paperSize = isPaperSize(patch.createKid.paperSize)
       ? patch.createKid.paperSize
       : store.settings.paperSize || DEFAULT_SETTINGS.paperSize;

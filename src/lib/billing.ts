@@ -14,6 +14,10 @@ import { periodEnd, stripeConfigured, type StripeSubscription } from "./stripe";
  *
  * Nothing is enforced until STRIPE_SECRET_KEY is set — before then there's no
  * way to pay, so expired trials keep working (the clock still runs).
+ *
+ * BILLING_GRACE_UNTIL (ISO date, e.g. 2026-12-01) softens the switch-on: until
+ * then, expired trials keep working even with Stripe live, so existing families
+ * get time to subscribe instead of being cut off the day the key goes in.
  */
 export const PRICE_CENTS = 500;
 /** Entry annual price (1 kid). Tiers for 2 and 5 kids live in plans.ts. */
@@ -23,6 +27,11 @@ export const TRIAL_DAYS = 30;
 const DAY = 86_400_000;
 const PAID_STATUSES = new Set(["active", "trialing", "past_due"]);
 
+function graceActive(now: number): boolean {
+  const until = Date.parse(process.env.BILLING_GRACE_UNTIL ?? "");
+  return Number.isFinite(until) && until > now;
+}
+
 export interface Billing {
   trialStartedAt: string;
   trialEndsAt: string;
@@ -31,6 +40,8 @@ export interface Billing {
   subStatus?: string;
   paidUntil?: string | null;
   cancelAtPeriodEnd?: boolean;
+  /** Kid cap from the yearly plan they bought (undefined = no cap, e.g. monthly). */
+  maxKids?: number;
   /** Free time from access codes. */
   compUntil?: string | null;
   compForever?: boolean;
@@ -49,6 +60,10 @@ export interface Access {
   codes: string[];
   priceCents: number;
   annualPriceCents: number;
+  /** Most kids this account may have (null = no cap). */
+  maxKids: number | null;
+  /** Expired, but still active because BILLING_GRACE_UNTIL hasn't passed. */
+  inGrace?: boolean;
 }
 
 export interface AccessCode {
@@ -99,6 +114,7 @@ export function accessFrom(b: Billing, opts: { admin?: boolean; now?: number } =
     cancelAtPeriodEnd: !!b.cancelAtPeriodEnd,
     codes: b.codes ?? [],
     priceCents: PRICE_CENTS, annualPriceCents: ANNUAL_PRICE_CENTS,
+    maxKids: subscribed && b.maxKids ? b.maxKids : null,
   };
   const later = (iso?: string | null) => !!iso && Date.parse(iso) > now;
   let reason: Access["reason"] = "expired";
@@ -108,8 +124,9 @@ export function accessFrom(b: Billing, opts: { admin?: boolean; now?: number } =
   else if (b.compForever) reason = "code";
   else if (later(b.compUntil)) [reason, until] = ["code", b.compUntil!];
   else if (later(b.trialEndsAt)) [reason, until] = ["trial", b.trialEndsAt];
-  const active = reason !== "expired" || !stripeConfigured;
-  return { ...base, active, reason, until };
+  const inGrace = reason === "expired" && stripeConfigured && graceActive(now);
+  const active = reason !== "expired" || !stripeConfigured || inGrace;
+  return { ...base, active, reason, until, ...(inGrace ? { inGrace } : {}) };
 }
 
 /** Access for a storage key (`user:<email>`, or the shared demo). */
@@ -118,7 +135,7 @@ export async function accessFor(userKey: string): Promise<Access> {
   if (!email) {
     return {
       active: true, enforced: stripeConfigured, reason: "demo", until: null, trialEndsAt: null,
-      subscribed: false, cancelAtPeriodEnd: false, codes: [], priceCents: PRICE_CENTS, annualPriceCents: ANNUAL_PRICE_CENTS,
+      subscribed: false, cancelAtPeriodEnd: false, codes: [], priceCents: PRICE_CENTS, annualPriceCents: ANNUAL_PRICE_CENTS, maxKids: null,
     };
   }
   return accessFrom(await getBilling(email), { admin: isAdminEmail(email) });
@@ -135,6 +152,7 @@ export async function applySubscription(email: string, sub: StripeSubscription):
     subStatus: sub.status,
     paidUntil: end ? new Date(end * 1000).toISOString() : null,
     cancelAtPeriodEnd: !!sub.cancel_at_period_end,
+    maxKids: Number(sub.metadata?.maxKids) > 0 ? Number(sub.metadata?.maxKids) : undefined,
   });
 }
 
