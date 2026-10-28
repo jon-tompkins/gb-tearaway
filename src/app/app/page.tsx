@@ -114,7 +114,7 @@ export default function DashboardPage() {
             <Link href="/app/setup" className="btn-primary">
               Create {NOUN.one}
             </Link>
-            <Link href="/app/browse" className="btn-secondary">
+            <Link href="/modules" className="btn-secondary">
               Browse modules
             </Link>
           </div>

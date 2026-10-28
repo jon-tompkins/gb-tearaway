@@ -8,7 +8,7 @@ import { AuthButton } from "./AuthButton";
 
 const LINKS = [
   { href: "/app", label: "Dashboard", exact: true },
-  { href: "/app/browse", label: "Modules", exact: false },
+  { href: "/modules", label: "Modules", exact: false },
 ];
 
 export function AppNav() {
