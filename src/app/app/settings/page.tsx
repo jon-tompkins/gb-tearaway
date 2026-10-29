@@ -306,8 +306,7 @@ export default function SettingsPage() {
             </div>
           ) : (
             <p className="rounded-xl border border-dashed border-rule bg-paper/50 px-4 py-3 text-sm text-ink-soft">
-              Sign in with Google (top right) to connect a calendar. Until then, add events manually
-              below.
+              Google Calendar sync is coming back soon. For now, add events manually below.
             </p>
           )}
         </section>

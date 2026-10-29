@@ -40,7 +40,7 @@ export default function PrivacyPage() {
           favorite sports teams and stock tickers if you add them.
         </li>
         <li>
-          <strong className="text-ink">Google Calendar events (optional)</strong>: if you turn on the Calendar module, we ask Google for read-only access to
+          <strong className="text-ink">Google Calendar events (optional, currently paused)</strong>: if Calendar sync is offered and you turn it on, we ask Google for read-only access to
           your calendars so we can show today&rsquo;s events on the page. We only read event titles and times for the calendar you pick, and only
           to build that page. We don&rsquo;t change anything in your calendar.
         </li>

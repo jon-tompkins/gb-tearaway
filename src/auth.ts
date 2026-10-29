@@ -19,16 +19,10 @@ import Google from "next-auth/providers/google";
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
     Google({
-      // Ask for read-only Calendar access so the calendar module can pull events.
-      // access_type=offline + prompt=consent so we also receive a refresh token.
-      authorization: {
-        params: {
-          scope:
-            "openid email profile https://www.googleapis.com/auth/calendar.readonly",
-          access_type: "offline",
-          prompt: "consent",
-        },
-      },
+      // Basic sign-in only (openid/email/profile). Calendar sync is paused: its
+      // scope (calendar.readonly) is "sensitive" and triggers Google's
+      // unverified-app warning until the app is verified. Re-add it as an
+      // opt-in connect step (incremental auth) when calendar is revived.
     }),
   ],
   trustHost: true,
