@@ -37,4 +37,18 @@ export const FAQ: FaqItem[] = [
     q: "Can I make pages for more than one kid?",
     a: "Yes. Each kid gets their own page with its own cards, difficulty, and delivery time.",
   },
+  {
+    q: "How does the page get to us?",
+    a: "Every morning we email you a printable PDF, and you can also open it in the app. Print it on any printer, hand it over with a pencil, and breakfast gets a little smarter.",
+  },
+  {
+    q: "Where are the answers?",
+    a: "Behind a QR code on the page, or in the app, never printed on the sheet. Kids solve first, then you scan to check.",
+  },
+  {
+    q: "Can I print a puzzle booklet for a binder?",
+    a: "Yes. The Booklet tool makes a black-and-white PDF of mazes, word finds, or color-by-number pages (up to 60), with extra margin on the binding side so you can punch holes. It includes answer pages for mazes and word finds. Printing it at home is free.",
+    href: "/app/booklet",
+    cta: "Make a booklet →",
+  },
 ];

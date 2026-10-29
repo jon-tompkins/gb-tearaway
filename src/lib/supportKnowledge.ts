@@ -12,6 +12,7 @@ const FAQ: Array<[string, string]> = [
   ["Where does the news come from?", "From real outlets: Smithsonian, NASA, Science News Explores, Mongabay, Popular Science, IEEE Spectrum, Good News Network, and others. Each story is rewritten for kids, checked against the source article, and printed with its location. Crime, politics, and anything scary are left out."],
   ["Does my kid need an account or a screen?", "No. Parents set it up, and kids just get the paper. We only ask for the kid's first name, and there are no ads."],
   ["Can I make pages for more than one kid?", "Yes. Each kid gets their own page with its own cards, difficulty, and delivery time."],
+  ["Can I print a puzzle booklet for a binder?", "Yes. The Booklet tool at /app/booklet makes a black-and-white PDF of mazes, word finds or color-by-number pages (up to 60) with a wider binding margin for hole punching, plus answer pages for mazes and word finds. It is free to print at home. A shipped, professionally printed booklet may come later."],
 ];
 
 const FACTS = `PRICING
