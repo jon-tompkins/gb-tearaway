@@ -27,6 +27,10 @@ export const MODULE_INFO: Record<ModuleId, ModuleInfo> = {
     source: "Generated connect-the-dots with a silly caption.",
     config: [DIAL + " Sets how many dots."],
   },
+  colorbynumber: {
+    source: "Hand-drawn pixel pictures with a numbered color key; each day picks a different one.",
+    config: [DIAL + " Picks the age band (simpler pictures for younger kids)."],
+  },
   riddle: {
     source: "A fresh riddle written each morning by an AI, age-checked (with a hand-curated backup bank of 100+).",
     config: [DIAL + " Picks the age band."],

@@ -73,6 +73,7 @@ export function generateWordFind(seed: number, band: AgeBand, difficulty?: numbe
     themed.length >= count ? themed : [...themed, ...shuffle(rng, poolFor(poolBand)).filter((w) => !themed.includes(w))];
   const grid: (string | null)[][] = Array.from({ length: rows }, () => Array.from({ length: cols }, () => null));
   const placed: string[] = [];
+  const placements: NonNullable<WordFindData["placements"]> = [];
 
   for (const word of candidates) {
     if (placed.length >= count) break;
@@ -85,6 +86,7 @@ export function generateWordFind(seed: number, band: AgeBand, difficulty?: numbe
       if (!canPlace(grid, word, r, c, dir[0], dir[1])) continue;
       place(grid, word, r, c, dir[0], dir[1]);
       placed.push(word);
+      placements.push({ word, r, c, dr: dir[0], dc: dir[1] });
       ok = true;
     }
   }
@@ -98,12 +100,16 @@ export function generateWordFind(seed: number, band: AgeBand, difficulty?: numbe
     placed.push(pick(rng, poolFor(poolBand)));
   }
 
-  return { cols, rows, grid: filled, words: placed, theme: themed.length >= count ? theme?.theme : undefined };
+  return { cols, rows, grid: filled, words: placed, placements, theme: themed.length >= count ? theme?.theme : undefined };
 }
 
-export function wordFindToSvg(data: WordFindData, maxWidth = 340): string {
+export function wordFindToSvg(
+  data: WordFindData,
+  maxWidth = 340,
+  opts: { maxCell?: number; showAnswers?: boolean } = {},
+): string {
   const { cols, rows, grid } = data;
-  const cell = Math.min(28, Math.floor(maxWidth / cols));
+  const cell = Math.min(opts.maxCell ?? 28, Math.floor(maxWidth / cols));
   const pad = 4;
   const w = cols * cell + pad * 2;
   const h = rows * cell + pad * 2;
@@ -118,6 +124,17 @@ export function wordFindToSvg(data: WordFindData, maxWidth = 340): string {
       );
       cells.push(
         `<text x="${x + cell / 2}" y="${y + cell / 2 + font * 0.35}" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="${font}" font-weight="700" fill="#1c1915">${grid[r][c]}</text>`,
+      );
+    }
+  }
+  if (opts.showAnswers) {
+    for (const p of data.placements ?? []) {
+      const x1 = pad + p.c * cell + cell / 2;
+      const y1 = pad + p.r * cell + cell / 2;
+      const x2 = pad + (p.c + p.dc * (p.word.length - 1)) * cell + cell / 2;
+      const y2 = pad + (p.r + p.dr * (p.word.length - 1)) * cell + cell / 2;
+      cells.push(
+        `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#c45c26" stroke-width="${cell * 0.55}" stroke-linecap="round" opacity="0.35"/>`,
       );
     }
   }

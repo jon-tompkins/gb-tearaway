@@ -42,6 +42,7 @@ export const DIFFICULTY_MODULES: ReadonlySet<ModuleId> = new Set<ModuleId>([
   "sudoku",
   "wordfind",
   "dots",
+  "colorbynumber",
   "sequence",
 ]);
 

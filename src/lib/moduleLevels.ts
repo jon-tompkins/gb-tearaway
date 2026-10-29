@@ -13,6 +13,7 @@ export const MODULE_LEVELS: Record<ModuleId, string> = {
   maze: "Smooth scale: about 10×13 cells at 3, 17×22 at 7, 25×33 at 11, up to 42×55.",
   wordfind: "Smooth scale: grid 6→14 and 4→12 words; diagonals from 6, backwards words from 11.",
   dots: "Two ranges: simple shapes at 1–6, trickier shapes from 7.",
+  colorbynumber: "Easier pictures with few colors at 1–6; more colors and detail from 7.",
   riddle: BANK,
   sudoku: "1–6: 4×4 grid · 7–13: 6×6 · 14+: 9×9. More blanks as it climbs.",
   battleship: "1–5: 6×6 board · 6–10: 7×7 · 11–14: 8×8 · 15+: 9×9 with a bigger fleet.",

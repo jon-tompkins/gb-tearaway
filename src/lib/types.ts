@@ -34,6 +34,7 @@ export type ModuleId =
   | "poem"
   | "wordfind"
   | "dots"
+  | "colorbynumber"
   | "news_world"
   | "news_national"
   | "news_city"
@@ -237,6 +238,8 @@ export interface WordFindData {
   rows: number;
   grid: string[][];
   words: string[];
+  /** Where each word hides (row/col of its first letter and step), for answer keys. */
+  placements?: { word: string; r: number; c: number; dr: number; dc: number }[];
   /** The day's theme ("Ocean Life"), when the words all came from one. */
   theme?: string;
 }
@@ -260,6 +263,15 @@ export interface DotPoint {
   n: number;
   x: number;
   y: number;
+}
+
+export interface ColorByNumberData {
+  cols: number;
+  rows: number;
+  /** 0 = blank paper; n = palette number to color. */
+  cells: number[][];
+  palette: { n: number; name: string; hex: string }[];
+  caption: string;
 }
 
 export interface DotsData {
@@ -334,6 +346,7 @@ export interface StripSection {
     | "sudoku"
     | "wordfind"
     | "dots"
+    | "colorbynumber"
     | "battleship"
     | "crossword"
     | "weather"
@@ -345,6 +358,7 @@ export interface StripSection {
   sudoku?: SudokuData;
   wordfind?: WordFindData;
   dots?: DotsData;
+  colorbynumber?: ColorByNumberData;
   battleship?: BattleshipData;
   crossword?: CrosswordData;
   weather?: WeatherSnapshot;

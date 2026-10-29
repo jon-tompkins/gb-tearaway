@@ -47,6 +47,7 @@ import { generateStateQuiz } from "./puzzles/states";
 import { generateCountryQuiz, type Continent } from "./puzzles/countries";
 import { generateWordFind, wordFindToSvg } from "./puzzles/wordfind";
 import { generateDots, dotsToSvg } from "./puzzles/dots";
+import { generateColorByNumber, colorByNumberToSvg } from "./puzzles/colorbynumber";
 import { moduleById } from "./modules";
 import { buildPreviewHtml } from "./previewHtml";
 import { ensureKidSlots, resolveActiveModules } from "./slots";
@@ -646,6 +647,19 @@ export function generateStrip(
         lines: [wordfind.words.join(" · ")],
         wordfind,
         svg,
+      });
+      continue;
+    }
+    if (moduleId === "colorbynumber") {
+      const colorbynumber = generateColorByNumber((seed ^ 0x4342) >>> 0, difficulty != null ? bandFromDifficulty(difficulty) : band);
+      sections.push({
+        id: `cbn-${colorbynumber.cols}x${colorbynumber.rows}`,
+        moduleId,
+        title: meta.name,
+        kind: "colorbynumber",
+        lines: [colorbynumber.caption],
+        colorbynumber,
+        svg: colorByNumberToSvg(colorbynumber),
       });
       continue;
     }

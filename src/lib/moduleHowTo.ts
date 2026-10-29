@@ -19,6 +19,10 @@ export const MODULE_HOW_TO: Partial<Record<ModuleId, string[]>> = {
     "Start at dot 1 and draw a line to dot 2, then 3, and keep going in number order.",
     "Keep going to the last dot, then read the caption and color your picture in.",
   ],
+  colorbynumber: [
+    "Every square has a number. The color key under the picture tells you which color each number is.",
+    "Color all the squares with the same number the same color. Leave the blank space white.",
+  ],
   riddle: [
     "Read the riddle and think before you peek. Say your guess out loud.",
     "The answer isn't on the paper. Open the app or scan the page's QR code to check.",

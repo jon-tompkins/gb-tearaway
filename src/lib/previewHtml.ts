@@ -3,6 +3,7 @@ import { mazeToSvg } from "./puzzles/maze";
 import { sudokuToSvg } from "./puzzles/sudoku";
 import { wordFindToSvg } from "./puzzles/wordfind";
 import { dotsToSvg } from "./puzzles/dots";
+import { colorByNumberToSvg } from "./puzzles/colorbynumber";
 import { battleshipToSvg } from "./puzzles/battleship";
 import { crosswordToSvg, type CrosswordData } from "./puzzles/crossword";
 
@@ -272,6 +273,8 @@ export function sectionHtml(section: StripSection): string {
         ? sudokuToSvg(section.sudoku, { showSolution: false })
         : section.kind === "wordfind" && section.wordfind
           ? wordFindToSvg(section.wordfind)
+          : section.kind === "colorbynumber" && section.colorbynumber
+            ? colorByNumberToSvg(section.colorbynumber)
           : section.kind === "dots" && section.dots
             ? dotsToSvg(section.dots)
             : section.kind === "battleship" && section.battleship

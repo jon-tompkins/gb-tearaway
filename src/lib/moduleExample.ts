@@ -4,6 +4,7 @@ import { generateMaze, mazeToSvg } from "./puzzles/maze";
 import { generateSudoku, sudokuToSvg } from "./puzzles/sudoku";
 import { generateWordFind, wordFindToSvg } from "./puzzles/wordfind";
 import { generateDots, dotsToSvg } from "./puzzles/dots";
+import { generateColorByNumber, colorByNumberToSvg } from "./puzzles/colorbynumber";
 import { generateSequence } from "./puzzles/sequence";
 import { generateBattleship, battleshipToSvg } from "./puzzles/battleship";
 import { buildCrossword, crosswordToSvg, crosswordConfigForDifficulty } from "./puzzles/crossword";
@@ -53,6 +54,8 @@ export function moduleExample(id: ModuleId): ModuleExample {
       return { svg: sudokuToSvg(generateSudoku(42, BAND, DIFF)) };
     case "wordfind":
       return { svg: wordFindToSvg(generateWordFind(42, BAND, DIFF)) };
+    case "colorbynumber":
+      return { svg: colorByNumberToSvg(generateColorByNumber(42, BAND)) };
     case "dots":
       return { svg: dotsToSvg(generateDots(42, BAND)) };
     case "crossword": {

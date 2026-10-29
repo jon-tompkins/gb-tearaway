@@ -193,13 +193,13 @@ export function generateMaze(
   seed: number,
   band: AgeBand,
   difficulty?: number,
-  opts: { square?: boolean } = {},
+  opts: { square?: boolean; dims?: { cols: number; rows: number } } = {},
 ): MazeData {
   const base = difficulty != null ? mazeSizeForDifficulty(difficulty) : sizeForBand(band);
   // A square maze (Letter 1× card) uses fewer columns so its cells stay about
   // the size they'd be in a tall card.
   const side = Math.max(6, Math.round(base.cols * 0.75));
-  const { cols, rows } = opts.square ? { cols: side, rows: side } : base;
+  const { cols, rows } = opts.dims ?? (opts.square ? { cols: side, rows: side } : base);
   // Little kids get an easy maze; bigger kids get a harder-selected one.
   const candidates =
     difficulty != null
