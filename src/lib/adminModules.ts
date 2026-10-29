@@ -142,7 +142,7 @@ export const ADMIN_MODULES: Record<ModuleId, AdminModule> = {
     how: "Static bank. Each kid works through their age band's quotes one a day, in their own shuffled order, so nothing repeats until the band is used up.",
     bank: () => ({
       columns: ["Quote", "Author", "Meaning"],
-      rows: QUOTES.map((q) => ({ cells: [q.quote, `${q.author} (${q.role})`, q.meaning], bands: q.bands })),
+      rows: QUOTES.map((q) => ({ cells: [q.quote, `${q.author} (${q.role}) — ${q.source}`, q.meaning], bands: q.bands })),
     }),
   },
   joke: {

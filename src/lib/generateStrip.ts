@@ -557,7 +557,7 @@ export function generateStrip(
         moduleId,
         title: meta.name,
         kind: "text",
-        lines: [`“${q.quote}”`, `— ${q.author}, ${q.role}`, `Meaning: ${q.meaning}`],
+        lines: [`“${q.quote}”`, `— ${q.author}, ${q.role}`, `(${q.source})`, `Meaning: ${q.meaning}`],
       });
       continue;
     }

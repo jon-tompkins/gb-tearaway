@@ -136,7 +136,7 @@ export function moduleExample(id: ModuleId): ModuleExample {
     }
     case "quote": {
       const q = pickQuote(BAND, rng);
-      return { text: [`“${q.quote}”`, `— ${q.author}, ${q.role}`, q.meaning], note: "One a day from the bank — this is a sample." };
+      return { text: [`“${q.quote}”`, `— ${q.author}, ${q.role}`, `(${q.source})`, q.meaning], note: "One a day from the bank — this is a sample." };
     }
     case "joke": {
       const j = pickJoke(BAND, rng);
