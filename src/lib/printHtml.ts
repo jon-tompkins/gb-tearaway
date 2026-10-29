@@ -227,7 +227,7 @@ export function buildPrintHtml(
   // News cards: stories use a small type size that is fit to the card. Shrink
   // (down to 6.4pt) until everything fits; if it still overflows, drop the
   // last paragraph of the last story, then the last story. Spare room grows
-  // the type back up (cap 8.6pt) so short cards aren't left half empty.
+  // the type back up (cap 11pt) so short cards aren't left half empty.
   const newsFit = `<script>
     (function(){
       if(!${isLetter ? "true" : "false"}) return;
@@ -236,7 +236,7 @@ export function buildPrintHtml(
           var stories=[].slice.call(box.querySelectorAll('.nstory'));
           stories.forEach(function(s){s.style.display='';s.querySelectorAll('p').forEach(function(p){p.style.display=''})});
           function over(){return box.scrollHeight>box.clientHeight+1}
-          var lo=6.4, hi=8.6;
+          var lo=6.4, hi=11;
           box.style.fontSize=hi+'pt';
           if(over()){
             for(var i=0;i<14;i++){var mid=(lo+hi)/2;box.style.fontSize=mid+'pt';if(over()) hi=mid; else lo=mid}

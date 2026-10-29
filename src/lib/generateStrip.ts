@@ -690,13 +690,23 @@ export function generateStrip(
       continue;
     }
     if (isNewsModule(moduleId)) {
-      // Stories are two paragraphs now: 2x (double) = 2 stories, 1x = 1, and a
+      // Stories are two paragraphs now: 2x (double) = up to 3 stories (fit trims), 1x = 1, and a
       // half card gets one story's first paragraph.
-      const count = cardSize === "double" ? 2 : 1;
+      const count = cardSize === "double" ? 3 : 1; // extras are trimmed to fit at print
       // Real (kid-safe) headlines only — no fabricated fallback. If there are
       // none today, the card simply doesn't print (better to fail than fake it).
       const livePool = opts.newsByFeed?.[moduleId];
       const items = livePool && livePool.length ? newsListFromPool(livePool, band, rng, count) : [];
+      // A thin feed would leave the card half empty: top up with other feeds'
+      // stories (real, kid-safe, band-filtered, no repeated headlines).
+      if (items.length < count) {
+        const seen = new Set(items.map((i) => i.headline));
+        const others = Object.entries(opts.newsByFeed ?? {})
+          .filter(([id]) => id !== moduleId)
+          .flatMap(([, pool]) => pool ?? [])
+          .filter((n, i, all) => !seen.has(n.headline) && all.findIndex((m) => m.headline === n.headline) === i);
+        if (others.length) items.push(...newsListFromPool(others, band, rng, count - items.length));
+      }
       if (!items.length) continue;
       sections.push({
         id: `${moduleId}-${hashish(items[0]?.headline ?? moduleId)}`,
