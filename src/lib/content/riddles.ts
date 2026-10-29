@@ -124,6 +124,22 @@ export const RIDDLES: RiddleEntry[] = [
   { bands: ["10-12"], question: "What gets broken if it is not kept?", answer: "A promise." },
   { bands: ["10-12"], question: "What kind of room can you eat?", answer: "A mushroom." },
   { bands: ["10-12"], question: "What word reads the same forwards and backwards and means a car that races?", answer: "Racecar." },
+  // Public-domain seed riddles. Rhymes from "The Book of Riddles" (Concord: John F. Brown, 1846,
+  // Project Gutenberg #36571) and traditional Mother Goose riddle rhymes; trimmed and adapted for kids.
+  { bands: ["7-9", "10-12"], question: "Two bodies have I, though both joined in one. The stiller I stand, the faster I run. What am I?", answer: "An hourglass." },
+  { bands: ["7-9", "10-12"], question: "What force and strength cannot get through, I with a gentle touch can do. What am I?", answer: "A key." },
+  { bands: ["7-9", "10-12"], question: "I never offend thee, yet thou dost me whip, though I dance and skip. When I'm upright thou dost like me best, and whip me when I want to rest. What am I?", answer: "A spinning top." },
+  { bands: ["7-9", "10-12"], question: "My nose is long, my back is broad and round. No load I carry, yet I puff and blow. What am I?", answer: "A pair of bellows." },
+  { bands: ["7-9", "10-12"], question: "My body is light, my head is white, with a cord I am laced around. I am beaten with sticks, but only to make my sound. What am I?", answer: "A drum." },
+  { bands: ["7-9", "10-12"], question: "My clothing's fine as velvet, though under the earth I dwell. When I come up above ground, the gardener doesn't like me one bit. What am I?", answer: "A mole." },
+  { bands: ["4-6", "7-9"], question: "Humpty Dumpty sat on a wall. Humpty Dumpty had a great fall. What is Humpty Dumpty?", answer: "An egg." },
+  { bands: ["4-6", "7-9"], question: "Little Nancy Etticoat, in a white petticoat, with a red nose. She has no feet or hands, and the longer she stands, the shorter she grows. Who is she?", answer: "A candle." },
+  { bands: ["4-6", "7-9"], question: "Thirty white horses upon a red hill. Now they tramp, now they champ, now they stand still. What are they?", answer: "Teeth." },
+  { bands: ["7-9", "10-12"], question: "Old Mother Twitchett has but one eye, and a long tail which she lets fly. Every time she goes through a gap, she leaves a bit of her tail in a trap. What is she?", answer: "A needle and thread." },
+  { bands: ["7-9", "10-12"], question: "In marble walls as white as milk, lined with a skin as soft as silk, within a fountain crystal clear, a golden apple does appear. No doors are there to this stronghold, yet thieves break in and steal the gold. What is it?", answer: "An egg." },
+  { bands: ["7-9", "10-12"], question: "Four stiff-standers, four dilly-danders, two lookers, two crookers, and a wig-wag. What is it?", answer: "A cow." },
+  { bands: ["7-9", "10-12"], question: "Elizabeth, Elspeth, Betsy and Bess all went together to seek a bird's nest. They found a nest with five eggs in. They all took one, and left four in. How many girls went?", answer: "Just one. Elizabeth, Elspeth, Betsy and Bess are all names for the same girl." },
+  { bands: ["4-6", "7-9"], question: "Lives in winter, dies in summer, and grows with its root upward. What is it?", answer: "An icicle." },
 ];
 
 export function pickRiddle(band: AgeBand, rng: () => number): RiddleItem {
