@@ -22,6 +22,7 @@ import { pickCryptogram } from "./content/cryptograms";
 import { generateCryptogram } from "./puzzles/cryptogram";
 import { buildNumberCross } from "./puzzles/numbercross";
 import { pickJoke } from "./content/jokes";
+import { pickQuote } from "./content/quotes";
 import { pickRiddle } from "./content/riddles";
 import { pickSpanish } from "./content/spanish";
 import { pickPoem, poemLines } from "./content/poems";
@@ -132,6 +133,10 @@ export function moduleExample(id: ModuleId): ModuleExample {
     case "records": {
       const r = pickRecord(BAND, rng);
       return { text: [r.category, r.record, r.extra], note: "One a day from the bank — this is a sample." };
+    }
+    case "quote": {
+      const q = pickQuote(BAND, rng);
+      return { text: [`“${q.quote}”`, `— ${q.author}, ${q.role}`, q.meaning], note: "One a day from the bank — this is a sample." };
     }
     case "joke": {
       const j = pickJoke(BAND, rng);

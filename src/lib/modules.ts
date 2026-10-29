@@ -39,6 +39,7 @@ export const MODULE_CATALOG: ModuleMeta[] = [
   // Words & language
   { id: "word", name: "Word of the Day", blurb: "A real word, said out loud, used in a sentence — age-banded.", category: "words", defaultOn: true, size: "half" },
   { id: "poem", name: "Poem of the Day", blurb: "A short printable poem — soft, silly, or thoughtful.", category: "words", defaultOn: false, size: "full" },
+  { id: "quote", name: "Famous Quote", blurb: "A famous line from history, who said it, and what it means.", category: "words", defaultOn: false, size: "half" },
   { id: "joke", name: "Breakfast Joke", blurb: "One groaner a day. Age-checked, no mean stuff.", category: "words", defaultOn: true, size: "half" },
   { id: "spanish", name: "Spanish Word", blurb: "A second language bite beside English Word of the Day.", category: "words", defaultOn: false, size: "half" },
   { id: "logicgrid", name: "Logic Grid", blurb: "Who has what? Use the clues to fill in the grid. Every puzzle has exactly one answer.", category: "play", defaultOn: false, size: "full" },
@@ -103,6 +104,7 @@ const MODULE_SIZES: Partial<Record<ModuleId, SlotSize[]>> = {
   poem: ["half", "full", "double"],
   word: ["half", "full"],
   joke: ["half", "full"],
+  quote: ["half", "full"],
   riddle: ["half", "full"],
   sequence: ["half", "full"],
   scramble: ["half", "full"],

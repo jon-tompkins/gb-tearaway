@@ -69,6 +69,11 @@ export const MODULE_INFO: Record<ModuleId, ModuleInfo> = {
     source: "Real public-domain poems (text taken verbatim from PoetryDB and Project Gutenberg), sized to fit the card. One a day per kid, alternating poets, no repeats until the bank is used.",
     config: [DIAL + " Picks the age band.", "Card size sets how long a poem fits."],
   },
+  quote: {
+    source:
+      "A hand-checked bank of famous quotes from speeches, letters and books. Each has who said it and a plain-English meaning. Only well-documented attributions are used. Each kid works through the bank in their own order.",
+    config: [DIAL + " Picks the age band."],
+  },
   joke: {
     source:
       "A hand-picked bank of 500+ clean, age-checked jokes. Each kid works through it one a day in their own order, so nothing repeats until the whole bank is used.",

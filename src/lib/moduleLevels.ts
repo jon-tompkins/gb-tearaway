@@ -22,6 +22,7 @@ export const MODULE_LEVELS: Record<ModuleId, string> = {
   word: BANK,
   poem: BANK,
   joke: BANK,
+  quote: BANK,
   spanish: BANK,
   logicgrid: "Fewer clues up to 10, an extra person to match from 11.",
   planes: "1–6: a school-bus size comparison and a fun fact. 7–9 add length, wingspan and speed; 10+ add first-flight year and crew.",

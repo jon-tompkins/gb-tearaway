@@ -1,5 +1,6 @@
 import type { AgeBand, ModuleId } from "./types";
 import { JOKES } from "./content/jokes";
+import { QUOTES } from "./content/quotes";
 import { FACTS } from "./content/facts";
 import { RECORDS } from "./content/records";
 import { TWISTERS } from "./content/twisters";
@@ -136,6 +137,14 @@ function feedNames(feed: keyof typeof NEWS_FEEDS): string {
 
 export const ADMIN_MODULES: Record<ModuleId, AdminModule> = {
   // ---- Static banks ----
+  quote: {
+    kind: "bank",
+    how: "Static bank. Each kid works through their age band's quotes one a day, in their own shuffled order, so nothing repeats until the band is used up.",
+    bank: () => ({
+      columns: ["Quote", "Author", "Meaning"],
+      rows: QUOTES.map((q) => ({ cells: [q.quote, `${q.author} (${q.role})`, q.meaning], bands: q.bands })),
+    }),
+  },
   joke: {
     kind: "bank",
     how: "Static bank. Each kid works through their age band's jokes one a day, in their own shuffled order, so nothing repeats until the band is used up.",

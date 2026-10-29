@@ -26,6 +26,7 @@ export type ModuleId =
   | "sportsnews"
   | "calendar"
   | "joke"
+  | "quote"
   | "riddle"
   | "sequence"
   | "crossword"

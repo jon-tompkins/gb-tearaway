@@ -21,6 +21,7 @@ import { generateLogicGrid } from "./puzzles/logicgrid";
 import { buildNumberCross } from "./puzzles/numbercross";
 import { pickHistory } from "./content/history";
 import { pickJokeForDay } from "./content/jokes";
+import { pickQuoteForDay } from "./content/quotes";
 import {
   pickLiveWord,
   pickLiveSpanish,
@@ -546,6 +547,17 @@ export function generateStrip(
         kind: "calendar",
         lines,
         events: todays,
+      });
+      continue;
+    }
+    if (moduleId === "quote") {
+      const q = pickQuoteForDay(band, { dateISO: date, kid: firstName, nonce });
+      sections.push({
+        id: `quote-${hashish(q.quote)}`,
+        moduleId,
+        title: meta.name,
+        kind: "text",
+        lines: [`“${q.quote}”`, `— ${q.author}, ${q.role}`, `Meaning: ${q.meaning}`],
       });
       continue;
     }
