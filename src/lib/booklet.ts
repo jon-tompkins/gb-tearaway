@@ -130,10 +130,11 @@ ${opts.duplex ? `.sheet:nth-child(even) { padding: 0.5in ${inner}in 0.5in 0.5in;
 .key-cell { display: flex; flex-direction: column; min-height: 0; }
 .key-n { font-size: 9pt; font-weight: 700; margin-bottom: 0.04in; }
 .key-cell .fig { flex: 1 1 0; }
+@media print { body { zoom: 1 !important; } }
 @media screen { body { background: #e9e4d8; } .sheet { background: #fff; margin: 0.2in auto; box-shadow: 0 2px 12px rgba(0,0,0,.18); } }
 `;
   const script = extra.autoPrint
     ? `<script>window.addEventListener("load",function(){setTimeout(function(){window.print()},300)})</script>`
-    : "";
+    : `<script>(function(){function fit(){var w=document.documentElement.clientWidth;document.body.style.zoom=Math.min(1,(w-24)/816)}fit();window.addEventListener("resize",fit)})()</script>`;
   return `<!doctype html><html><head><meta charset="utf-8"><title>Back of the Box booklet</title><style>${css}</style></head><body>${sheets.join("")}${script}</body></html>`;
 }
