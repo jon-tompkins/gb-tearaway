@@ -30,6 +30,10 @@ export const NEWS_FEEDS: Partial<
   news_national: {
     url: [
       "https://www.goodnewsnetwork.org/category/news/usa/feed/",
+      // Main feed posts daily (the USA category only a few a week); the card
+      // hint keeps just the US stories.
+      "https://www.goodnewsnetwork.org/feed/",
+      "https://reasonstobecheerful.world/feed/",
       "https://www.sunnyskyz.com/rss_tebow.php",
       "https://www.optimistdaily.com/feed/",
     ],

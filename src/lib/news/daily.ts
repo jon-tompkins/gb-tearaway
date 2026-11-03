@@ -18,6 +18,8 @@ interface DailyNewsPayload {
 }
 
 const MAX_EMPTY_TRIES = 3;
+/** How many past days of printed stories to avoid repeating. */
+const RECENT_DAYS = 7;
 
 function utcDate(): string {
   return new Date().toISOString().slice(0, 10);
@@ -85,7 +87,26 @@ export async function getDailyNews(
   // isn't ready yet simply doesn't print.
   if (!opts.generate) return null;
 
-  const headlines = await headlinesFor(urls);
+  // Never repeat a story printed in the last week for this feed: drop headlines
+  // whose article link (or title) already ran. Thin feeds then pull in new items
+  // or print fewer stories rather than recycling yesterday's.
+  const seenLinks = new Set<string>();
+  const seenTitles = new Set<string>();
+  for (let d = 1; d <= RECENT_DAYS; d++) {
+    const day = new Date(Date.now() - d * 86400000).toISOString().slice(0, 10);
+    const prev = await loadPayload<DailyNewsPayload>(`news:${day}:${feed}${cacheSuffix}`);
+    for (const it of prev?.items ?? []) {
+      if (it.source?.url) seenLinks.add(it.source.url);
+      if (it.source?.title) seenTitles.add(it.source.title.toLowerCase());
+    }
+    // Stories picked but rejected also shouldn't keep being re-tried daily.
+    for (const dr of prev?.dropped ?? []) {
+      if (dr.url) seenLinks.add(dr.url);
+    }
+  }
+  const headlines = (await headlinesFor(urls)).filter(
+    (h) => !(h.link && seenLinks.has(h.link)) && !seenTitles.has(h.title.toLowerCase()),
+  );
   const { items, dropped, usage } = await rewriteKidSafe(headlines, hint, opts.config);
   const emptyTries = items.length ? 0 : (cached?.date === date ? (cached.emptyTries ?? 1) : 0) + 1;
   await savePayload(key, { date, items, dropped, usage, emptyTries } satisfies DailyNewsPayload);
