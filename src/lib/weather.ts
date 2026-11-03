@@ -201,7 +201,10 @@ async function fetchJsonResilient(
     const ctl = new AbortController();
     const timer = setTimeout(() => ctl.abort(), timeoutMs);
     try {
-      const res = await fetch(url, { next: { revalidate }, signal: ctl.signal });
+      // revalidate 0 = never cached. Next's data cache serves a STALE entry once
+      // it expires (refreshing in the background), so the first request of the
+      // morning got yesterday's forecast with yesterday's day labels.
+      const res = await fetch(url, revalidate > 0 ? { next: { revalidate }, signal: ctl.signal } : { cache: "no-store", signal: ctl.signal });
       clearTimeout(timer);
       if (res.ok) return res;
     } catch {
@@ -306,7 +309,7 @@ export async function fetchWeather(opts: {
     // Cache ~30m so parent preview refreshes don't burn Open-Meteo quota.
     // Resilient (timeout + retry) so a transient blip during the heavy morning
     // render doesn't drop a real location to fabricated mock temps.
-    const res = await fetchJsonResilient(`https://api.open-meteo.com/v1/forecast?${params}`, 1800);
+    const res = await fetchJsonResilient(`https://api.open-meteo.com/v1/forecast?${params}`, 0);
     if (!res) return mockOr(geo.name);
     const json = (await res.json()) as {
       current?: { temperature_2m?: number; weather_code?: number };
