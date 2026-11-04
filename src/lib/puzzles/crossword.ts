@@ -337,9 +337,17 @@ export function crosswordToSvg(cw: CrosswordData, opts: { showAnswers?: boolean 
   for (let r = 0; r < cw.rows; r++)
     for (let c = 0; c < cw.cols; c++) {
       const ch = cw.grid[r][c];
-      if (!ch) continue;
       const x = pad + c * s;
       const y = pad + r * s;
+      // Blank squares that are boxed in by the puzzle (3+ sides are letter
+      // squares) are blacked out, newspaper-style, so they don't read as missing
+      // answers. Open space around the grid stays white (saves ink).
+      if (!ch) {
+        const boxed = [[-1, 0], [1, 0], [0, -1], [0, 1]].filter(([dr, dc]) => !!cw.grid[r + dr]?.[c + dc]).length;
+        if (boxed < 3) continue;
+        parts.push(`<rect x="${x}" y="${y}" width="${s}" height="${s}" fill="#111"/>`);
+        continue;
+      }
       parts.push(`<rect x="${x}" y="${y}" width="${s}" height="${s}" fill="#fff" stroke="#111" stroke-width="1.1"/>`);
       const n = nums.get(`${r},${c}`);
       if (n) parts.push(`<text x="${x + 1.8}" y="${y + 6.6}" font-size="6.2" font-family="Helvetica,Arial,sans-serif" fill="#111">${n}</text>`);
