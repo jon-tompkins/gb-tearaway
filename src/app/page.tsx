@@ -174,8 +174,8 @@ export default async function HomePage() {
         <div className="mx-auto grid max-w-6xl items-center gap-8 px-4 py-14 md:grid-cols-2">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="/dad-and-son.svg"
-            alt="A cartoon of a dad and his son grinning in front of a space shuttle"
+            src="/dad-and-son.jpg"
+            alt="An illustration of a dad and his son grinning in front of a space shuttle"
             className="w-full rounded-2xl border border-rule shadow-sm"
             loading="lazy"
           />
