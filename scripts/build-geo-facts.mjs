@@ -103,5 +103,5 @@ async function worker() {
     writeFileSync(OUT, JSON.stringify(bank, null, 1));
   }
 }
-await Promise.all(Array.from({ length: 4 }, worker));
+await Promise.all(Array.from({ length: 2 }, worker));
 console.log(`done: ${Object.keys(bank).length} facts, ${failed.length} failed`, failed.length);
