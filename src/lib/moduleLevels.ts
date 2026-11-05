@@ -34,6 +34,7 @@ export const MODULE_LEVELS: Record<ModuleId, string> = {
   usstate: "Easier at lower levels (state named, star on the map); harder at 9+ (blank outline).",
   country_eu: COUNTRY,
   country_af: COUNTRY,
+  country_all: COUNTRY,
   country_asia_oce: COUNTRY,
   country_americas: COUNTRY,
   history: BANK + " The youngest set is smaller.",

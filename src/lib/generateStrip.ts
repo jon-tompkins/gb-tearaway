@@ -53,6 +53,12 @@ import { moduleById } from "./modules";
 import { buildPreviewHtml } from "./previewHtml";
 import { ensureKidSlots, resolveActiveModules } from "./slots";
 import { bandFromDifficulty, defaultDifficultyForBand, effectiveDifficulty } from "./difficulty";
+import { geoFact } from "./puzzles/geo-facts";
+/** Fun fact line for the easy geography cards (the name is already shown there, so it spoils nothing). */
+const factLine = (kind: "state" | "country", name: string): string[] => {
+  const f = geoFact(kind, name);
+  return f ? [`Fun fact: ${f}`] : [];
+};
 
 export interface GenerateOptions {
   nonce?: number;
@@ -373,7 +379,7 @@ export function generateStrip(
         title: q.easy ? "State & Capital" : "Name the State",
         kind: "text",
         lines: q.easy
-          ? [`${q.name}  ·  Capital: ${q.capital}  ★`]
+          ? [`${q.name}  ·  Capital: ${q.capital}  ★`, ...factLine("state", q.name)]
           : ["What state is this? Name it and its capital."],
         svg: q.svg,
         locator: q.locatorSvg ?? undefined,
@@ -383,27 +389,32 @@ export function generateStrip(
       continue;
     }
     if (
+      moduleId === "country_all" ||
       moduleId === "country_eu" ||
       moduleId === "country_af" ||
       moduleId === "country_asia_oce" ||
       moduleId === "country_americas"
     ) {
-      const cont: Continent =
-        moduleId === "country_eu"
+      const cont: Continent | "all" =
+        moduleId === "country_all"
+          ? "all"
+          : moduleId === "country_eu"
           ? "europe"
           : moduleId === "country_af"
             ? "africa"
             : moduleId === "country_asia_oce"
               ? "asia_oceania"
               : "americas";
-      const q = generateCountryQuiz(rng, difficulty, cont);
+      let nameHash = 0;
+      for (const ch of firstName) nameHash = (nameHash * 31 + ch.charCodeAt(0)) >>> 0;
+      const q = generateCountryQuiz(rng, difficulty, cont, Math.floor(Date.parse(date) / 86400000) + nonce + nameHash);
       sections.push({
         id: `${moduleId}-${q.name}`,
         moduleId,
         title: q.easy ? "Country & Capital" : "Name the Country",
         kind: "text",
         lines: q.easy
-          ? [`${q.name}  ·  Capital: ${q.capital}  ★`]
+          ? [`${q.name}  ·  Capital: ${q.capital}  ★`, ...factLine("country", q.name)]
           : ["What country is this? Name it and its capital."],
         svg: q.svg,
         locator: q.locatorSvg ?? undefined,

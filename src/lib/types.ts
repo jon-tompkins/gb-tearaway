@@ -19,6 +19,7 @@ export type ModuleId =
   | "country_af"
   | "country_asia_oce"
   | "country_americas"
+  | "country_all"
   | "history"
   | "weather"
   | "stocks"

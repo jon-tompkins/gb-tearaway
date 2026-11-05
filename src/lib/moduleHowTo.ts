@@ -63,6 +63,11 @@ export const MODULE_HOW_TO: Partial<Record<ModuleId, string[]>> = {
     "Easy cards give you the name and star the capital. Harder ones show only the shape.",
     "Check your answer in the app.",
   ],
+  country_all: [
+    "Look at the outline, then the small map to see where in the world it is.",
+    "Easy cards give you the name and star the capital. Harder ones show only the shape.",
+    "Check your answer in the app.",
+  ],
   country_af: [
     "Look at the outline. Can you name the country and its capital?",
     "Easy cards give you the name and star the capital. Harder ones show only the shape.",

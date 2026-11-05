@@ -99,6 +99,11 @@ export const MODULE_INFO: Record<ModuleId, ModuleInfo> = {
     config: [DIAL + " Easy names it and stars the capital; harder is outline-only."],
     answerInApp: true,
   },
+  country_all: {
+    source: "Real country outlines + capitals (Natural Earth data), every continent in one module.",
+    config: [DIAL + " Easy names it and stars the capital; harder is outline-only."],
+    answerInApp: true,
+  },
   country_af: {
     source: "Real country outlines + capitals (Natural Earth data), scoped to Africa.",
     config: [DIAL + " Easy names it and stars the capital; harder is outline-only."],

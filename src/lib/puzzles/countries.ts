@@ -45,10 +45,26 @@ export function countryToSvg(s: CountryShape, opts: { showStar?: boolean } = {})
   return parts.join("");
 }
 
-export function generateCountryQuiz(rng: RNG, difficulty: number, continent: Continent): CountryQuiz {
-  const pool = COUNTRIES.filter((c) => c.continent === continent);
+/** Every country in one fixed shuffled order, so a day-by-day walk covers the world with no repeats. */
+function worldOrder(): CountryShape[] {
+  const a = [...COUNTRIES];
+  let x = 20261105;
+  for (let i = a.length - 1; i > 0; i--) {
+    x = (Math.imul(x, 1664525) + 1013904223) >>> 0;
+    const j = x % (i + 1);
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+/**
+ * continent "all" walks the whole world: `walk` (a day/kid/nonce counter) indexes a fixed
+ * shuffled list, so it never repeats until every country has been shown.
+ */
+export function generateCountryQuiz(rng: RNG, difficulty: number, continent: Continent | "all", walk = 0): CountryQuiz {
+  const pool = continent === "all" ? worldOrder() : COUNTRIES.filter((c) => c.continent === continent);
   const easy = clampDifficulty(difficulty) <= 8;
-  const s = pool[Math.floor(rng() * pool.length) % pool.length];
+  const s = continent === "all" ? pool[((walk % pool.length) + pool.length) % pool.length] : pool[Math.floor(rng() * pool.length) % pool.length];
   return {
     name: s.name,
     capital: s.capital,

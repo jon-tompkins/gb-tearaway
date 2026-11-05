@@ -1,0 +1,107 @@
+{
+ "state:Alaska": {
+  "fact": "Alaska is the largest U.S. state by area, bigger than Texas, California, and Montana combined.",
+  "source": "Wikipedia: Alaska",
+  "quote": "Alaska is the largest U.S. state by area—comprising more total area than the next three largest states of Texas, California, and Montana combined—and is the world's largest semi-exclave and seventh-largest subnational division."
+ },
+ "state:Alabama": {
+  "fact": "Alabama's nickname is the Yellowhammer State, named after its state bird.",
+  "source": "Wikipedia: Alabama",
+  "quote": "Alabama is nicknamed the Yellowhammer State, after the state bird."
+ },
+ "state:Arizona": {
+  "fact": "Arizona is home to the Grand Canyon, one of the world's seven natural wonders.",
+  "source": "Wikipedia: Arizona",
+  "quote": "In addition to the internationally known Grand Canyon National Park, which is one of the world's seven natural wonders, there are several national forests, national parks, and national monuments."
+ },
+ "state:Colorado": {
+  "fact": "Colorado has deserts with huge sand dunes, plus mountains and deep canyons.",
+  "source": "Wikipedia: Colorado",
+  "quote": "Colorado is notable for its diverse geography, which includes alpine mountains, high plains, deserts with huge sand dunes, and deep canyons."
+ },
+ "state:Arkansas": {
+  "fact": "Arkansas is home to Walmart, the world's largest company by revenue, headquartered in Bentonville.",
+  "source": "Wikipedia: Arkansas",
+  "quote": "During the 1960s, the state became the base of the Walmart corporation, the world's largest company by revenue, headquartered in Bentonville."
+ },
+ "state:Delaware": {
+  "fact": "Delaware is nicknamed 'The First State' because it was the first to ratify the Constitution of the United States.",
+  "source": "Wikipedia: Delaware",
+  "quote": "On December 7, 1787, Delaware was the first state to ratify the Constitution of the United States, earning it the nickname \"The First State\"."
+ },
+ "state:Florida": {
+  "fact": "Florida has the longest coastline in the contiguous United States, spanning about 1,350 miles.",
+  "source": "Wikipedia: Florida",
+  "quote": "It has the longest coastline in the contiguous United States, spanning approximately 1,350 miles (2,170 km), not including its many barrier islands."
+ },
+ "state:Connecticut": {
+  "fact": "Connecticut is named after the Connecticut River, the longest river in New England.",
+  "source": "Wikipedia: Connecticut",
+  "quote": "The state is named after the Connecticut River, the longest in New England, which roughly bisects the state and drains into the Long Island Sound between the towns of Old Saybrook and Old Lyme."
+ },
+ "state:Hawaii": {
+  "fact": "Mauna Kea in Hawaii is taller than Mount Everest if you measure from its base on the ocean floor.",
+  "source": "Wikipedia: Hawaii",
+  "quote": "Hawaiʻi's tallest mountain, Mauna Kea, is 13,796 ft (4,205 m) above mean sea level; but it is taller than Mount Everest when measured from the base of the mountain, which is on the floor of the Pacific Ocean, rising about 33,500 feet (10,200 m)."
+ },
+ "state:Indiana": {
+  "fact": "Indianapolis hosts a big race called the Indianapolis 500 at Indianapolis Motor Speedway!",
+  "source": "Wikipedia: Indiana",
+  "quote": "The city also hosts several notable competitive events, such as the Indianapolis 500, held at Indianapolis Motor Speedway."
+ },
+ "state:Idaho": {
+  "fact": "Idaho's Shoshone Falls drops from a greater height than Niagara Falls.",
+  "source": "Wikipedia: Idaho",
+  "quote": "Shoshone Falls falls down cliffs from a height greater than that of Niagara Falls."
+ },
+ "state:Illinois": {
+  "fact": "Illinoisan John Deere invented a self-scouring steel plow that turned Illinois prairie into some of the world's most productive farmland.",
+  "source": "Wikipedia: Illinois",
+  "quote": "the invention of the self-scouring steel plow by Illinoisan John Deere turned the state's rich prairie into some of the world's most productive and valuable farmland, attracting immigrant farmers from Germany, Sweden, Hungary, and elsewhere."
+ },
+ "state:Kentucky": {
+  "fact": "Kentucky is home to the world's longest known cave system, in Mammoth Cave National Park.",
+  "source": "Wikipedia: Kentucky",
+  "quote": "The state is home to the world's longest known cave system in Mammoth Cave National Park, and the nation's two largest artificial lakes east of the Mississippi River."
+ },
+ "state:Louisiana": {
+  "fact": "Louisiana is the only U.S. state with parishes instead of counties.",
+  "source": "Wikipedia: Louisiana",
+  "quote": "Reflecting its French heritage, Louisiana is the only U.S. state with political subdivisions termed parishes, which are equivalent to counties, making it one of only two U.S. states not subdivided into counties (the other being Alaska and its boroughs)."
+ },
+ "state:Kansas": {
+  "fact": "A 2003 study jokingly said Kansas is 'flatter than a pancake.'",
+  "source": "Wikipedia: Kansas",
+  "quote": "It is a common misconception that Kansas is the flattest state in the nation—in 2003, a tongue-in-cheek study famously declared the state \"flatter than a pancake\"."
+ },
+ "state:Maine": {
+  "fact": "Maine's Quoddy Head Lighthouse is the closest place in the United States to Africa and Europe.",
+  "source": "Wikipedia: Maine",
+  "quote": "Its Quoddy Head Lighthouse is also the closest place in the United States to Africa and Europe."
+ },
+ "state:Iowa": {
+  "fact": "Iowa's state flag is patterned after the flag of France. Iowa was once part of French Louisiana!",
+  "source": "Wikipedia: Iowa",
+  "quote": "During the 18th and early 19th centuries, Iowa was a part of French Louisiana and Spanish Louisiana; its state flag is patterned after the flag of France."
+ },
+ "state:Maryland": {
+  "fact": "Maryland is nicknamed \"America in Miniature\" because it has a variety of climates and land features.",
+  "source": "Wikipedia: Maryland",
+  "quote": "Although one of the smallest states in the U.S., it features a variety of climates and topographical features that have earned it the moniker of America in Miniature."
+ },
+ "state:Massachusetts": {
+  "fact": "Some say the name Massachusetts means \"near the great hill,\" a nod to the Blue Hills.",
+  "source": "Wikipedia: Massachusetts",
+  "quote": "This word has been translated as \"near the great hill\", \"by the blue hills\", \"at the little big hill\", or \"at the range of hills\", in reference to the Blue Hills—namely, the Great Blue Hill, located on the boundary of Milton and Canton."
+ },
+ "state:Missouri": {
+  "fact": "Missouri has more than 7,300 recorded caves, so it is also known as the Cave State.",
+  "source": "Wikipedia: Missouri",
+  "quote": "It is also known as the \"Cave State\" because there are more than 7,300 recorded caves in the state (second to Tennessee)."
+ },
+ "state:Mississippi": {
+  "fact": "Mississippi produces more than half of the country's farm-raised catfish. That's a lot of fish!",
+  "source": "Wikipedia: Mississippi",
+  "quote": "The state produces more than half of the country's farm-raised catfish, and is a top producer of sweet potatoes, cotton and pulpwood."
+ }
+}

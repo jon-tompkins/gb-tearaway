@@ -51,6 +51,7 @@ export const MODULE_CATALOG: ModuleMeta[] = [
   { id: "scramble", name: "Word Scramble", blurb: "Unscramble the letters with a hint — answer shows in the app, never on paper.", category: "words", defaultOn: false, size: "half" },
   // Curious facts
   { id: "usstate", name: "Name the State", blurb: "A US state outline, with a small US map showing where it is. Easy names the state + marks its capital with a star; harder shows just the outline (answer in the app).", category: "facts", defaultOn: false, size: "full" },
+  { id: "country_all", name: "Countries: Whole World", blurb: "One country a day from every continent, walking through the whole world with no repeats until all are done. A small map highlights the country on its continent. Easy names it + stars the capital; harder is outline-only.", category: "facts", defaultOn: false, size: "full" },
   { id: "country_eu", name: "Countries: Europe", blurb: "A European country outline, with a small map of Europe showing where it is. Easy names it + stars the capital; harder is outline-only (answer in the app).", category: "facts", defaultOn: false, size: "full" },
   { id: "country_af", name: "Countries: Africa", blurb: "An African country outline, with a small map of Africa showing where it is. Easy names it + stars the capital; harder is outline-only (answer in the app).", category: "facts", defaultOn: false, size: "full" },
   { id: "country_asia_oce", name: "Countries: Asia & Oceania", blurb: "An Asian or Oceanian country outline, with a small regional map showing where it is. Easy names it + stars the capital; harder is outline-only.", category: "facts", defaultOn: false, size: "full" },
@@ -89,6 +90,7 @@ const MODULE_SIZES: Partial<Record<ModuleId, SlotSize[]>> = {
   crossword: ["double"],
   numbercross: ["full", "double"],
   usstate: ["full", "double"],
+  country_all: ["full", "double"],
   country_eu: ["full", "double"],
   country_af: ["full", "double"],
   country_asia_oce: ["full", "double"],

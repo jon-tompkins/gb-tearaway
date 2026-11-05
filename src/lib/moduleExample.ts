@@ -83,12 +83,15 @@ export function moduleExample(id: ModuleId): ModuleExample {
       const q = generateStateQuiz(mulberry32(3), 4);
       return { svg: q.svg, locator: q.locatorSvg ?? undefined, text: [`${q.name}  ·  Capital: ${q.capital}  ★`] };
     }
+    case "country_all":
     case "country_eu":
     case "country_af":
     case "country_asia_oce":
     case "country_americas": {
-      const cont: Continent =
-        id === "country_eu"
+      const cont: Continent | "all" =
+        id === "country_all"
+          ? "all"
+          : id === "country_eu"
           ? "europe"
           : id === "country_af"
             ? "africa"

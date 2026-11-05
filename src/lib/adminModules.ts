@@ -366,19 +366,20 @@ export const ADMIN_MODULES: Record<ModuleId, AdminModule> = {
     how: "Built-in outlines + capitals for all 50 states (public map data).",
     bank: () => ({ columns: ["State", "Capital"], rows: US_STATES.map((s) => ({ cells: [s.name, s.capital] })) }),
   },
+  country_all: countryModule(),
   country_eu: countryModule("europe"),
   country_af: countryModule("africa"),
   country_asia_oce: countryModule("asia_oceania"),
   country_americas: countryModule("americas"),
 };
 
-function countryModule(continent: (typeof COUNTRIES)[number]["continent"]): AdminModule {
+function countryModule(continent?: (typeof COUNTRIES)[number]["continent"]): AdminModule {
   return {
     kind: "dataset",
     how: "Built-in country outlines + capitals (Natural Earth data).",
     bank: () => ({
       columns: ["Country", "Capital"],
-      rows: COUNTRIES.filter((c) => c.continent === continent).map((c) => ({ cells: [c.name, c.capital] })),
+      rows: COUNTRIES.filter((c) => !continent || c.continent === continent).map((c) => ({ cells: [c.name, c.capital] })),
     }),
   };
 }
