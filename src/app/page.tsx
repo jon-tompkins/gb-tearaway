@@ -4,6 +4,8 @@ import { HomeHeaderActions } from "@/components/HomeHeaderActions";
 import { MODULE_CATALOG, MODULE_CATEGORIES } from "@/lib/modules";
 import { getHiddenModules } from "@/lib/visibility";
 import { FAQ } from "@/lib/faq";
+import { PLANS } from "@/lib/plans";
+import { AGE_BANDS } from "@/lib/types";
 
 // The module showcase leaves out admin-hidden modules; refresh every few minutes.
 export const revalidate = 300;
@@ -55,12 +57,11 @@ export default async function HomePage() {
               Morning ritual · screen-free
             </p>
             <h1 className="mt-3 font-display text-4xl leading-[1.05] tracking-tight text-ink sm:text-5xl">
-              A smarter breakfast, printed on paper — every single morning.
+              A new puzzle page for your kid, every morning.
             </h1>
             <p className="mt-5 max-w-xl text-lg leading-relaxed text-ink-soft">
-              Back of the Box makes your kid a fresh puzzle page every day: real kid-safe news, a maze,
-              a crossword, a word to grow on, a joke for the table. You set the age and pick the cards.
-              It lands at breakfast, ready to print.
+              Kid-safe news, a maze, a crossword and a joke, emailed as a PDF. Print it, no screen.
+              Free for a month.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <GetStartedButton className="btn-primary" />
@@ -68,9 +69,20 @@ export default async function HomePage() {
                 See Modules
               </Link>
             </div>
-            <p className="mt-4 text-sm text-ink-soft">
-              First month free. Then $20 a year for up to two kids, $40 for up to five (or $6 / $12 a quarter).
-            </p>
+            <div className="mt-5">
+              <p className="text-sm font-semibold text-ink">Try one first. Download today’s sample page (PDF), no sign-in:</p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {AGE_BANDS.map((b) => (
+                  <a
+                    key={b.id}
+                    href={`/api/sample/${b.id}`}
+                    className="rounded-full border border-rule bg-paper px-4 py-1.5 text-sm font-semibold text-ink transition hover:border-ink/40"
+                  >
+                    Ages {b.label} ↓
+                  </a>
+                ))}
+              </div>
+            </div>
           </div>
 
           <div className="mx-auto w-full max-w-[640px]">
@@ -153,6 +165,30 @@ export default async function HomePage() {
         </div>
       </section>
 
+      <section id="pricing" className="border-t border-rule/50">
+        <div className="mx-auto max-w-3xl px-4 py-14">
+          <h2 className="font-display text-2xl text-ink sm:text-3xl">Simple pricing</h2>
+          <p className="mt-2 text-ink-soft">
+            Your first month is free, and you don’t need a card to start. Pick a plan when you’re ready.
+          </p>
+          <div className="mt-6 grid gap-4 sm:grid-cols-2">
+            {PLANS.map((p) => (
+              <div key={p.id} className="card">
+                <h3 className="font-display text-lg text-ink">{p.label}</h3>
+                <p className="mt-2 font-display text-3xl text-ink">
+                  ${p.yearCents / 100}
+                  <span className="text-base text-ink-soft"> / year</span>
+                </p>
+                <p className="mt-1 text-sm text-ink-soft">or ${p.quarterCents / 100} a quarter</p>
+              </div>
+            ))}
+          </div>
+          <p className="mt-4 text-sm text-ink-soft">
+            No ads, no kid accounts, cancel anytime. <Link href="/privacy" className="font-semibold text-ink underline-offset-4 hover:underline">Read the privacy policy →</Link>
+          </p>
+        </div>
+      </section>
+
       <section className="border-t border-rule/50 bg-warm/40">
         <div className="mx-auto max-w-6xl px-4 py-14">
           <h2 className="font-display text-2xl text-ink sm:text-3xl">Three minutes to set up</h2>
@@ -193,6 +229,11 @@ export default async function HomePage() {
                 day, just for the kid reading it, with a pencil in hand and the news in plain words.
               </p>
               <p>We hope it makes your mornings a little slower, and a lot more fun.</p>
+              <p>
+                <Link href="/about" className="font-semibold text-ink underline-offset-4 hover:underline">
+                  More about us →
+                </Link>
+              </p>
             </div>
           </div>
         </div>
@@ -237,6 +278,7 @@ export default async function HomePage() {
           <Link href="/supplies" className="hover:text-ink">Supplies</Link>
           <Link href="/app" className="hover:text-ink">Dashboard</Link>
           <Link href="/app/setup" className="hover:text-ink">Get started</Link>
+          <Link href="/about" className="hover:text-ink">About</Link>
           <Link href="/faq" className="hover:text-ink">FAQ</Link>
           <Link href="/privacy" className="hover:text-ink">Privacy</Link>
           <Link href="/terms" className="hover:text-ink">Terms</Link>

@@ -52,7 +52,7 @@ export function buildPrintHtml(
         .map(sectionHtml)
         .join("\n")}</div>`;
     const bodyHtml = `<div class="cols">${col(colA)}${col(colB)}</div>`;
-    const ftr1 = `<div class="ftr1"><div class="ftr1-mid"><div class="tear1">— tear here —</div><div class="brand1">Back of the Box</div></div>${qrBlock}</div>`;
+    const ftr1 = `<div class="ftr1"><div class="ftr1-mid"><div class="tear1">— tear here —</div><div class="brand1">Back of the Box · backofthebox.xyz</div></div>${qrBlock}</div>`;
     inner = [hdr1, bodyHtml, ftr1].join("\n");
   } else {
     const footer = job.sections.find((s) => s.kind === "footer");

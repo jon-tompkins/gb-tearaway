@@ -30,7 +30,7 @@ export default function SetupPage() {
   const [deliveryEmail, setDeliveryEmail] = useState("");
   const [timezone, setTimezone] = useState<string>(DEFAULT_SETTINGS.timezone);
   // "scratch" = start with an empty page; otherwise a START_TEMPLATES id.
-  const [templateId, setTemplateId] = useState<string>("scratch");
+  const [templateId, setTemplateId] = useState<string>("puzzle");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -196,7 +196,7 @@ export default function SetupPage() {
         <div className="card space-y-3">
           <div>
             <h2 className="font-display text-lg text-ink">Start from a template</h2>
-            <p className="text-sm text-ink-soft">Pick a ready-made page, then tweak it next. Or build your own from scratch.</p>
+            <p className="text-sm text-ink-soft">We pre-picked a popular one, so you can just tap Create. You can change every card next. Or build your own from scratch.</p>
           </div>
           <div className="grid gap-2 sm:grid-cols-2">
             {START_TEMPLATES.map((t) => (

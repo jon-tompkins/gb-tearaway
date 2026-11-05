@@ -1,5 +1,6 @@
 import { MODULE_LEVELS } from "@/lib/moduleLevels";
 import type { ModuleId } from "@/lib/types";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { isAdmin } from "@/lib/admin";
@@ -13,6 +14,20 @@ import { AppNav } from "@/components/AppNav";
 
 function sizeLabel(sz: SlotSize): string {
   return sz === "half" ? "½ card" : sz === "double" ? "2× card (tall)" : "1× card";
+}
+
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params;
+  if (!isModuleId(id)) return {};
+  const meta = moduleById(id);
+  const title = `${meta.name} for kids: printable daily puzzle | Back of the Box`;
+  const description = `${meta.blurb} Fresh every morning on your kid's printed Back of the Box page, tuned to their age.`;
+  return {
+    title,
+    description,
+    alternates: { canonical: `/modules/${id}` },
+    openGraph: { title, description, url: `/modules/${id}`, images: [{ url: "/og.png", width: 1200, height: 630 }] },
+  };
 }
 
 // Dynamic so a module the admin hid 404s for everyone else.

@@ -73,7 +73,7 @@ export function SupportChat() {
   }
 
   return (
-    <div className="print:hidden fixed bottom-4 right-4 z-50 flex flex-col items-end gap-2">
+    <div className="print:hidden fixed bottom-3 right-3 z-50 flex flex-col items-end gap-2 sm:bottom-4 sm:right-4">
       {open ? (
         <div className="flex h-[min(28rem,70vh)] w-[min(22rem,calc(100vw-2rem))] flex-col overflow-hidden rounded-xl border border-rule bg-paper shadow-lg">
           <div className="flex items-center justify-between border-b border-rule bg-cream px-4 py-2.5">
@@ -113,8 +113,9 @@ export function SupportChat() {
         </div>
       ) : null}
       {!open ? (
-        <button type="button" onClick={() => setOpen(true)} className="btn-primary rounded-full px-4 py-2 text-sm shadow-lg">
-          Help
+        <button type="button" onClick={() => setOpen(true)} aria-label="Help" className="btn-primary h-10 w-10 rounded-full p-0 text-base shadow-lg sm:h-auto sm:w-auto sm:px-4 sm:py-2 sm:text-sm">
+          <span className="sm:hidden" aria-hidden>?</span>
+          <span className="hidden sm:inline">Help</span>
         </button>
       ) : null}
     </div>
