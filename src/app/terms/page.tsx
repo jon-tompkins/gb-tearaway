@@ -36,7 +36,7 @@ export default function TermsPage() {
       <h2 className={H2}>Free trial, plans and billing</h2>
       <ul className="mt-2 list-disc space-y-1.5 pl-5 text-ink-soft">
         <li>New accounts get a free first month. It starts when you first open the app.</li>
-        <li>After that, a paid plan is needed to keep pages active and delivered. Plans are billed yearly or quarterly through Stripe, and renew automatically until you cancel.</li>
+        <li>After that, a paid plan is needed to keep pages active and delivered. Plans are billed monthly ($5) or yearly ($39) through Stripe, and renew automatically until you cancel.</li>
         <li>Prices and plan limits are shown on the Plan page. We may change prices going forward, and we&rsquo;ll give notice before a change applies to your renewal.</li>
         <li>You can cancel any time from the Plan page. Your plan stays active until the end of the period you&rsquo;ve paid for. Except where the law requires otherwise, payments are non-refundable, though if something went wrong, email us and we&rsquo;ll try to make it right.</li>
         <li>Access codes give free time and have no cash value. We may end a code that is abused.</li>

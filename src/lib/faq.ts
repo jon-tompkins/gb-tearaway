@@ -9,7 +9,7 @@ export interface FaqItem {
 export const FAQ: FaqItem[] = [
   {
     q: "What does it cost?",
-    a: "Your first month is free. After that it’s $20 a year for up to two kids, or $40 a year for up to five. Prefer to pay as you go? It’s $6 a quarter for up to two kids, or $12 a quarter for up to five. Sign in with Google to save your setup and get a page every morning.",
+    a: "Your first month is free. After that it’s one simple plan for up to five kids: $5 a month, or $39 a year (under $3.30 a month). Cancel anytime. Sign in with Google to save your setup and get a page every morning.",
   },
   {
     q: "What do I need to print it?",

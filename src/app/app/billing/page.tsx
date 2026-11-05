@@ -61,7 +61,7 @@ function BillingInner() {
       });
   }, [covered, save]);
 
-  async function stripeGo(path: "/api/billing/checkout" | "/api/billing/portal", interval?: "year" | "quarter", plan?: string) {
+  async function stripeGo(path: "/api/billing/checkout" | "/api/billing/portal", interval?: "year" | "month", plan?: string) {
     setBusy(true);
     const err = await goToStripe(path, interval, plan);
     if (err) setMsg({ ok: false, text: err });
@@ -118,7 +118,7 @@ function BillingInner() {
       <section className="card space-y-3">
         <h2 className="font-display text-xl text-ink">Pick a plan</h2>
         <p className="text-sm text-ink-soft">
-          Every account starts with a free month. After that, pick a plan by how many {NOUN.many} you need and how you&rsquo;d like to pay: yearly (best value) or quarterly. Cancel any time.
+          Every account starts with a free month. After that, one simple plan covers up to five {NOUN.many}: $5 a month or $39 a year (best value). Cancel any time.
         </p>
         <p className="font-semibold text-ink">{planLine(a)}</p>
         {a.reason === "admin" ? null : a.subscribed ? (
@@ -127,36 +127,26 @@ function BillingInner() {
           </button>
         ) : (
           <>
-            <div className="space-y-2" role="radiogroup" aria-label="Plan">
-              {PLANS.map((p) => (
-                <div key={p.id} className="rounded-xl border border-rule bg-paper p-3">
-                  <p className="mb-2 text-sm font-semibold text-ink">{p.label}</p>
-                  <div className="flex flex-wrap gap-2">
-                    {(["year", "quarter"] as PlanInterval[]).map((iv) => {
-                      const on = planId === p.id && interval === iv;
-                      const cents = iv === "year" ? p.yearCents : p.quarterCents;
-                      return (
-                        <button
-                          key={iv}
-                          type="button"
-                          role="radio"
-                          aria-checked={on}
-                          onClick={() => {
-                            setPlanId(p.id);
-                            setIntervalChoice(iv);
-                          }}
-                          className={`rounded-full border px-4 py-2 text-sm font-semibold transition ${
-                            on ? "border-ink bg-ink text-cream" : "border-rule bg-cream text-ink hover:border-ink/40"
-                          }`}
-                        >
-                          ${cents / 100}/{iv === "year" ? "year" : "quarter"}
-                          {iv === "year" ? " · best value" : ""}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              ))}
+            <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Billing">
+              {(["year", "month"] as PlanInterval[]).map((iv) => {
+                const on = interval === iv;
+                const cents = iv === "year" ? PLANS[0].yearCents : PLANS[0].monthCents;
+                return (
+                  <button
+                    key={iv}
+                    type="button"
+                    role="radio"
+                    aria-checked={on}
+                    onClick={() => setIntervalChoice(iv)}
+                    className={`rounded-full border px-4 py-2 text-sm font-semibold transition ${
+                      on ? "border-ink bg-ink text-cream" : "border-rule bg-cream text-ink hover:border-ink/40"
+                    }`}
+                  >
+                    ${cents / 100}/{iv}
+                    {iv === "year" ? " · best value" : ""}
+                  </button>
+                );
+              })}
             </div>
             {status.testMode ? (
               <div className="rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">

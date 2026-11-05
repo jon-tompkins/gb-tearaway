@@ -4,7 +4,7 @@ import { listPayloadFields, loadPayload, savePayload } from "./persist";
 import { periodEnd, stripeConfigured, type StripeSubscription } from "./stripe";
 
 /**
- * Plans: every account gets a free first month, then a yearly or quarterly plan through Stripe (see plans.ts).
+ * Plans: every account gets a free first month, then one plan ($5/month or $39/year, up to 5 kids) through Stripe (see plans.ts).
  * Access codes grant free time (N months, or forever) on top of that.
  *
  * Billing lives beside each user's state in botb_state under `billing:<email>`;

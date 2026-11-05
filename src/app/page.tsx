@@ -172,16 +172,22 @@ export default async function HomePage() {
             Your first month is free, and you don’t need a card to start. Pick a plan when you’re ready.
           </p>
           <div className="mt-6 grid gap-4 sm:grid-cols-2">
-            {PLANS.map((p) => (
-              <div key={p.id} className="card">
-                <h3 className="font-display text-lg text-ink">{p.label}</h3>
-                <p className="mt-2 font-display text-3xl text-ink">
-                  ${p.yearCents / 100}
-                  <span className="text-base text-ink-soft"> / year</span>
-                </p>
-                <p className="mt-1 text-sm text-ink-soft">or ${p.quarterCents / 100} a quarter</p>
-              </div>
-            ))}
+            <div className="card">
+              <h3 className="font-display text-lg text-ink">Monthly</h3>
+              <p className="mt-2 font-display text-3xl text-ink">
+                ${PLANS[0].monthCents / 100}
+                <span className="text-base text-ink-soft"> / month</span>
+              </p>
+              <p className="mt-1 text-sm text-ink-soft">Up to five kids. Cancel anytime.</p>
+            </div>
+            <div className="card border-ink">
+              <h3 className="font-display text-lg text-ink">Yearly · best value</h3>
+              <p className="mt-2 font-display text-3xl text-ink">
+                ${PLANS[0].yearCents / 100}
+                <span className="text-base text-ink-soft"> / year</span>
+              </p>
+              <p className="mt-1 text-sm text-ink-soft">Up to five kids. Under $3.30 a month.</p>
+            </div>
           </div>
           <p className="mt-4 text-sm text-ink-soft">
             No ads, no kid accounts, cancel anytime. <Link href="/privacy" className="font-semibold text-ink underline-offset-4 hover:underline">Read the privacy policy →</Link>

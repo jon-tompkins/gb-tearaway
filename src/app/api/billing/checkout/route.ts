@@ -11,13 +11,13 @@ const SITE = process.env.EMAIL_SITE_URL || "https://www.backofthebox.xyz";
 const MIN_TRIAL_MS = 49 * 3_600_000;
 
 /**
- * Start a $5/month (or a yearly 1/2/5-kid plan) Stripe Checkout. Any free time the user still has (trial or
+ * Start a $5/month or $39/year (up to 5 kids) Stripe Checkout. Any free time the user still has (trial or
  * code) becomes the subscription's trial, so subscribing early never costs a
  * day — the first charge lands when the free time runs out.
  */
 export async function POST(req: Request) {
   const body = (await req.json().catch(() => ({}))) as { interval?: string; plan?: string };
-  const interval: PlanInterval = body.interval === "year" ? "year" : "quarter";
+  const interval: PlanInterval = body.interval === "month" ? "month" : "year";
   const plan = planById(body.plan) ?? PLANS[0];
   const email = (await auth().catch(() => null))?.user?.email?.toLowerCase();
   if (!email) return NextResponse.json({ error: "Sign in first." }, { status: 401 });
@@ -27,7 +27,7 @@ export async function POST(req: Request) {
   const freeUntil = Math.max(Date.parse(b.trialEndsAt) || 0, Date.parse(b.compUntil ?? "") || 0);
   const trialEnd = freeUntil - Date.now() > 0 ? Math.max(freeUntil, Date.now() + MIN_TRIAL_MS) : null;
 
-  // Optional pre-made Stripe prices: STRIPE_PRICE_ID_KIDS2_YEAR, _KIDS2_QUARTER, _KIDS5_YEAR, _KIDS5_QUARTER.
+  // Optional pre-made Stripe prices: STRIPE_PRICE_ID_KIDS5_YEAR, _KIDS5_MONTH.
   const priceId = process.env[`STRIPE_PRICE_ID_${plan.id.toUpperCase()}_${interval.toUpperCase()}`];
   const price = priceId
     ? { price: priceId, quantity: 1 }
@@ -36,8 +36,8 @@ export async function POST(req: Request) {
         price_data: {
           currency: "usd",
           unit_amount: centsFor(plan, interval),
-          recurring: interval === "year" ? { interval: "year" } : { interval: "month", interval_count: 3 },
-          product_data: { name: `Back of the Box, ${plan.label.toLowerCase()} (${interval === "year" ? "yearly" : "quarterly"})` },
+          recurring: { interval },
+          product_data: { name: `Back of the Box, ${plan.label.toLowerCase()} (${interval === "year" ? "yearly" : "monthly"})` },
         },
       };
   try {

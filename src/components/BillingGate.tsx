@@ -41,7 +41,7 @@ function Paywall() {
     <AppShell title="Your free month is up">
       <div className="card max-w-xl space-y-4">
         <p className="text-ink-soft">
-          Thanks for trying Back of the Box. Keep the morning pages coming from $20 a year (or $6 a quarter). Your pages and settings are saved and pick up right where they left off.
+          Thanks for trying Back of the Box. Keep the morning pages coming for $5 a month or $39 a year. Your pages and settings are saved and pick up right where they left off.
         </p>
         <div className="flex flex-wrap gap-2">
           <Link href="/app/billing" className="btn-primary">
