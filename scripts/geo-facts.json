@@ -103,5 +103,835 @@
   "fact": "Mississippi produces more than half of the country's farm-raised catfish. That's a lot of fish!",
   "source": "Wikipedia: Mississippi",
   "quote": "The state produces more than half of the country's farm-raised catfish, and is a top producer of sweet potatoes, cotton and pulpwood."
+ },
+ "state:Montana": {
+  "fact": "Montana has many unofficial nicknames, like Big Sky Country and The Treasure State.",
+  "source": "Wikipedia: Montana",
+  "quote": "Montana has no official nickname but has several unofficial ones, most notably \"Big Sky Country\", \"The Treasure State\", \"Land of the Shining Mountains\", and \"The Last Best Place\"."
+ },
+ "state:Nevada": {
+  "fact": "Nevada's name means \"snowy\" in Spanish, and many of its mountains are capped with snow in winter.",
+  "source": "Wikipedia: Nevada",
+  "quote": "The state's name means \"snowy\" in Spanish, referring to Nevada's extensive number of mountain ranges capped with snow in winter, which help make Nevada among the highest US states by mean altitude."
+ },
+ "state:New Hampshire": {
+  "fact": "New Hampshire has more than 800 lakes and ponds, plus about 19,000 miles of rivers and streams.",
+  "source": "Wikipedia: New Hampshire",
+  "quote": "New Hampshire has more than 800 lakes and ponds, and approximately 19,000 miles (31,000 km) of rivers and streams."
+ },
+ "state:New Jersey": {
+  "fact": "As glaciers retreated, they left behind Lake Passaic, plus rivers, meadows, swamps, and gorges.",
+  "source": "Wikipedia: New Jersey",
+  "quote": "As glaciers retreated, they left behind Lake Passaic along with rivers, meadows, swamps, and gorges."
+ },
+ "state:Nebraska": {
+  "fact": "Nebraska's highest point, Panorama Point, is 5,424 feet up, but it's a relatively low rise.",
+  "source": "Wikipedia: Nebraska",
+  "quote": "Panorama Point, at 5,424 feet (1,653 m), is Nebraska's highest point; though despite its name and elevation, it is a relatively low rise near the Colorado and Wyoming borders."
+ },
+ "state:North Carolina": {
+  "fact": "Mount Mitchell in North Carolina is 6,684 ft tall, the highest point in North America east of the Black Hills.",
+  "source": "Wikipedia: North Carolina",
+  "quote": "North Carolina's Mount Mitchell at 6,684 ft (2,037 m) is the highest point in North America east of the Black Hills, in South Dakota."
+ },
+ "state:North Dakota": {
+  "fact": "A stone marker in Rugby, North Dakota, marks the geographic center of the North American continent!",
+  "source": "Wikipedia: North Dakota",
+  "quote": "North Dakota is near the middle of North America with a stone marker in Rugby, North Dakota marking the \"Geographic Center of the North American Continent\"."
+ },
+ "state:Ohio": {
+  "fact": "Ohio is nicknamed the Buckeye State because of its Ohio buckeye trees.",
+  "source": "Wikipedia: Ohio",
+  "quote": "Ohio is nicknamed the \"Buckeye State\" after its Ohio buckeye trees."
+ },
+ "state:Oklahoma": {
+  "fact": "Tulsa was once called the 'Oil Capital of the World.'",
+  "source": "Wikipedia: Oklahoma",
+  "quote": "Tulsa eventually became known as the \"Oil Capital of the World\" for most of the 20th century and oil investments fueled much of the state's early economy."
+ },
+ "state:New Mexico": {
+  "fact": "Santa Fe, New Mexico's capital, was founded in 1610 and is the oldest state capital in the U.S.",
+  "source": "Wikipedia: New Mexico",
+  "quote": "New Mexico's largest city is Albuquerque, and its state capital is Santa Fe, the oldest state capital in the U.S.—founded in 1610 as the government seat of Nuevo México in New Spain—and the highest in elevation, at 7,000 feet (2,134 m)."
+ },
+ "state:Rhode Island": {
+  "fact": "Rhode Island is nicknamed the Ocean State because it has 400 mi of coastline.",
+  "source": "Wikipedia: Rhode Island",
+  "quote": "Its official nickname, found on its welcome sign, is the \"Ocean State\", a reference to its 400 mi (640 km) of coastline and the large bays and inlets that make up about 14% of its area."
+ },
+ "state:South Carolina": {
+  "fact": "South Carolina's name honors King Charles I, and Carolus is the Latin word for Charles.",
+  "source": "Wikipedia: South Carolina",
+  "quote": "South Carolina was named in honor of King Charles I of England, who first formed the English colony, with Carolus being Latin for \"Charles\"."
+ },
+ "state:Tennessee": {
+  "fact": "Tennessee's Great Smoky Mountains National Park is the nation's most visited national park.",
+  "source": "Wikipedia: Tennessee",
+  "quote": "The Great Smoky Mountains National Park, the nation's most visited national park, is in eastern Tennessee."
+ },
+ "state:Texas": {
+  "fact": "Texas is the second-largest state in the U.S. in both area and population, with 268,596 square miles.",
+  "source": "Wikipedia: Texas",
+  "quote": "Covering 268,596 square miles (695,660 km2) and with an estimated population of over 31.7 million residents in 2025, it is the second-largest state by both area and population."
+ },
+ "state:Vermont": {
+  "fact": "Vermont makes about 50% of the nation's maple syrup.",
+  "source": "Wikipedia: Vermont",
+  "quote": "Vermont produces approximately 50% of the nation's maple syrup."
+ },
+ "state:South Dakota": {
+  "fact": "The Missouri River splits South Dakota into two halves nicknamed East River and West River.",
+  "source": "Wikipedia: South Dakota",
+  "quote": "The Missouri River bisects the state into two geographically and socially distinct halves colloquially known as \"East River\" and \"West River\"."
+ },
+ "state:Utah": {
+  "fact": "Utah's flag has a beehive on it, and the state's motto is \"Industry.\"",
+  "source": "Wikipedia: Utah",
+  "quote": "This is symbolized by the beehive on the Utah flag, and the state's motto, \"Industry\"."
+ },
+ "state:Virginia": {
+  "fact": "Virginia is called the Mother of States because land from it was carved into new states, like Kentucky.",
+  "source": "Wikipedia: Virginia",
+  "quote": "Virginia is called the \"Mother of States\" because of its role in being carved into states such as Kentucky, and for the numbers of American pioneers born in Virginia."
+ },
+ "state:Wisconsin": {
+  "fact": "Wisconsin is nicknamed \"America's Dairyland\" and is famous for its cheese.",
+  "source": "Wikipedia: Wisconsin",
+  "quote": "Wisconsin is one of the nation's leading dairy producers and is known as \"America's Dairyland\"; it is particularly famous for its cheese."
+ },
+ "state:Washington": {
+  "fact": "Washington is the largest apple producer in the United States.",
+  "source": "Wikipedia: Washington (state)",
+  "quote": "Washington is a leading lumber producer, the largest producer of apples, hops, pears, blueberries, spearmint oil, and sweet cherries in the U.S., and ranks high in the production of apricots, asparagus, dry edible peas, grapes, lentils, peppermint oil, potatoes and wheat."
+ },
+ "country:Algeria": {
+  "fact": "Algeria's name comes from Algiers, whose Arabic name means \"the islands.\"",
+  "source": "Wikipedia: Algeria",
+  "quote": "The name Algeria ultimately derives from the city of Algiers, whose Arabic name, al-Jazāʾir (الجزائر, meaning \"the islands\"), referenced the islands once located off the city's coast."
+ },
+ "state:West Virginia": {
+  "fact": "West Virginia is known for its outdoor recreation, including skiing, whitewater rafting, rock climbing, and mountain biking.",
+  "source": "Wikipedia: West Virginia",
+  "quote": "It is also known for its tourism and a wide range of outdoor recreational opportunities, including skiing, whitewater rafting, fishing, hiking, backpacking, mountain biking, rock climbing, and hunting."
+ },
+ "country:Angola": {
+  "fact": "Angola's name comes from ngola, a title held by kings.",
+  "source": "Wikipedia: Angola",
+  "quote": "The toponym was derived by the Portuguese from the title ngola, held by the kings of Ndongo and Matamba."
+ },
+ "country:Botswana": {
+  "fact": "Botswana has a huge river delta where the Okavango River spreads across the Kalahari Desert instead of flowing into the sea.",
+  "source": "Wikipedia: Botswana",
+  "quote": "Botswana features the Okavango Delta located in the northwest, a vast inland river delta where the Okavango River spreads across the Kalahari rather than flowing into the sea."
+ },
+ "state:Wyoming": {
+  "fact": "Yellowstone became the world's first national park in 1872.",
+  "source": "Wikipedia: Wyoming",
+  "quote": "In 1872, Yellowstone National Park was created as the world's first, to protect this area."
+ },
+ "country:Benin": {
+  "fact": "Benin's official language is French, but Fon, Bariba, Yoruba and Dendi are spoken there too.",
+  "source": "Wikipedia: Benin",
+  "quote": "The official language of Benin is French, with indigenous languages such as Fon, Bariba, Yoruba and Dendi also spoken."
+ },
+ "country:Cameroon": {
+  "fact": "Cameroon's name came from shrimp! Portuguese sailors named a river Shrimp River because it had so many ghost shrimp.",
+  "source": "Wikipedia: Cameroon",
+  "quote": "They noted an abundance of the ghost shrimp Lepidophthalmus turneranus in the Wouri River and named it Rio dos Camarões (Shrimp River), which became Cameroon in English."
+ },
+ "country:Central African Republic": {
+  "fact": "An old name for the country, Ubangi-Shari, comes from two rivers: the Ubangi and the Chari.",
+  "source": "Wikipedia: Central African Republic",
+  "quote": "During the colonial era, the country's name was Ubangi-Shari (French: Oubangui-Chari), a name derived from two major rivers, the Ubangi and the Chari."
+ },
+ "country:Congo": {
+  "fact": "Congo has 170 km of beaches along its coast on the Atlantic Ocean.",
+  "source": "Wikipedia: Republic of the Congo",
+  "quote": "Natural landscapes range from the savanna plains in the North Niari flooded forests, to the Congo River, to the rugged mountains and forests of Mayombe, and 170 km of beaches along the Atlantic coast."
+ },
+ "country:Burundi": {
+  "fact": "Lake Tanganyika lies along the southwestern border of Burundi, a country in East Africa.",
+  "source": "Wikipedia: Burundi",
+  "quote": "It is bordered by Rwanda to the north, Tanzania to the east and southeast, and the Democratic Republic of the Congo to the west; Lake Tanganyika lies along its southwestern border."
+ },
+ "country:Chad": {
+  "fact": "Chad got its name from Lake Chad, and that lake's name comes from a word meaning \"lake\" in the Kanuri language.",
+  "source": "Wikipedia: Chad",
+  "quote": "Lake Chad, after which the country is named (and which in turn takes its name from the Kanuri word for \"lake\"), is the remains of an immense lake that occupied 330,000 square kilometres (130,000 sq mi) of the Chad Basin 7,000 years ago."
+ },
+ "country:Djibouti": {
+  "fact": "Djibouti has the smallest population in mainland Africa, with 1,066,809 people.",
+  "source": "Wikipedia: Djibouti",
+  "quote": "Djibouti is a multi-ethnic nation with a population of 1,066,809 at the census held on 20 May 2024 (the smallest in mainland Africa)."
+ },
+ "country:DR Congo": {
+  "fact": "The Congo River, which flows through DR Congo, is the world's deepest river.",
+  "source": "Wikipedia: Democratic Republic of the Congo",
+  "quote": "The Congo River is the world's deepest river and the world's third-largest river by discharge."
+ },
+ "country:Egypt": {
+  "fact": "Ancient Egypt built the famous pyramids at Giza.",
+  "source": "Wikipedia: Egypt",
+  "quote": "The Old Kingdom (c. 2700–2200 BCE) saw the construction of the pyramids, including those at Giza."
+ },
+ "country:Eswatini": {
+  "fact": "You can find rock art paintings in Eswatini, some about 27,000 years old!",
+  "source": "Wikipedia: Eswatini",
+  "quote": "Prehistoric rock art paintings dating from as far back as c. 27,000 years ago to as recently as the 19th century can be found around the country."
+ },
+ "country:Equatorial Guinea": {
+  "fact": "Equatorial Guinea is the only Spanish-speaking country in Africa.",
+  "source": "Wikipedia: Equatorial Guinea",
+  "quote": "Equatorial Guinea, officially the Republic of Equatorial Guinea, is a country on the west coast of Central Africa and the only Spanish-speaking country in Africa."
+ },
+ "country:Gabon": {
+  "fact": "Gabon's name comes from a Portuguese word meaning hooded cloak.",
+  "source": "Wikipedia: Gabon",
+  "quote": "The country's name derives from the Portuguese word \"gabao\" (also spelled \"Gabão\"), meaning \"hooded cloak\"."
+ },
+ "country:Ghana": {
+  "fact": "Ghana has Lake Volta, the world's third-largest reservoir by volume, formed by a dam.",
+  "source": "Wikipedia: Ghana",
+  "quote": "The White Volta River and its tributary Black Volta, flow south through Ghana to Lake Volta, the world's third-largest reservoir by volume and largest by surface area, formed by the hydroelectric Akosombo Dam, completed in 1965."
+ },
+ "country:Gambia": {
+  "fact": "The Gambia is one of only two countries whose short English name officially uses the word 'the'.",
+  "source": "Wikipedia: The Gambia",
+  "quote": "The Gambia is one of only two countries for which the definite article \"the\" is officially used in its short form English-language name, the other being the Bahamas."
+ },
+ "country:Guinea-Bissau": {
+  "fact": "Guinea-Bissau's name includes its capital's name, Bissau, so it isn't mixed up with Guinea.",
+  "source": "Wikipedia: Guinea-Bissau",
+  "quote": "Upon independence, declared in 1973 and recognised in 1974, the name of its capital, Bissau, was added to the country's name to prevent confusion with Guinea (formerly French Guinea)."
+ },
+ "country:Guinea": {
+  "fact": "Guinea is the world's second-largest producer of bauxite, and it also has diamonds and gold.",
+  "source": "Wikipedia: Guinea",
+  "quote": "It is the world's second-largest producer of bauxite and has deposits of diamonds and gold."
+ },
+ "country:Ivory Coast": {
+  "fact": "As of 2023, Ivory Coast is the world's largest exporter of cocoa beans.",
+  "source": "Wikipedia: Ivory Coast",
+  "quote": "As of 2023, Ivory Coast is the world's largest exporter of cocoa beans and has high levels of income for its region."
+ },
+ "country:Lesotho": {
+  "fact": "Lesotho is a country in the Maloti Mountains, home to the highest peak in southern Africa.",
+  "source": "Wikipedia: Lesotho",
+  "quote": "Lesotho is located in the Maloti Mountains, with the highest peak in southern Africa."
+ },
+ "country:Liberia": {
+  "fact": "Liberia's national flag has 11 stripes.",
+  "source": "Wikipedia: Liberia",
+  "quote": "On August 24, Liberia adopted its 11-striped national flag."
+ },
+ "country:Libya": {
+  "fact": "Libya is the fourth-largest country in Africa, covering almost 1.8 million square kilometres!",
+  "source": "Wikipedia: Libya",
+  "quote": "With an area of almost 1.8 million km2 (700,000 sq mi), Libya is the fourth-largest country in Africa and the Arab world, and the 16th-largest in the world."
+ },
+ "country:Kenya": {
+  "fact": "Kenya's whole country is named after a mountain: Mount Kenya.",
+  "source": "Wikipedia: Kenya",
+  "quote": "The Republic of Kenya is named after Mount Kenya."
+ },
+ "country:Madagascar": {
+  "fact": "Over 90% of Madagascar's wildlife lives nowhere else on Earth.",
+  "source": "Wikipedia: Madagascar",
+  "quote": "As a result, Madagascar is a biodiversity hotspot and one of the world's 17 megadiverse countries, with over 90% of its wildlife being endemic."
+ },
+ "country:Malawi": {
+  "fact": "The name Malawi means \"flames\" in the languages Chichewa and Chitumbuka.",
+  "source": "Wikipedia: Malawi",
+  "quote": "The name Malawi means \"flames\" in Chichewa and Chitumbuka."
+ },
+ "country:Mauritania": {
+  "fact": "Mauritania is in West Africa, and 90% of its land is in the Sahara desert.",
+  "source": "Wikipedia: Mauritania",
+  "quote": "By land area Mauritania is the 11th-largest country in Africa and the 28th-largest in the world; 90% of its territory is in the Sahara desert."
+ },
+ "country:Mozambique": {
+  "fact": "Mozambique is named after an island, which got its name from an Arab trader called Musa ibn Bique.",
+  "source": "Wikipedia: Mozambique",
+  "quote": "The country was named Moçambique by the Portuguese after the Island of Mozambique, derived from Musa ibn Bique, an Arab trader who first visited the island and later lived there and was its ruler when Vasco da Gama called at the island in 1498."
+ },
+ "country:Morocco": {
+  "fact": "Morocco's local name means \"the land of the sunset.\"",
+  "source": "Wikipedia: Morocco",
+  "quote": "Morocco's local name stems from the Arabic al-Maghrib (المغرب, transl. the land of the sunset; the west), with the Kingdom's official Arabic name being al-Mamlakah al-Maghribīyah (المملكة المغربية; transl. the kingdom of sunset; the western kingdom) and official Berber name Tagldit n Lmeɣrib (ⵜⴰⴳⵍⴷⵉⵜ ⵏ ⵍⵎⵖⵔⵉⴱ)."
+ },
+ "country:Niger": {
+  "fact": "Niger's name may come from a phrase meaning 'river of rivers.'",
+  "source": "Wikipedia: Niger",
+  "quote": "The modern spelling Niger was first recorded by Berber scholar Leo Africanus in 1550, possibly derived from the Tuareg phrase the (e)gărăw-n-gărăwăn meaning literally 'river of rivers'."
+ },
+ "country:Nigeria": {
+  "fact": "Nigeria is named after the Niger River that flows through it.",
+  "source": "Wikipedia: Nigeria",
+  "quote": "The name Nigeria derives from the Niger River running through the country."
+ },
+ "country:Mali": {
+  "fact": "Mali's name first meant \"hippopotamus,\" the symbol of the Keita Dynasty.",
+  "source": "Wikipedia: Mali",
+  "quote": "Originally meaning \"hippopotamus\", the clanic symbol of the Keita Dynasty, it eventually came to mean \"the place where the king lives\"."
+ },
+ "country:Rwanda": {
+  "fact": "Rwanda has two rainy seasons and two dry seasons each year.",
+  "source": "Wikipedia: Rwanda",
+  "quote": "The climate is considered tropical highland, with two rainy seasons and two dry seasons each year."
+ },
+ "country:Senegal": {
+  "fact": "Senegal nearly surrounds the Gambia, a country on a narrow strip of land along a river.",
+  "source": "Wikipedia: Senegal",
+  "quote": "Senegal nearly surrounds the Gambia, a country occupying a narrow strip of land along the banks of the Gambia River, which separates Senegal's southern region of Casamance from the rest of the country."
+ },
+ "country:Namibia": {
+  "fact": "Namibia is named after the Namib desert, the oldest desert in the world.",
+  "source": "Wikipedia: Namibia",
+  "quote": "The name of the country is derived from the Namib desert, the oldest desert in the world."
+ },
+ "country:Sierra Leone": {
+  "fact": "Sierra Leone is named after the Lion Mountains near its capital, Freetown.",
+  "source": "Wikipedia: Sierra Leone",
+  "quote": "Sierra Leone derives its name from the Lion Mountains near its capital, Freetown."
+ },
+ "country:South Sudan": {
+  "fact": "Right through the middle of South Sudan, the Nile River runs across a large swamp called the Sudd.",
+  "source": "Wikipedia: South Sudan",
+  "quote": "The Nile River system is the defining physical feature of the country, running south to north across its centre, which is dominated by a large swamp known as the Sudd."
+ },
+ "country:Somaliland": {
+  "fact": "Rock art at the Laas Geel complex shows wild animals and decorated cows. It dates back around 5,000 years!",
+  "source": "Wikipedia: Somaliland",
+  "quote": "The Laas Geel complex on the outskirts of Hargeisa dates back around 5,000 years, and has rock art depicting both wild animals and decorated cows."
+ },
+ "country:Somalia": {
+  "fact": "Long ago, giraffes and zebras were exported to China's Ming Empire.",
+  "source": "Wikipedia: Somalia",
+  "quote": "Giraffes, zebras and incense were exported to the Ming Empire of China, which established Somali merchants as leaders in the commerce between East Asia and the Horn."
+ },
+ "country:South Africa": {
+  "fact": "South Africa has some of the oldest human fossil sites in the world.",
+  "source": "Wikipedia: South Africa",
+  "quote": "South Africa contains some of the oldest archaeological and human-fossil sites in the world."
+ },
+ "country:Tanzania": {
+  "fact": "In Tanzania you can find Mount Kilimanjaro, the highest mountain in Africa!",
+  "source": "Wikipedia: Tanzania",
+  "quote": "Tanzania is mountainous and densely forested in the north-east, where Mount Kilimanjaro, the highest mountain in Africa and the highest single free-standing mountain above sea level in the world, is located."
+ },
+ "country:Togo": {
+  "fact": "The name Togo means \"by the water\" or \"behind the sea\".",
+  "source": "Wikipedia: Togo",
+  "quote": "The name of Togo means \"by the water\" or \"behind the sea\", derived from Ewe to (\"water\") and go (\"shore\")."
+ },
+ "country:Uganda": {
+  "fact": "Lake Victoria, in Uganda, is the world's second-largest freshwater lake.",
+  "source": "Wikipedia: Uganda",
+  "quote": "Geographically, Uganda is diverse, with volcanic hills, mountains, and lakes, including Lake Victoria, the world's second-largest freshwater lake."
+ },
+ "country:Zambia": {
+  "fact": "Zambia's name comes from the Zambezi river, which may mean \"the grand river.\"",
+  "source": "Wikipedia: Zambia",
+  "quote": "The name \"Zambia\" derives from the Zambezi river (Zambezi may mean \"the grand river\")."
+ },
+ "country:Tunisia": {
+  "fact": "Tunisia is home to Africa's northernmost point, Cape Angela.",
+  "source": "Wikipedia: Tunisia",
+  "quote": "Tunisia is home to Africa's northernmost point, Cape Angela."
+ },
+ "country:Sudan": {
+  "fact": "Sudan has ancient Nubian pyramids, built between 800 BCE and 100 AD.",
+  "source": "Wikipedia: Sudan",
+  "quote": "Between 800 BCE and 100 AD the Nubian pyramids were built, among them can be named El-Kurru, Kashta, Piye, Tantamani, Shabaka, Pyramids of Gebel Barkal, Pyramids of Meroe (Begarawiyah), the Sedeinga pyramids, and Pyramids of Nuri."
+ },
+ "country:Belize": {
+  "fact": "Belize is the only Central American country where English is the official language.",
+  "source": "Wikipedia: Belize",
+  "quote": "It is the only Central American country where English is the official language, while Belizean Creole, Spanish, and the Mayan languages are widely spoken."
+ },
+ "country:Argentina": {
+  "fact": "Argentina's Cave of the Hands has handprints made long ago, between 7,300 BC and 700 AD.",
+  "source": "Wikipedia: Argentina",
+  "quote": "Another significant site is the Cueva de las Manos (Cave of the Hands), also located in Santa Cruz, which features stencilled handprints and hunting scenes created between 7,300 BC and 700 AD, offering insights into the lives of early hunter-gatherer communities."
+ },
+ "country:Zimbabwe": {
+  "fact": "Many sources say Zimbabwe's name means \"houses of stones\" in the Shona language.",
+  "source": "Wikipedia: Zimbabwe",
+  "quote": "Many sources hold that \"Zimbabwe\" derives from dzimba-dza-mabwe, translated from the Karanga dialect of Shona as \"houses of stones\" (dzimba = plural of imba, \"house\"; mabwe = plural of ibwe, \"stone\")."
+ },
+ "country:Bolivia": {
+  "fact": "Bolivia has part of the Pantanal, the largest tropical wetland in the world.",
+  "source": "Wikipedia: Bolivia",
+  "quote": "It includes part of the Pantanal, the largest tropical wetland in the world, along its eastern border."
+ },
+ "country:Bahamas": {
+  "fact": "The Bahamas has 700 islands and more than 2,500 cays. Wow, that's a lot of islands to explore!",
+  "source": "Wikipedia: The Bahamas",
+  "quote": "The country comprises 700 islands, and more than 2,500 cays in the Atlantic Ocean, located north of Cuba and north-west of the island of Hispaniola (split between the Dominican Republic and Haiti) and the Turks and Caicos Islands, southeast of the US state of Florida and east of the Florida Keys."
+ },
+ "country:Canada": {
+  "fact": "Canada has the longest coastline of any country.",
+  "source": "Wikipedia: Canada",
+  "quote": "Its ten provinces and three territories extend from the Atlantic Ocean to the Pacific Ocean and northward into the Arctic Ocean, making it the second-largest country by total area, with the longest coastline of any country."
+ },
+ "country:Brazil": {
+  "fact": "Some early sailors called Brazil the 'Land of Parrots'.",
+  "source": "Wikipedia: Brazil",
+  "quote": "Some early sailors called it the 'Land of Parrots'."
+ },
+ "country:Cuba": {
+  "fact": "Cuba has a main island plus 4,195 more islands, islets, and cays!",
+  "source": "Wikipedia: Cuba",
+  "quote": "It comprises the eponymous main island as well as 4,195 islands, islets, and cays."
+ },
+ "country:Dominican Republic": {
+  "fact": "The Dominican Republic is home to Pico Duarte, the tallest mountain peak in the Caribbean.",
+  "source": "Wikipedia: Dominican Republic",
+  "quote": "A geographically diverse nation, the country is home to both the Caribbean's tallest mountain peak, Pico Duarte, and the Caribbean's largest lake and lowest point, Lake Enriquillo."
+ },
+ "country:Costa Rica": {
+  "fact": "Costa Rica's Irazú Volcano is its highest volcano, and Lake Arenal is its largest lake.",
+  "source": "Wikipedia: Costa Rica",
+  "quote": "The highest volcano in the country is the Irazú Volcano (3,431 m or 11,257 ft) and the largest lake is Lake Arenal."
+ },
+ "country:Ecuador": {
+  "fact": "Ecuador's Galápagos Islands are about 1,000 kilometers west of the mainland, in the Pacific Ocean.",
+  "source": "Wikipedia: Ecuador",
+  "quote": "It also includes the Galápagos Province which contains the Galápagos Islands in the Pacific, about 1,000 kilometers (540 nmi; 620 mi) west of the mainland."
+ },
+ "country:El Salvador": {
+  "fact": "Giant ground sloths once roamed the land that is now El Salvador.",
+  "source": "Wikipedia: El Salvador",
+  "quote": "During the Pleistocene epoch, the region was inhabited by extinct megafauna, including the giant ground sloth Eremotherium, the toxodontid Mixotoxodon, the gomphothere Cuvieronius, the glyptodont Glyptotherium, the camelid Hemiauchenia, and the prehistoric horse Equus conversidens."
+ },
+ "country:Guyana": {
+  "fact": "Guyana is the only country in mainland South America where English is the official language.",
+  "source": "Wikipedia: Guyana",
+  "quote": "Guyana is the only country in mainland South America to have English as the official language."
+ },
+ "country:Haiti": {
+  "fact": "Haiti's name comes from the Taíno language and means 'land of high mountains.'",
+  "source": "Wikipedia: Haiti",
+  "quote": "Haiti (also earlier Hayti) comes from the Indigenous Taíno language and means \"land of high mountains\"; it was the Native name for the entire island of Hispaniola."
+ },
+ "country:Jamaica": {
+  "fact": "Jamaicans often call their home island 'yaad', the Jamaican Patois word for yard, meaning home.",
+  "source": "Wikipedia: Jamaica",
+  "quote": "Jamaicans often refer to their home island as \"yaad\" – the Jamaican Patois word for yard, meaning home."
+ },
+ "country:Honduras": {
+  "fact": "The name Honduras means 'depths' in Spanish.",
+  "source": "Wikipedia: Honduras",
+  "quote": "The literal meaning of the Spanish term honduras is 'depths'."
+ },
+ "country:Mexico": {
+  "fact": "Mexico is one of the world's 17 megadiverse countries, full of many kinds of plants and animals.",
+  "source": "Wikipedia: Mexico",
+  "quote": "It is one of the world's 17 megadiverse countries, ranking fifth in natural biodiversity."
+ },
+ "country:Guatemala": {
+  "fact": "Guatemala's name comes from a Nahuatl word meaning 'place of many trees.'",
+  "source": "Wikipedia: Guatemala",
+  "quote": "The name \"Guatemala\" comes from the Nahuatl word Cuauhtēmallān, or \"place of many trees\", a derivative of the K'iche' Mayan word for \"many trees\" or, perhaps more specifically, for the Cuate/Cuatli tree Eysenhardtia."
+ },
+ "country:Panama": {
+  "fact": "Panama's jungles cover around 40 percent of the land, and some plants and animals live nowhere else on Earth.",
+  "source": "Wikipedia: Panama",
+  "quote": "Covering around 40 percent of its land area, Panama's jungles are home to an abundance of tropical plants and animals – some of them found nowhere else on Earth."
+ },
+ "country:Peru": {
+  "fact": "Peru's capital, Lima, is considered a global food capital, with award-winning restaurants like Central and Maido.",
+  "source": "Wikipedia: Peru",
+  "quote": "Lima is now considered a global culinary capital, home to award-winning restaurants like Central and Maido."
+ },
+ "country:Suriname": {
+  "fact": "Over 95% of Suriname is covered by rainforest, the second-highest forest cover in the world.",
+  "source": "Wikipedia: Suriname",
+  "quote": "Situated slightly north of the equator, over 95% of its territory is covered by rainforest, the second-highest proportion of forest cover in the world."
+ },
+ "country:Trinidad and Tobago": {
+  "fact": "Trinidad and Tobago is the birthplace of the steelpan and the limbo, two fun parts of its music and culture.",
+  "source": "Wikipedia: Trinidad and Tobago",
+  "quote": "Trinidad and Tobago is well known for its African and Indian cultures, reflected in its large and famous Carnival, Diwali, and Hosay celebrations, as well as being the birthplace of the steelpan, the limbo, and musical styles such as calypso, soca, rapso, chutney, and chutney soca."
+ },
+ "country:Paraguay": {
+  "fact": "The city of Luque in Paraguay is the seat of the South American Football Confederation.",
+  "source": "Wikipedia: Paraguay",
+  "quote": "Additionally, the city of Luque, in metropolitan Asunción, is the seat of the South American Football Confederation."
+ },
+ "country:Nicaragua": {
+  "fact": "Nicaragua is home to the Bosawás Biosphere Reserve, the second-largest tropical rainforest of the Americas.",
+  "source": "Wikipedia: Nicaragua",
+  "quote": "Known as the \"land of lakes and volcanoes\", Nicaragua is also home to the Bosawás Biosphere Reserve, the second-largest tropical rainforest of the Americas."
+ },
+ "country:United States": {
+  "fact": "The name America comes from Amerigo Vespucci, an Italian explorer.",
+  "source": "Wikipedia: United States",
+  "quote": "\"America\" is the feminine form of the first name of Americus Vesputius, the Latinized name of Italian explorer Amerigo Vespucci (1454–1512); it was first used as a place name by the German cartographers Martin Waldseemüller and Matthias Ringmann in 1507."
+ },
+ "country:Armenia": {
+  "fact": "Archaeologists found the world's earliest known leather shoe in a cave in Armenia.",
+  "source": "Wikipedia: Armenia",
+  "quote": "Archaeological surveys in 2010 and 2011 at the Areni-1 cave complex have resulted in the discovery of the world's earliest known leather shoe, skirt, and wine-producing facility."
+ },
+ "country:Venezuela": {
+  "fact": "Venezuela may be named 'Little Venice' because stilt houses by Lake Maracaibo reminded a sailor of Venice, Italy.",
+  "source": "Wikipedia: Venezuela",
+  "quote": "The stilt houses in the area of Lake Maracaibo reminded the Italian navigator, Amerigo Vespucci, of the city of Venice, Italy, so he named the region Veneziola, or \"Little Venice\"."
+ },
+ "country:Australia": {
+  "fact": "Australia has fun nicknames like \"Oz\", \"Straya\" and \"Down Under\".",
+  "source": "Wikipedia: Australia",
+  "quote": "Colloquial names for Australia include \"Oz\", \"Straya\" and \"Down Under\"."
+ },
+ "country:Uruguay": {
+  "fact": "Uruguay is nicknamed the \"Switzerland of the Americas,\" a fun name for a country in South America.",
+  "source": "Wikipedia: Uruguay",
+  "quote": "In the early 20th century, a series of economic, labor and social reforms, combined with sustained political stability, established Uruguay as an advanced welfare state and earned it the nickname \"Switzerland of the Americas\"."
+ },
+ "country:Bangladesh": {
+  "fact": "Chittagong is Bangladesh's busiest port, and it is also its second-largest city.",
+  "source": "Wikipedia: Bangladesh",
+  "quote": "Chittagong is the second-largest city and the busiest port of the country."
+ },
+ "country:Brunei": {
+  "fact": "According to legend, Brunei's name comes from a man who shouted \"Baru nah!\" when he landed.",
+  "source": "Wikipedia: Brunei",
+  "quote": "According to legend, upon landing he exclaimed, \"Baru nah!\" (loosely translated as \"that's it!\" or \"there!\"), from which the name \"Brunei\" was derived."
+ },
+ "country:Cambodia": {
+  "fact": "Cambodia is home to Tonlé Sap, Southeast Asia's largest lake.",
+  "source": "Wikipedia: Cambodia",
+  "quote": "Cambodia spans an area of about 181,035 km2 (69,898 sq mi), dominated by a low-lying plain and the confluence of the Mekong river and Tonlé Sap, Southeast Asia's largest lake."
+ },
+ "country:China": {
+  "fact": "Long ago, people in China invented paper, printing, and the compass.",
+  "source": "Wikipedia: China",
+  "quote": "The imperial era saw the expansion of the Silk Road and the invention of gunpowder, paper, printing, and the compass."
+ },
+ "country:Fiji": {
+  "fact": "Fiji is a country with more than 330 islands, and about 110 of them have people living on them.",
+  "source": "Wikipedia: Fiji",
+  "quote": "Fiji consists of an archipelago of more than 330 islands — of which about 110 are permanently inhabited — and more than 500 islets, amounting to a total land area of about 18,300 square kilometres (7,100 sq mi)."
+ },
+ "country:India": {
+  "fact": "India is the world's seventh-largest country by area, and it has the most people of any country.",
+  "source": "Wikipedia: India",
+  "quote": "It is the world's seventh-largest country by area and its most populous."
+ },
+ "country:Indonesia": {
+  "fact": "Indonesia is the world's largest archipelagic state, made up of 13,000 to 17,000 islands.",
+  "source": "Wikipedia: Indonesia",
+  "quote": "Comprising between 13,000 and 17,000 islands—including Sumatra, Java, Sulawesi, and parts of Borneo and New Guinea—it is the world's largest archipelagic state and the 14th-largest country by area."
+ },
+ "country:Iran": {
+  "fact": "Goats were tamed by people in Iran about 10,000 years ago, at a site called Ganj Dareh.",
+  "source": "Wikipedia: Iran",
+  "quote": "The contemporary site of Ganj Dareh also features the earliest known domestication of goats around 10,000 years ago."
+ },
+ "country:Israel": {
+  "fact": "Israel is home to Earth's lowest point, near the Dead Sea.",
+  "source": "Wikipedia: Israel",
+  "quote": "Israel's western coast lies on the Mediterranean Sea, its southern tip reaches the Red Sea, and to the east is Earth's lowest point near the Dead Sea."
+ },
+ "country:Iraq": {
+  "fact": "Long ago in Mesopotamia, which is now Iraq, people invented the wheel, the sailboat, and a calendar.",
+  "source": "Wikipedia: Iraq",
+  "quote": "Known as the cradle of civilisation, Mesopotamia saw the invention of astrology, mathematics, navigation, timekeeping, writing systems, the wheel, the sailboat, a calendar, and a law code."
+ },
+ "country:Japan": {
+  "fact": "Japan is made of four major islands and over 14,000 smaller islands.",
+  "source": "Wikipedia: Japan",
+  "quote": "The Japanese archipelago consists of four major islands alongside over 14,000 smaller islands."
+ },
+ "country:Jordan": {
+  "fact": "Scientists found the world's oldest known evidence of bread-making in Jordan's northeastern desert, at a site 14,500 years old.",
+  "source": "Wikipedia: Jordan",
+  "quote": "Scientists have found the world's oldest known evidence of bread-making at a 14,500-year-old Natufian site in Jordan's northeastern desert."
+ },
+ "country:Kyrgyzstan": {
+  "fact": "The sun on Kyrgyzstan's flag has 40 rays, a nod to 40 tribes.",
+  "source": "Wikipedia: Kyrgyzstan",
+  "quote": "The 40-ray sun on the flag of Kyrgyzstan is a reference to those same 40 tribes and the graphical element in the sun's center depicts the wooden crown, called tunduk, of a yurt—a portable dwelling traditionally used by nomads in the steppes of Central Asia."
+ },
+ "country:Kazakhstan": {
+  "fact": "Archaeologists believe horses were first tamed in Kazakhstan's vast steppes.",
+  "source": "Wikipedia: Kazakhstan",
+  "quote": "Archaeologists believe that humans first domesticated the horse in the region's vast steppes."
+ },
+ "country:Kuwait": {
+  "fact": "Kuwait was the center of boat building in the Persian Gulf, and its ships were famous across the Indian Ocean.",
+  "source": "Wikipedia: Kuwait",
+  "quote": "Kuwait was the center of boat building in the Persian Gulf, its ships renowned throughout the Indian Ocean."
+ },
+ "country:Malaysia": {
+  "fact": "Malaysia is one of 17 megadiverse countries, home to many species found nowhere else.",
+  "source": "Wikipedia: Malaysia",
+  "quote": "Malaysia is tropical and is one of 17 megadiverse countries; it is home to numerous endemic species."
+ },
+ "country:Lebanon": {
+  "fact": "The Phoenicians, a seafaring people from Lebanon, are credited with inventing the oldest verified alphabet.",
+  "source": "Wikipedia: Lebanon",
+  "quote": "The Phoenicians are credited with the invention of the oldest verified alphabet, which subsequently inspired the Greek alphabet and the Latin one thereafter."
+ },
+ "country:Nepal": {
+  "fact": "Nepal has eight of the world's ten highest mountains, including Mount Everest.",
+  "source": "Wikipedia: Nepal",
+  "quote": "Nepal has a diverse geography, including fertile plains, subalpine forested hills, and eight of the world's ten highest mountains, including Mount Everest, the highest point above mean sea level on Earth."
+ },
+ "country:New Zealand": {
+  "fact": "New Zealand is made of two main islands and over 700 smaller islands.",
+  "source": "Wikipedia: New Zealand",
+  "quote": "It comprises two main landmasses—the North Island (Te Ika-a-Māui) and the South Island (Te Waipounamu)—and over 700 smaller islands."
+ },
+ "country:Mongolia": {
+  "fact": "A cave in Mongolia has paintings of mammoths and camels that are 20,000 years old.",
+  "source": "Wikipedia: Mongolia",
+  "quote": "The Khoit Tsenkher Cave in Khovd Province shows lively pink, brown, and red ocher paintings (dated to 20,000 years ago) of mammoths, lynx, bactrian camels, and ostriches, earning it the nickname \"the Lascaux of Mongolia\"."
+ },
+ "country:North Korea": {
+  "fact": "North Korea has the Yellow Sea on its west side and the Sea of Japan on its east side.",
+  "source": "Wikipedia: North Korea",
+  "quote": "The country's western border is formed by the Yellow Sea, while its eastern border is defined by the Sea of Japan."
+ },
+ "country:Oman": {
+  "fact": "The Persians called Oman \"Mazun,\" from a word meaning clouds and abundant flowing water.",
+  "source": "Wikipedia: Oman",
+  "quote": "The ancient Sumerians and the Mesopotamians called it \"Magan\", a reference to the Magan civilisation, while the Persians called it Mazun, derived from the word \"Muzn\", meaning clouds and abundant flowing water, which explains the establishment and prosperity of agriculture in Oman since ancient times and the stability and civilisation that accompanied it."
+ },
+ "country:Myanmar": {
+  "fact": "Myanmar is the largest country by area in Mainland Southeast Asia.",
+  "source": "Wikipedia: Myanmar",
+  "quote": "It is the largest country by area in Mainland Southeast Asia and had a population of about 51 million at the 2024 census."
+ },
+ "country:Philippines": {
+  "fact": "The Philippines is a country of about 7,641 islands, located in the western Pacific Ocean.",
+  "source": "Wikipedia: Philippines",
+  "quote": "Located in the western Pacific Ocean, it consists of about 7,641 islands, with a total area of about 300,000 square kilometers."
+ },
+ "country:Pakistan": {
+  "fact": "Mehrgarh, an ancient site in Pakistan, is 8,500 years old.",
+  "source": "Wikipedia: Pakistan",
+  "quote": "Pakistan is the site of several ancient cultures, including the 8,500-year-old Neolithic site of Mehrgarh in Balochistan, the Indus Valley Civilisation of the Bronze Age, and the ancient Gandhara civilisation."
+ },
+ "country:Solomon Islands": {
+  "fact": "Solomon Islands is made of six big islands and over 1,000 smaller islands.",
+  "source": "Wikipedia: Solomon Islands",
+  "quote": "Solomon Islands is an archipelagic country consisting of six major islands and over 1,000 smaller islands in Melanesia, Oceania, to the north-east of Australia."
+ },
+ "country:Saudi Arabia": {
+  "fact": "Rock engravings in Saudi Arabia show dogs more than 8,000 years old, the earliest dog pictures in the world!",
+  "source": "Wikipedia: Saudi Arabia",
+  "quote": "These rock engravings date back more than 8,000 years, making them the earliest depictions of dogs in the world."
+ },
+ "country:Papua New Guinea": {
+  "fact": "Papua New Guinea has 840 known spoken languages, making it the most linguistically diverse country in the world.",
+  "source": "Wikipedia: Papua New Guinea",
+  "quote": "There are 840 known spoken languages, making it the most linguistically diverse country in the world."
+ },
+ "country:South Korea": {
+  "fact": "South Korea has some of the fastest internet speeds and densest high-speed railway networks.",
+  "source": "Wikipedia: South Korea",
+  "quote": "South Korea has some of the fastest Internet connection speeds and densest high-speed railway networks."
+ },
+ "country:Sri Lanka": {
+  "fact": "Sri Lanka's Sigiriya is nicknamed the 'Fortress in the Sky'.",
+  "source": "Wikipedia: Sri Lanka",
+  "quote": "Sri Lankan monarchs undertook some remarkable construction projects such as Sigiriya, the so-called \"Fortress in the Sky\", built during the reign of Kashyapa I, who ruled between 477 and 495."
+ },
+ "country:Tajikistan": {
+  "fact": "Mountains cover more than 90% of Tajikistan, so almost the whole country is mountain land!",
+  "source": "Wikipedia: Tajikistan",
+  "quote": "Mountains cover more than 90% of the country."
+ },
+ "country:Taiwan": {
+  "fact": "In 1542, Portuguese sailors called Taiwan 'Ilha Formosa,' which means 'beautiful island.'",
+  "source": "Wikipedia: Taiwan",
+  "quote": "The name Formosa (福爾摩沙) dates from 1542, when Portuguese sailors noted it on their maps as Ilha Formosa (Portuguese for \"beautiful island\")."
+ },
+ "country:Thailand": {
+  "fact": "Before 1939, people around the world knew Thailand as Siam.",
+  "source": "Wikipedia: Thailand",
+  "quote": "Before 1939, Thailand was known internationally as Siam."
+ },
+ "country:Timor-Leste": {
+  "fact": "The country's name, Timor-Leste, translates to 'East East' in English, since both its name parts mean east.",
+  "source": "Wikipedia: East Timor",
+  "quote": "Therefore, Timor-Leste simply translates to 'East East' in English."
+ },
+ "country:Uzbekistan": {
+  "fact": "Uzbekistan and Liechtenstein are the only two doubly landlocked countries in the world.",
+  "source": "Wikipedia: Uzbekistan",
+  "quote": "It is one of only two doubly landlocked countries in the world, the other being Liechtenstein."
+ },
+ "country:Vanuatu": {
+  "fact": "Vanuatu has more than 100 languages spoken on its islands.",
+  "source": "Wikipedia: Vanuatu",
+  "quote": "Linguistically, the Lapita peoples' Austronesian languages were maintained, with all of the numerous 100+ autochthonous languages of Vanuatu being classified as belonging to the Oceanic branch of the Austronesian language family."
+ },
+ "country:United Arab Emirates": {
+  "fact": "The United Arab Emirates got its name from seven emirates that formed a federation.",
+  "source": "Wikipedia: United Arab Emirates",
+  "quote": "The United Arab Emirates is named after the seven emirates that formed a federation: the Emirate of Abu Dhabi, the Emirate of Dubai, the Emirate of Ajman, the Emirate of Sharjah, the Emirate of Ras Al Khaimah, the Emirate of Umm Al Quwain, and the Emirate of Fujairah."
+ },
+ "country:Turkmenistan": {
+  "fact": "Turkmenistan's name ends in \"-stan,\" a Persian word meaning \"place of\" or \"country.\"",
+  "source": "Wikipedia: Turkmenistan",
+  "quote": "The name of Turkmenistan (Turkmen: Türkmenistan) can be divided into two components: the ethnonym Türkmen and the Persian suffix -stan meaning \"place of\" or \"country\"."
+ },
+ "country:Yemen": {
+  "fact": "For hundreds of years, Yemen was a big coffee maker, sending its coffee out through the port of Mocha.",
+  "source": "Wikipedia: Yemen",
+  "quote": "For centuries, Yemen was a primary producer of coffee, exported through the port of Mocha."
+ },
+ "country:Vietnam": {
+  "fact": "Vietnam's capital is Hanoi, but its largest city is Ho Chi Minh City. Two different cities do two jobs!",
+  "source": "Wikipedia: Vietnam",
+  "quote": "Its capital is Hanoi, while its largest city is Ho Chi Minh City."
+ },
+ "country:Belarus": {
+  "fact": "One idea says Belarus may get its name from the white clothes local people wear.",
+  "source": "Wikipedia: Belarus",
+  "quote": "An alternative explanation for the name comments on the white clothing the local Slavic population wears."
+ },
+ "country:Belgium": {
+  "fact": "Belgium sits in a region called the Low Countries, next to the North Sea.",
+  "source": "Wikipedia: Belgium",
+  "quote": "Situated in a coastal lowland region known as the Low Countries, it is bordered by the Netherlands to the north, Germany to the east, Luxembourg to the southeast, France to the south, and the North Sea to the west."
+ },
+ "country:Croatia": {
+  "fact": "Croatia has over 1,000 islands and islets on the Adriatic Sea.",
+  "source": "Wikipedia: Croatia",
+  "quote": "The Croatian archipelago contains over 1,000 islands and islets, the largest overseas territory on the Adriatic Sea."
+ },
+ "country:Bosnia and Herzegovina": {
+  "fact": "Badanj Cave near Stolac has one of the oldest known cave engravings, of an animal believed to be a horse.",
+  "source": "Wikipedia: Bosnia and Herzegovina",
+  "quote": "Notably, the Badanj Cave near Stolac features one of the oldest known cave engravings, depicting an animal figure believed to be a horse, dating back to approximately 13,000 to 12,000 BC."
+ },
+ "country:Czechia": {
+  "fact": "Czechia's Venus of Dolní Věstonice is considered the oldest known ceramic figurine in the world.",
+  "source": "Wikipedia: Czechia",
+  "quote": "This artifact is considered the oldest known ceramic figurine in the world."
+ },
+ "country:France": {
+  "fact": "France is the world's leading tourist destination, welcoming 102 million foreign visitors in 2025.",
+  "source": "Wikipedia: France",
+  "quote": "It hosts the fourth-largest number of UNESCO World Heritage Sites, with 54 in total, and is the world's leading tourist destination, having received 102 million foreign visitors in 2025."
+ },
+ "country:Finland": {
+  "fact": "Finland has over 180,000 recorded lakes, so there are lots of places to splash and swim!",
+  "source": "Wikipedia: Finland",
+  "quote": "Its land is predominantly covered by boreal forest, with over 180,000 recorded lakes."
+ },
+ "country:Estonia": {
+  "fact": "Estonia has over 2,300 other islands and islets, besides its mainland.",
+  "source": "Wikipedia: Estonia",
+  "quote": "The territory of Estonia consists of the mainland, the larger islands of Saaremaa and Hiiumaa, and over 2,300 other islands and islets on the east coast of the Baltic Sea."
+ },
+ "country:Germany": {
+  "fact": "Some flutes found in Germany's Swabian Jura are 42,000 years old, the oldest musical instruments ever found.",
+  "source": "Wikipedia: Germany",
+  "quote": "Similarly dated evidence of modern humans has been found in the Swabian Jura, including 42,000-year-old flutes which are the oldest musical instruments ever found, the 40,000-year-old Lion-man, and the 41,000-year-old Venus of Hohle Fels."
+ },
+ "country:Hungary": {
+  "fact": "Hungarian is one of the few languages in Europe that is not in the Indo-European language family.",
+  "source": "Wikipedia: Hungary",
+  "quote": "Hungarian is the official language and among the few in Europe outside the Indo-European family."
+ },
+ "country:Iceland": {
+  "fact": "Iceland has geysers, and it sits on a rift between tectonic plates.",
+  "source": "Wikipedia: Iceland",
+  "quote": "Iceland is on a rift between tectonic plates, and its geologic activity includes geysers and frequent volcanic eruptions."
+ },
+ "country:Greece": {
+  "fact": "Greece is the birthplace of the Olympic Games, and of theatre too!",
+  "source": "Wikipedia: Greece",
+  "quote": "Through the Ancient Greeks, Greece is the birthplace of democracy, historiography, political science, major scientific and mathematical principles, theatre, and the Olympic Games."
+ },
+ "country:Ireland": {
+  "fact": "Ireland is the third-largest island in Europe and the twentieth-largest in the world.",
+  "source": "Wikipedia: Ireland",
+  "quote": "Ireland is the second-largest island of the British Isles, the third-largest in Europe, and the twentieth-largest in the world."
+ },
+ "country:Italy": {
+  "fact": "Italy has nearly 800 islands, including Sicily and Sardinia!",
+  "source": "Wikipedia: Italy",
+  "quote": "It consists of a peninsula, which extends into the Mediterranean Sea, with the Alps on its northern land border, as well as nearly 800 islands, notably Sicily and Sardinia."
+ },
+ "country:Latvia": {
+  "fact": "Long ago, people in Latvia traded local amber for precious metals.",
+  "source": "Wikipedia: Latvia",
+  "quote": "The Balts established trade routes to Rome and Byzantium, trading local amber for precious metals."
+ },
+ "country:Kosovo": {
+  "fact": "Kosovo's first recorded musical instrument is a baked-clay ocarina, found in Runik.",
+  "source": "Wikipedia: Kosovo",
+  "quote": "Amongst the finds of excavations in Neolithic Runik is a baked-clay ocarina, which is the first musical instrument recorded in Kosovo."
+ },
+ "country:Lithuania": {
+  "fact": "Nobody knows for sure what Lithuania's name means, and experts still argue about it.",
+  "source": "Wikipedia: Lithuania",
+  "quote": "The true meaning of the name is unknown, and scholars still debate it."
+ },
+ "country:Moldova": {
+  "fact": "Moldova is landlocked, yet it gained a river frontage on the Danube, turning Giurgiulești into a river port.",
+  "source": "Wikipedia: Moldova",
+  "quote": "This frontage has transformed the old village of Giurgiulești (in the extreme south-west of the country) into a river port, providing Moldova access to international waters via the Danube and the Black Sea."
+ },
+ "country:Montenegro": {
+  "fact": "Montenegro's name means Black Mountain, because Mount Lovćen was covered in dense evergreen forests.",
+  "source": "Wikipedia: Montenegro",
+  "quote": "Montenegro's (  MON-tin-E(E)G-roh, -⁠AY-groh; Montenegrin: Crna Gora / Црна Гора, Montenegrin pronunciation: [t͡sr̂ːnaː gǒra]; Albanian: Mali i Zi) English name is a literal translation from a Venetian calque of the Montenegrin phrase \"Crna Gora\", or \"Black Mountain\", deriving from the appearance of Mount Lovćen, which was covered in dense evergreen forests."
+ },
+ "country:Netherlands": {
+  "fact": "The world's oldest canoe was found in Drenthe, a place in the Netherlands.",
+  "source": "Wikipedia: Netherlands",
+  "quote": "From Mesolithic Maglemosian-like tribes (c. 8000 BC), the world's oldest canoe was found in Drenthe."
+ },
+ "country:North Macedonia": {
+  "fact": "North Macedonia is a landlocked country, so it has no sea.",
+  "source": "Wikipedia: North Macedonia",
+  "quote": "North Macedonia, officially the Republic of North Macedonia, is a landlocked country in Southeastern Europe."
+ },
+ "country:Romania": {
+  "fact": "Romania's name comes from a Latin word, romanus, that means \"of Rome.\"",
+  "source": "Wikipedia: Romania",
+  "quote": "Romania derives from the local name for Romanian (Romanian: român), which in turn derives from Latin romanus, meaning \"Roman\" or \"of Rome\"."
+ },
+ "country:Russia": {
+  "fact": "Russia is the largest country in the world and spans eleven time zones.",
+  "source": "Wikipedia: Russia",
+  "quote": "It is the largest country in the world, spanning eleven time zones and sharing land borders with fourteen countries."
+ },
+ "country:Norway": {
+  "fact": "Norway has two official names: Norge and Noreg.",
+  "source": "Wikipedia: Norway",
+  "quote": "Norway has two official names: Norge in Bokmål and Noreg in Nynorsk."
+ },
+ "country:Slovakia": {
+  "fact": "Slovakia is the world's largest per-capita car producer and is known as the \"European Detroit\".",
+  "source": "Wikipedia: Slovakia",
+  "quote": "Known as the \"European Detroit\" due to its dense concentration of automotive manufacturing, Slovakia is the world's largest per-capita car producer."
+ },
+ "country:Slovenia": {
+  "fact": "Slovenia has the world's oldest wooden wheel, found in Ljubljana Marsh.",
+  "source": "Wikipedia: Slovenia",
+  "quote": "In 2002, remains of pile dwellings over 4,500 years old were discovered in Ljubljana Marsh, later protected as a UNESCO World Heritage Site, along with the Ljubljana Marshes Wooden Wheel, the world's oldest wooden wheel."
+ },
+ "country:Sweden": {
+  "fact": "Sweden is the largest country in the Nordic group, and it is the fifth-largest country in Europe.",
+  "source": "Wikipedia: Sweden",
+  "quote": "At 450,295 square kilometres (173,860 sq mi) and with a population of 10.6 million, Sweden is the largest and most populous Nordic country, and is the fifth-largest country in Europe."
+ },
+ "country:Switzerland": {
+  "fact": "Switzerland is a country known for making chocolate and cheese, tasty treats!",
+  "source": "Wikipedia: Switzerland",
+  "quote": "It is known for its chocolate and cheese production, well-developed tourism industry, and growing startup sector."
+ },
+ "country:Ukraine": {
+  "fact": "Ukraine's name may come from an old Slavic word meaning 'borderland.'",
+  "source": "Wikipedia: Ukraine",
+  "quote": "The name of Ukraine is frequently interpreted as coming from the old Slavic term for 'borderland' as is the word krajina."
  }
 }
