@@ -170,6 +170,34 @@ export default async function HomePage() {
         </div>
       </section>
 
+      <section className="border-t border-rule/50 bg-warm/40">
+        <div className="mx-auto grid max-w-6xl items-center gap-8 px-4 py-14 md:grid-cols-2">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/dad-and-son.svg"
+            alt="A cartoon of a dad and his son grinning in front of a space shuttle"
+            className="w-full rounded-2xl border border-rule shadow-sm"
+            loading="lazy"
+          />
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-widest text-ink-soft">Our story</p>
+            <h2 className="mt-2 font-display text-2xl text-ink sm:text-3xl">Built by a dad and his son, for families</h2>
+            <div className="mt-4 space-y-3 leading-relaxed text-ink-soft">
+              <p>
+                We love puzzles. Mazes, crosswords, a good riddle over breakfast. We wanted something to do together in
+                the morning that wasn&apos;t a screen.
+              </p>
+              <p>
+                Remember when the morning had a newspaper on the table, a pencil nearby, and nobody was scrolling?
+                That&apos;s the feeling we&apos;re after. So we made it together: a page that&apos;s printed fresh every
+                day, just for the kid reading it, with a pencil in hand and the news in plain words.
+              </p>
+              <p>We hope it makes your mornings a little slower, and a lot more fun.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section className="border-t border-rule/50">
         <div className="mx-auto max-w-3xl px-4 py-14">
           <h2 className="font-display text-2xl text-ink sm:text-3xl">Questions parents ask</h2>

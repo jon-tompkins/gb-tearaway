@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 560" role="img" aria-label="Cartoon of a dad and his son smiling in front of a space shuttle">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1f2a8a"/><stop offset="1" stop-color="#3b2a8f"/></linearGradient>
+    <linearGradient id="hull" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#e6e2d6"/></linearGradient>
+  </defs>
+  <rect width="800" height="560" rx="22" fill="url(#bg)"/>
+  <!-- hangar beams -->
+  <g stroke="#6f7be0" stroke-width="5" stroke-linecap="round" opacity=".55" fill="none">
+    <path d="M20 40 L300 -10"/><path d="M420 -5 L790 70"/><path d="M560 110 L790 30"/>
+  </g>
+  <rect y="470" width="800" height="90" fill="#16195a"/>
+  <!-- shuttle -->
+  <g>
+    <path d="M-20 290 Q60 175 230 190 L520 215 L690 240 Q770 255 810 300 L810 410 L-20 410 Z" fill="url(#hull)"/>
+    <path d="M-20 250 Q40 200 150 195 L205 235 L-20 300 Z" fill="#fff"/>
+    <path d="M70 215 Q130 168 215 180 L240 225 L110 250 Z" fill="#2d2f4a"/>
+    <path d="M95 225 L130 197 M135 233 L170 192 M178 226 L205 187" stroke="#e8774a" stroke-width="4" fill="none"/>
+    <path d="M-20 300 L260 250" stroke="#444" stroke-width="8" fill="none"/>
+    <path d="M330 250 L690 270" stroke="#bbb" stroke-width="3"/>
+    <rect x="570" y="300" width="100" height="26" rx="4" fill="#fff"/>
+    <rect x="578" y="306" width="22" height="14" fill="#c0392b"/><rect x="578" y="306" width="22" height="5" fill="#fff"/>
+    <text x="606" y="321" font-family="Helvetica,Arial,sans-serif" font-size="14" font-weight="700" fill="#222">United States</text>
+    <text x="440" y="236" font-family="Helvetica,Arial,sans-serif" font-size="13" font-weight="700" fill="#222">NASA</text>
+    <path d="M640 150 L690 90 L720 100 L705 245 Z" fill="#f4f1e6"/>
+    <path d="M668 105 L690 90 L706 98 L690 150 Z" fill="#6f4bd8"/>
+    <path d="M60 320 Q-20 330 -20 400 L120 405 Q150 340 60 320Z" fill="#cfcabb"/>
+    <ellipse cx="55" cy="345" rx="26" ry="19" fill="#d8d4c7"/><ellipse cx="115" cy="335" rx="20" ry="15" fill="#d8d4c7"/>
+  </g>
+  <!-- dad -->
+  <g>
+    <path d="M150 560 Q170 410 330 395 L470 395 Q630 410 660 560 Z" fill="#3d4258"/>
+    <path d="M360 395 Q400 440 440 395 Z" fill="#2c3044"/>
+    <rect x="368" y="350" width="64" height="60" rx="18" fill="#e9b48c"/>
+    <ellipse cx="400" cy="290" rx="92" ry="102" fill="#f1bf98"/>
+    <path d="M308 270 Q300 190 400 182 Q505 188 494 272 Q470 222 400 224 Q335 224 308 270Z" fill="#4a3a30"/>
+    <ellipse cx="305" cy="296" rx="13" ry="22" fill="#e9b48c"/><ellipse cx="495" cy="296" rx="13" ry="22" fill="#e9b48c"/>
+    <path d="M345 262 Q362 252 378 262 M424 262 Q440 252 456 262" stroke="#4a3a30" stroke-width="7" stroke-linecap="round" fill="none"/>
+    <circle cx="362" cy="282" r="8" fill="#2a2018"/><circle cx="438" cy="282" r="8" fill="#2a2018"/>
+    <path d="M400 290 Q392 318 404 326" stroke="#d99a72" stroke-width="5" stroke-linecap="round" fill="none"/>
+    <path d="M345 338 Q400 392 458 336 Q400 356 345 338Z" fill="#fff" stroke="#a5552f" stroke-width="5" stroke-linejoin="round"/>
+    <path d="M300 540 Q240 470 330 440" stroke="#e9b48c" stroke-width="0" fill="none"/>
+  </g>
+  <!-- son -->
+  <g>
+    <path d="M470 560 Q485 470 570 462 L680 462 Q765 470 770 560 Z" fill="#4a73b8"/>
+    <rect x="590" y="436" width="46" height="40" rx="14" fill="#e9b48c"/>
+    <ellipse cx="613" cy="392" rx="76" ry="82" fill="#f1bf98"/>
+    <path d="M536 392 Q520 305 600 300 Q690 296 692 392 Q680 350 640 344 Q620 372 590 344 Q548 348 536 392Z" fill="#5a3a2a"/>
+    <path d="M556 330 Q600 318 612 345 Q640 318 680 332" stroke="#5a3a2a" stroke-width="14" stroke-linecap="round" fill="none"/>
+    <ellipse cx="540" cy="398" rx="11" ry="18" fill="#e9b48c"/><ellipse cx="686" cy="398" rx="11" ry="18" fill="#e9b48c"/>
+    <path d="M572 382 Q586 374 598 382 M632 382 Q646 374 658 382" stroke="#2a2018" stroke-width="6" stroke-linecap="round" fill="none"/>
+    <path d="M570 428 Q614 480 658 426 Q614 444 570 428Z" fill="#fff" stroke="#a5552f" stroke-width="5" stroke-linejoin="round"/>
+    <circle cx="566" cy="418" r="10" fill="#f09a86" opacity=".6"/><circle cx="662" cy="418" r="10" fill="#f09a86" opacity=".6"/>
+  </g>
+</svg>
