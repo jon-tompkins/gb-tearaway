@@ -8,6 +8,7 @@ export type ModuleId =
   | "tonguetwister"
   | "animal"
   | "planes"
+  | "dinosaurs"
   | "logicgrid"
   | "cryptogram"
   | "numbercross"

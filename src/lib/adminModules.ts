@@ -6,6 +6,7 @@ import { RECORDS } from "./content/records";
 import { TWISTERS } from "./content/twisters";
 import { ANIMALS } from "./content/animals";
 import { PLANES } from "./content/planes";
+import { DINOSAURS } from "./content/dinosaurs";
 import { CRYPTOGRAMS } from "./content/bank/cryptograms";
 import { WORDS } from "./content/words";
 import { WORDS as SPANISH } from "./content/spanish";
@@ -183,6 +184,14 @@ export const ADMIN_MODULES: Record<ModuleId, AdminModule> = {
     bank: () => ({
       columns: ["Animal", "Lives", "Size", "Fun fact"],
       rows: ANIMALS.map((a) => ({ cells: [a.name, a.lives, a.size, a.fact], bands: a.bands })),
+    }),
+  },
+  dinosaurs: {
+    kind: "bank",
+    how: "Static bank of 17 dinosaurs with public-domain PhyloPic outlines. Each kid works through it one a day in their own shuffled order.",
+    bank: () => ({
+      columns: ["Dinosaur", "Diet", "Length (m)", "Weight (kg)", "When", "Fun fact"],
+      rows: DINOSAURS.map((d) => ({ cells: [d.name, d.diet, String(d.lengthM), String(d.weightKg), d.when, d.fact], bands: d.bands })),
     }),
   },
   planes: {

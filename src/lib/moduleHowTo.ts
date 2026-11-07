@@ -105,6 +105,9 @@ export const MODULE_HOW_TO: Partial<Record<ModuleId, string[]>> = {
     "Color in the animal, then read where it lives and the fun fact.",
     "Can you guess how big it is before you read the size?",
   ],
+  dinosaurs: [
+    "Color in the dinosaur, then read how big it was, what it ate and when it lived.",
+  ],
   planes: [
     "Color in the aircraft as seen from above, then read what it does and how big and fast it is.",
   ],
