@@ -102,7 +102,9 @@ function buildDaily(daily: {
   precipitation_probability_max?: number[];
 }): WeatherDay[] | undefined {
   if (!daily?.time) return undefined;
-  const out = daily.time.slice(0, 7).map((d, i) => ({
+  // Forward-looking row: starts TOMORROW (today is already the big headline), 7 days.
+  const FIRST = 1;
+  const out = daily.time.slice(FIRST, FIRST + 7).map((d, k) => { const i = k + FIRST; return {
     day: weekdayShort(d),
     code: daily.weather_code?.[i] ?? 1,
     hi: daily.temperature_2m_max?.[i] != null ? Math.round(daily.temperature_2m_max![i]) : null,
@@ -110,7 +112,7 @@ function buildDaily(daily: {
     precip: daily.precipitation_probability_max?.[i] != null
       ? Math.round(daily.precipitation_probability_max![i])
       : null,
-  }));
+  }; });
   return out.length ? out : undefined;
 }
 
@@ -136,6 +138,7 @@ function mockDaily(h: number, base: number): WeatherDay[] {
   const codes = [0, 1, 2, 3, 61, 80, 2];
   const start = new Date().getDay();
   return Array.from({ length: 7 }, (_, i) => {
+    i += 1; // starts tomorrow
     const code = codes[(h + i) % codes.length];
     return {
       day: names[(start + i) % 7],
@@ -304,7 +307,7 @@ export async function fetchWeather(opts: {
       daily: "weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max",
       temperature_unit: "fahrenheit",
       timezone: opts.timezone || "America/New_York",
-      forecast_days: "7",
+      forecast_days: "8",
     });
     // Cache ~30m so parent preview refreshes don't burn Open-Meteo quota.
     // Resilient (timeout + retry) so a transient blip during the heavy morning

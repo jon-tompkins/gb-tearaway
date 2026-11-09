@@ -6,6 +6,15 @@ import { getHiddenModules } from "@/lib/visibility";
 import { FAQ } from "@/lib/faq";
 import { PLANS } from "@/lib/plans";
 import { AGE_BANDS } from "@/lib/types";
+import { moduleExample, type ModuleExample } from "@/lib/moduleExample";
+
+function safeExample(id: Parameters<typeof moduleExample>[0]): ModuleExample | null {
+  try {
+    return moduleExample(id);
+  } catch {
+    return null;
+  }
+}
 
 // The module showcase leaves out admin-hidden modules; refresh every few minutes.
 export const revalidate = 300;
@@ -144,20 +153,45 @@ export default async function HomePage() {
               Browse every module →
             </Link>
           </div>
-          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-8 space-y-10">
             {showcase.map(({ category, modules }) => (
-              <div key={category.id} className="card">
-                <h3 className="font-display text-lg text-ink">{category.name}</h3>
-                <div className="mt-3 flex flex-wrap gap-1.5">
-                  {modules.map((m) => (
-                    <Link
-                      key={m.id}
-                      href={`/modules/${m.id}`}
-                      className="rounded-full border border-rule bg-cream px-2.5 py-1 text-xs font-semibold text-ink-soft transition hover:border-ink/40 hover:text-ink"
-                    >
-                      {m.name}
-                    </Link>
-                  ))}
+              <div key={category.id}>
+                <h3 className="font-display text-xl text-ink">{category.name}</h3>
+                <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  {modules.map((m) => {
+                    const ex = safeExample(m.id);
+                    return (
+                      <Link
+                        key={m.id}
+                        href={`/modules/${m.id}`}
+                        className="group block overflow-hidden rounded-xl border border-rule bg-paper transition hover:border-ink/40"
+                      >
+                        <div className="relative h-36 overflow-hidden border-b border-rule/60 bg-[#fbf8f1] p-3">
+                          {ex?.svg ? (
+                            <div
+                              className="flex h-full items-center justify-center gap-2 [&_svg]:h-full [&_svg]:max-h-full [&_svg]:w-auto [&_svg]:max-w-full"
+                              dangerouslySetInnerHTML={{ __html: ex.svg + (ex.locator ? `<div style="width:38%;flex:none">${ex.locator.replace(/<div class="geo-cap">.*?<\/div>/, "")}</div>` : "") }}
+                            />
+                          ) : ex?.text ? (
+                            <div className="font-mono text-[0.68rem] leading-snug text-ink">
+                              {ex.text.slice(0, 6).map((line, i) => (
+                                <p key={i} className={i === 0 ? "font-semibold" : ""}>
+                                  {line}
+                                </p>
+                              ))}
+                            </div>
+                          ) : null}
+                          {!ex?.svg ? (
+                            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-[#fbf8f1] to-transparent" />
+                          ) : null}
+                        </div>
+                        <div className="px-3 py-2.5">
+                          <p className="text-sm font-semibold text-ink group-hover:underline">{m.name}</p>
+                          <p className="mt-0.5 text-xs leading-snug text-ink-soft">{m.blurb}</p>
+                        </div>
+                      </Link>
+                    );
+                  })}
                 </div>
               </div>
             ))}
