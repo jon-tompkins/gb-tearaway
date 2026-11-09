@@ -39,7 +39,7 @@ function star(cx: number, cy: number, r = 9): string {
 /** Outline (+ optional capital star) sized to its own viewBox. */
 export function stateToSvg(s: StateShape, opts: { showStar?: boolean } = {}): string {
   const parts = [
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${s.w} ${s.h}" width="${s.w}" height="${s.h}" role="img" aria-label="US state outline">`,
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-3 -3 ${s.w + 6} ${s.h + 6}" width="${s.w + 6}" height="${s.h + 6}" role="img" aria-label="US state outline" style="overflow:visible">`,
     `<path d="${s.path}" fill="#f2efe8" stroke="#111" stroke-width="2" stroke-linejoin="round"/>`,
   ];
   if (opts.showStar) parts.push(star(s.star[0], s.star[1]));

@@ -162,8 +162,8 @@ export function buildPrintHtml(
   /* Geography: outline takes the room, locator map sits beside it */
   .geo-row{flex:1;min-height:0;display:flex;gap:3mm;align-items:center;margin-top:1.2mm}
   .geo-row .fig{height:100%;margin-top:0}
-  .geo-row .fig svg{width:auto;height:100%}
-  .geo-loc{flex:0 0 42%;height:100%;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+  .geo-row .fig svg{width:100%;height:100%;max-width:100%;max-height:100%}
+  .geo-loc{padding-right:1mm;box-sizing:border-box;flex:0 0 42%;height:100%;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
   .geo-loc svg{width:100%;height:auto;min-height:0;max-height:calc(100% - 4mm)}
   .geo-cap{font-size:5.5pt;font-weight:700;letter-spacing:.12em;text-transform:uppercase;margin-top:1mm;text-align:center}`;
 

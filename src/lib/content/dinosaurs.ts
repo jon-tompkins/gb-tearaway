@@ -26,12 +26,10 @@ export function dinoCard(d: DinoEntry, band: AgeBand): DinoCard {
         : `Long as: about ${Math.max(1, Math.round(buses))} school bus${Math.round(buses) <= 1 ? "" : "es"}.`,
     );
     lines.push(`Fun fact: ${d.fact}`);
-    lines.push("Color me in!");
   } else {
     lines.push(`Length: about ${d.lengthM} m. Weight: about ${d.weightKg.toLocaleString("en-US")} kg.`);
     lines.push(`Fun fact: ${d.fact}`);
     if (d.note && band === "10-12") lines.push(d.note);
-    lines.push("Color me in, then invent a nickname for it.");
   }
   return { name: d.name, lines, svg: dinoSvg(d.name) };
 }

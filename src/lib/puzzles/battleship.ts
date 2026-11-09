@@ -361,7 +361,7 @@ function shipComponents(grid: number[][]): { cells: Cell[]; horizontal: boolean 
 export function battleshipToSvg(d: BattleshipData, opts: { showSolution?: boolean } = {}): string {
   const { n, reveal, ships, solution } = d;
   const CS = n <= 6 ? 32 : n <= 7 ? 28 : n <= 8 ? 24 : 21;
-  const pad = 4;
+  const pad = 6;
   const gut = 16; // count labels gutter (right + bottom)
   const gap = 16; // grid → fleet gap
   const gridPx = n * CS;
@@ -452,7 +452,7 @@ export function battleshipToSvg(d: BattleshipData, opts: { showSolution?: boolea
   ships.forEach((L, i) => {
     const y = oy + i * rowH;
     const cy = y + rowH / 2;
-    p.push(`<rect x="${fleetX.toFixed(1)}" y="${(y + 2).toFixed(1)}" width="${fw.toFixed(1)}" height="${(rowH - 4).toFixed(1)}" rx="4" fill="#fafafa" stroke="#d8d8d8" stroke-width="1"/>`);
+    p.push(`<rect x="${fleetX.toFixed(1)}" y="${(y + 2).toFixed(1)}" width="${fw.toFixed(1)}" height="${(rowH - 4).toFixed(1)}" rx="5" fill="#f4f4f4" stroke="#555" stroke-width="1.6"/>`);
     const x0 = fleetX + padL;
     if (L === 1) {
       p.push(`<circle cx="${(x0 + seg / 2).toFixed(1)}" cy="${cy.toFixed(1)}" r="${(seg * 0.4).toFixed(1)}" fill="#111"/>`);
@@ -470,7 +470,7 @@ export function battleshipToSvg(d: BattleshipData, opts: { showSolution?: boolea
 
   const W = fleetX + fw + pad;
   const H = oy + gridPx + gut + pad;
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="Battleship Solitaire puzzle">${p.join("")}</svg>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="Battleship Solitaire puzzle" style="overflow:visible">${p.join("")}</svg>`;
 }
 
 /** Compact text depiction of the solution for the in-app answer key. */

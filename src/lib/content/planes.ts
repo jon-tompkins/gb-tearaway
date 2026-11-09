@@ -22,13 +22,11 @@ export function planeCard(p: PlaneEntry, band: AgeBand): PlaneCard {
     const buses = Math.max(1, Math.round(p.lengthM / BUS_M));
     lines.push(`Long as: about ${buses} school bus${buses === 1 ? "" : "es"}.`);
     lines.push(`Fun fact: ${p.fact}`);
-    lines.push("Color me in!");
   } else {
     lines.push(`Length: about ${p.lengthM} m. Wingspan: about ${p.spanM} m.`);
     lines.push(`Top speed: ${p.speed}.`);
     if (band === "10-12") lines.push(`First flew: ${p.first}. Crew: ${p.crew}.`);
     lines.push(`Fun fact: ${p.fact}`);
-    lines.push("Color me in, then give it a squadron name.");
   }
   return { name: p.name, lines, svg: planeSvg(p.spec) };
 }

@@ -242,7 +242,9 @@ const PT_MM = 0.3528; // 1pt in mm
 
 /** All printed lines of a poem: title, body, attribution. */
 export function poemLines(p: PoemItem): string[] {
-  return [p.title, ...p.lines, `— ${p.author}`];
+  // Limericks are titled by their first line — don't print it twice.
+  const dup = p.lines[0]?.trim().toLowerCase().replace(/[.,;:!?]$/, "") === p.title.trim().toLowerCase().replace(/[.,;:!?]$/, "");
+  return [...(dup ? [] : [p.title]), ...p.lines, `— ${p.author}`];
 }
 
 /**
