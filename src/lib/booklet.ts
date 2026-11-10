@@ -11,6 +11,10 @@ import { buildNumberCross } from "./puzzles/numbercross";
 import { generateLogicGrid } from "./puzzles/logicgrid";
 import { CROSSWORD_THEMES } from "./content/crosswords";
 import { bandFromDifficulty } from "./difficulty";
+import { qrSvg } from "./qr";
+
+const SITE_URL = "https://www.backofthebox.xyz";
+const SITE_LABEL = "backofthebox.xyz";
 
 /** Every puzzle a booklet can hold, with its natural card size ("double" = 2× card, else a 1× card). */
 export const PUZZLE_KINDS = [
@@ -163,6 +167,11 @@ export function buildBookletHtml(opts: BookletOptions, extra: { autoPrint?: bool
   const pages = Math.max(BOOKLET_LIMITS.minPages, Math.min(BOOKLET_LIMITS.maxPages, Math.round(opts.pages)));
   const kinds = opts.kinds.length ? opts.kinds : ALL_PUZZLE_KINDS;
 
+  const qr = qrSvg(SITE_URL);
+  const hdr = `<header class="bk-hdr"><div class="bk-mast">Back of the Box</div><div class="bk-sub">Puzzle booklet</div></header>`;
+  const ftr = `<footer class="bk-ftr"><div class="bk-brand">Back of the Box · ${SITE_LABEL}</div><div class="bk-qr">${qr}<span>Scan for<br>more pages</span></div></footer>`;
+  const wrap = (cls: string, inner: string) => `<section class="sheet ${cls}">${hdr}<div class="body">${inner}</div>${ftr}</section>`;
+
   const sheets: string[] = [];
   const keyed: { item: Item; label: string }[] = [];
   let counter = 0;
@@ -176,7 +185,7 @@ export function buildBookletHtml(opts: BookletOptions, extra: { autoPrint?: bool
       cells.push(`<div class="cell ${kind}">${it.html}</div>`);
       if (it.answerHtml) keyed.push({ item: it, label: n === 1 ? `Page ${s + 1}` : `Page ${s + 1}${"abcd"[j]}` });
     }
-    sheets.push(`<section class="sheet n${n}">${cells.join("")}</section>`);
+    sheets.push(wrap(`n${n}`, cells.join("")));
   }
 
   if (opts.answers) {
@@ -186,7 +195,7 @@ export function buildBookletHtml(opts: BookletOptions, extra: { autoPrint?: bool
         .slice(k, k + perKey)
         .map(({ item, label }) => `<div class="key-cell"><div class="key-n">${label}</div>${item.answerHtml}</div>`)
         .join("");
-      sheets.push(`<section class="sheet key"><div class="key-title">Answers</div><div class="key-grid">${cells}</div></section>`);
+      sheets.push(wrap("key", `<div class="key-title">Answers</div><div class="key-grid">${cells}</div>`));
     }
   }
 
@@ -196,12 +205,22 @@ export function buildBookletHtml(opts: BookletOptions, extra: { autoPrint?: bool
 @page { size: 8.5in 11in; margin: 0; }
 * { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; background: #fff; color: #1c1915; font-family: ui-monospace, Menlo, monospace; }
-.sheet { width: 8.5in; height: 11in; padding: 0.5in 0.5in 0.5in ${inner}in; page-break-after: always; break-after: page; display: grid; gap: 0.3in; overflow: hidden; }
-.sheet.n1 { grid-template-rows: 1fr; }
-.sheet.n2 { grid-template-rows: 1fr 1fr; }
-.sheet.n4 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 0.25in; }
+.sheet { width: 8.5in; height: 11in; padding: 0.4in 0.5in 0.4in ${inner}in; page-break-after: always; break-after: page; display: flex; flex-direction: column; gap: 0.15in; overflow: hidden; }
+.sheet > .body { flex: 1 1 0; min-height: 0; display: grid; gap: 0.3in; }
+.sheet.n1 > .body { grid-template-rows: 1fr; }
+.sheet.n2 > .body { grid-template-rows: 1fr 1fr; }
+.sheet.n4 > .body { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 0.25in; }
+.sheet.key > .body { display: flex; flex-direction: column; gap: 0.1in; }
+.bk-hdr { text-align: center; border-bottom: 1.4px solid #000; padding-bottom: 0.06in; }
+.bk-mast { font-family: Georgia, 'Times New Roman', serif; font-weight: 700; font-size: 18pt; line-height: 1; letter-spacing: -0.01em; }
+.bk-sub { font-size: 7pt; letter-spacing: 0.08em; text-transform: uppercase; margin-top: 0.04in; }
+.bk-ftr { position: relative; border-top: 1px solid #000; padding-top: 0.08in; min-height: 0.5in; display: flex; align-items: center; justify-content: center; }
+.bk-brand { font-family: Georgia, 'Times New Roman', serif; font-size: 9pt; font-weight: 700; }
+.bk-qr { position: absolute; right: 0; top: 0.06in; display: flex; align-items: center; gap: 0.07in; line-height: 0; }
+.bk-qr svg { width: 0.45in; height: 0.45in; }
+.bk-qr span { font-size: 5.5pt; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; line-height: 1.15; text-align: right; }
 .sheet:last-child { page-break-after: auto; break-after: auto; }
-${opts.duplex ? `.sheet:nth-child(even) { padding: 0.5in ${inner}in 0.5in 0.5in; }` : ""}
+${opts.duplex ? `.sheet:nth-child(even) { padding: 0.4in ${inner}in 0.4in 0.5in; }` : ""}
 .cell { min-height: 0; min-width: 0; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; }
 .fig { width: 100%; flex: 1 1 0; min-height: 0; display: flex; align-items: center; justify-content: center; }
 .fig svg { max-width: 100%; max-height: 100%; width: 100%; height: 100%; }
@@ -210,7 +229,6 @@ ${opts.duplex ? `.sheet:nth-child(even) { padding: 0.5in ${inner}in 0.5in 0.5in;
 .wf-half { flex-direction: row; align-items: stretch; gap: 0.25in; }
 .wf-half .words { align-self: center; flex-direction: column; flex-wrap: nowrap; gap: 0.06in; width: 1.5in; padding: 0; font-size: 11pt; justify-content: center; }
 .wf-half .fig { flex: 1 1 0; height: 100%; align-self: stretch; min-width: 0; }
-.key { display: flex; flex-direction: column; }
 .key-title { font-size: 16pt; font-weight: 700; text-align: center; }
 .key-grid { flex: 1; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr 1fr; gap: 0.2in; min-height: 0; }
 .key-cell { display: flex; flex-direction: column; min-height: 0; }
