@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { AppShell } from "@/components/AppNav";
 import { HowItWorks } from "@/components/HowItWorks";
-import { MODULE_CATALOG, MODULE_CATEGORIES, moduleSize } from "@/lib/modules";
+import { MODULE_CATALOG, MODULE_CATEGORIES, moduleAudience, moduleSize } from "@/lib/modules";
 import { useModuleVisibility } from "@/lib/useModuleVisibility";
 import { NOUN } from "@/lib/copy";
 import type { ModuleCategoryId, SlotSize } from "@/lib/types";
@@ -15,13 +15,15 @@ export default function BrowseModulesPage() {
   const vis = useModuleVisibility();
   const [type, setType] = useState<ModuleCategoryId | "all">("all");
   const [size, setSize] = useState<SlotSize | "all">("all");
+  const [aud, setAud] = useState<"any" | "kids" | "grownups">("any");
 
   const chip = (active: boolean) =>
     `rounded-full border px-3 py-1 text-xs font-semibold transition ${
       active ? "border-ink bg-ink text-cream" : "border-rule bg-paper text-ink-soft hover:border-ink/30"
     }`;
   const shown = MODULE_CATALOG.filter(
-    (m) => vis.isVisible(m.id) && (type === "all" || m.category === type) && (size === "all" || moduleSize(m.id) === size),
+    (m) => vis.isVisible(m.id) && (type === "all" || m.category === type) && (size === "all" || moduleSize(m.id) === size) &&
+      (aud === "any" || (aud === "kids" ? moduleAudience(m.id) === "kids" : moduleAudience(m.id) === "all")),
   );
   const catName = (id: ModuleCategoryId) => MODULE_CATEGORIES.find((c) => c.id === id)?.name ?? id;
 
@@ -34,6 +36,17 @@ export default function BrowseModulesPage() {
         </Link>
       </div>
       <div className="mb-4 space-y-2">
+        <div className="flex flex-wrap gap-1.5">
+          <button type="button" className={chip(aud === "any")} onClick={() => setAud("any")}>
+            Everyone
+          </button>
+          <button type="button" className={chip(aud === "kids")} onClick={() => setAud("kids")}>
+            Kid-focused
+          </button>
+          <button type="button" className={chip(aud === "grownups")} onClick={() => setAud("grownups")}>
+            For grown-ups &amp; seniors
+          </button>
+        </div>
         <div className="flex flex-wrap gap-1.5">
           <button type="button" className={chip(type === "all")} onClick={() => setType("all")}>
             All types

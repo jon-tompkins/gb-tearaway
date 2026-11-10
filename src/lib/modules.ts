@@ -10,6 +10,18 @@ export interface ModuleMeta {
   size: SlotSize;
 }
 
+/** Modules written for children (tone, art or kid-safe rewriting). Everything else suits adults/seniors too. */
+const KIDS_ONLY: ReadonlySet<string> = new Set([
+  "maze", "dots", "colorbynumber", "riddle", "joke", "tonguetwister", "scramble", "cryptogram",
+  "animal", "dinosaurs", "planes", "news_world", "news_national", "news_tech", "news_gamer", "sportsnews",
+]);
+
+export type Audience = "kids" | "all";
+
+export function moduleAudience(id: ModuleId): Audience {
+  return KIDS_ONLY.has(id) ? "kids" : "all";
+}
+
 export interface ModuleCategoryMeta {
   id: ModuleCategoryId;
   name: string;
