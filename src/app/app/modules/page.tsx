@@ -223,7 +223,7 @@ export default function EditDispatchPage() {
 
         <div>
           <div className="mb-2 text-xs font-semibold uppercase tracking-[0.08em] text-ink-soft">
-            Age
+            Difficulty
           </div>
           <div className="grid gap-2 sm:grid-cols-3">
             {AGE_BANDS.map((b) => (
@@ -238,6 +238,7 @@ export default function EditDispatchPage() {
                 }`}
               >
                 <strong className="font-display text-base">{b.label}</strong>
+                <em className={`block text-[0.7rem] not-italic ${ageBand === b.id ? "text-cream/75" : "text-ink-soft"}`}>suggested ages {b.ages}</em>
               </button>
             ))}
           </div>

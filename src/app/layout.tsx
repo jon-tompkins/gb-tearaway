@@ -23,7 +23,7 @@ const mono = IBM_Plex_Mono({
 });
 
 const DESCRIPTION =
-  "A fresh, screen-free puzzle page for your kid every morning: real kid-safe news, mazes, crosswords, a word of the day. Age-tuned and ready to print at breakfast.";
+  "A fresh, screen-free puzzle page for your kid every morning: real kid-safe news, mazes, crosswords, a word of the day. Difficulty-tuned and ready to print at breakfast.";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.backofthebox.xyz"),

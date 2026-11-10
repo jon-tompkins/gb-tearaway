@@ -40,7 +40,7 @@ export const MODULE_CATEGORIES: ModuleCategoryMeta[] = [
 export const MODULE_CATALOG: ModuleMeta[] = [
   // Play / puzzles
   { id: "maze", name: "Maze", blurb: "A fresh, solvable maze. Harder as they grow.", category: "play", defaultOn: true, size: "double" },
-  { id: "wordfind", name: "Word Find", blurb: "A word-search tuned to your kid's age.", category: "play", defaultOn: false, size: "double" },
+  { id: "wordfind", name: "Word Find", blurb: "A word-search tuned to the difficulty you pick.", category: "play", defaultOn: false, size: "double" },
   { id: "dots", name: "Connect the Dots", blurb: "Funny numbered dots + a silly caption.", category: "play", defaultOn: false, size: "double" },
   { id: "colorbynumber", name: "Color by Number", blurb: "A numbered picture to color in with crayons, plus a color key.", category: "play", defaultOn: false, size: "double" },
   { id: "riddle", name: "Riddle", blurb: "Think first — answer shows in the app, never on paper.", category: "play", defaultOn: false, size: "half" },
@@ -49,10 +49,10 @@ export const MODULE_CATALOG: ModuleMeta[] = [
   { id: "crossword", name: "Themed Crossword", blurb: "A real criss-cross crossword on a daily theme, with Across and Down clues. Answers show in the app.", category: "play", defaultOn: false, size: "double" },
   { id: "sequence", name: "Number Sequence", blurb: "Spot the pattern and find the next number. Difficulty scales the trickiness; answer shows in the app.", category: "play", defaultOn: false, size: "half" },
   // Words & language
-  { id: "word", name: "Word of the Day", blurb: "A real word, said out loud, used in a sentence — age-banded.", category: "words", defaultOn: true, size: "half" },
+  { id: "word", name: "Word of the Day", blurb: "A real word, said out loud, used in a sentence — tuned to the difficulty you pick.", category: "words", defaultOn: true, size: "half" },
   { id: "poem", name: "Poem of the Day", blurb: "A short printable poem — soft, silly, or thoughtful.", category: "words", defaultOn: false, size: "full" },
   { id: "quote", name: "Famous Quote", blurb: "A famous line from history, who said it, and what it means.", category: "words", defaultOn: false, size: "half" },
-  { id: "joke", name: "Breakfast Joke", blurb: "One groaner a day. Age-checked, no mean stuff.", category: "words", defaultOn: true, size: "half" },
+  { id: "joke", name: "Breakfast Joke", blurb: "One groaner a day. Checked for kindness, no mean stuff.", category: "words", defaultOn: true, size: "half" },
   { id: "spanish", name: "Spanish Word", blurb: "A second language bite beside English Word of the Day.", category: "words", defaultOn: false, size: "half" },
   { id: "logicgrid", name: "Logic Grid", blurb: "Who has what? Use the clues to fill in the grid. Every puzzle has exactly one answer.", category: "play", defaultOn: false, size: "full" },
   { id: "planes", name: "Military Aircraft", blurb: "A different military plane or helicopter each day to color in, with its job, size, speed and a fun fact.", category: "facts", defaultOn: false, size: "full" },
@@ -241,7 +241,7 @@ export const MARKETPLACE_PACKS: MarketplacePack[] = [
   { id: "space", name: "Space Week", blurb: "Planets, rockets, and one constellation to find after dark.", price: "$2.99", status: "coming-soon" },
   { id: "sports", name: "Scorecard", blurb: "Last night’s kid-friendly scores for the teams you pick.", price: "$1.99", status: "coming-soon" },
   { id: "gratitude", name: "Gratitude Note", blurb: "One prompt to name something good before the bus.", price: "$1.99", status: "coming-soon" },
-  { id: "tongue", name: "Tongue Twister", blurb: "Say it three times fast. Age-banded and spit-free.", price: "$1.99", status: "coming-soon" },
+  { id: "tongue", name: "Tongue Twister", blurb: "Say it three times fast. Easy or tricky, and spit-free.", price: "$1.99", status: "coming-soon" },
 ];
 
 export function moduleById(id: ModuleId): ModuleMeta {

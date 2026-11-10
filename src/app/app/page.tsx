@@ -149,7 +149,7 @@ export default function DashboardPage() {
                     <StatusBadge status={kid.status} />
                   </div>
                   <p className="text-xs text-ink-soft">
-                    Age {ageLabel(kid.ageBand)} · {paper}
+                    {ageLabel(kid.ageBand)} difficulty · {paper}
                   </p>
                 </div>
                 <div className="shrink-0 rounded-full bg-paper px-3 py-1 text-right text-xs text-ink-soft">

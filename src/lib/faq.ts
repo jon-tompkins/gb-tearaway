@@ -22,8 +22,8 @@ export const FAQ: FaqItem[] = [
     cta: "See printers and paper →",
   },
   {
-    q: "What ages is it for?",
-    a: "About 4 to 12. You set an age when you make the page, and each card has its own 1–20 dial. Sudoku goes from 4×4 up to 9×9, mazes grow, and news cards start at level 5.",
+    q: "Who is it for, and how hard is it?",
+    a: "Anyone who likes a morning page. You choose a difficulty (Easier, Medium or Harder) when you make the page, with suggested ages of 4 to 12 as a starting point, and each card has its own 1–20 dial. Sudoku goes from 4×4 up to 9×9, mazes grow, and news cards start at level 5.",
   },
   {
     q: "Where does the news come from?",

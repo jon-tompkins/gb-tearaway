@@ -87,7 +87,7 @@ export default async function HomePage() {
                     href={`/api/sample/${b.id}`}
                     className="rounded-full border border-rule bg-paper px-4 py-1.5 text-sm font-semibold text-ink transition hover:border-ink/40"
                   >
-                    Ages {b.label} ↓
+                    {b.label} (ages {b.ages}) ↓
                   </a>
                 ))}
               </div>

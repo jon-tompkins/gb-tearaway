@@ -133,7 +133,7 @@ export default async function ModuleDetail({ params }: { params: Promise<{ id: s
           ))}
         </ul>
         <p className="mt-3 text-sm text-ink-soft">
-          <span className="font-semibold text-ink">Age dial (1–20):</span> {MODULE_LEVELS[id as ModuleId]}
+          <span className="font-semibold text-ink">Difficulty dial (1–20):</span> {MODULE_LEVELS[id as ModuleId]}
         </p>
       </section>
 

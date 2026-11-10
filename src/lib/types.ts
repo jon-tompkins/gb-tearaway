@@ -425,10 +425,11 @@ export const STRIP_DPI = 203;
 export const MIN_SLOTS = 1;
 export const MAX_SLOTS = 7;
 
-export const AGE_BANDS: { id: AgeBand; label: string; hint: string }[] = [
-  { id: "4-6", label: "4–6", hint: "Short words, chunky maze, 4×4 numbers" },
-  { id: "7-9", label: "7–9", hint: "Vocabulary, a real maze, 6×6 grid" },
-  { id: "10-12", label: "10–12", hint: "Denser facts, tougher maze, easy 9×9" },
+/** Difficulty tiers. `ages` is only a suggestion, never a requirement. */
+export const AGE_BANDS: { id: AgeBand; label: string; ages: string; hint: string }[] = [
+  { id: "4-6", label: "Easier", ages: "4–6", hint: "Short words, chunky maze, 4×4 numbers" },
+  { id: "7-9", label: "Medium", ages: "7–9", hint: "Vocabulary, a real maze, 6×6 grid" },
+  { id: "10-12", label: "Harder", ages: "10–12", hint: "Denser facts, tougher maze, easy 9×9" },
 ];
 
 export const TIMEZONES = [

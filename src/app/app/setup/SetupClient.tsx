@@ -162,8 +162,7 @@ export default function SetupClient({ examples }: { examples: ExampleMap }) {
         ...(zip.trim() ? { settings: { weatherZip: zip.trim() } } : {}),
         createKid: {
           name: name.trim(),
-          // Grown-ups get the fullest, least-childish difficulty tier.
-          ageBand: who === "grownup" ? "10-12" : ageBand,
+          ageBand,
           paperSize,
           slots,
           printTime: deliveryTime,
@@ -221,7 +220,7 @@ export default function SetupClient({ examples }: { examples: ExampleMap }) {
                 <div className="grid gap-2 sm:grid-cols-2">
                   <button type="button" className={tile(who === "kid")} onClick={() => chooseWho("kid")} aria-pressed={who === "kid"}>
                     <strong className="font-display text-lg">🧒 A kid</strong>
-                    <em className={`mt-0.5 block text-xs not-italic ${who === "kid" ? "text-cream/75" : "text-ink-soft"}`}>Age-tuned puzzles, animals, kid-safe news</em>
+                    <em className={`mt-0.5 block text-xs not-italic ${who === "kid" ? "text-cream/75" : "text-ink-soft"}`}>Puzzles, animals and kid-safe news</em>
                   </button>
                   <button type="button" className={tile(who === "grownup")} onClick={() => chooseWho("grownup")} aria-pressed={who === "grownup"}>
                     <strong className="font-display text-lg">🧓 A grown-up</strong>
@@ -233,19 +232,19 @@ export default function SetupClient({ examples }: { examples: ExampleMap }) {
                 <label htmlFor="name">{who === "kid" ? "Child's first name" : "First name"}</label>
                 <input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder={who === "kid" ? "Sam" : "Grandpa Joe"} autoComplete="off" maxLength={40} />
               </div>
-              {who === "kid" ? (
+              {(
                 <div>
-                  <div className="mb-2 text-xs font-semibold uppercase tracking-[0.08em] text-ink-soft">Age</div>
+                  <div className="mb-2 text-xs font-semibold uppercase tracking-[0.08em] text-ink-soft">Difficulty</div>
                   <div className="grid gap-2 sm:grid-cols-3">
                     {AGE_BANDS.map((b) => (
                       <button key={b.id} type="button" onClick={() => setAgeBand(b.id)} className={tile(ageBand === b.id)}>
                         <strong className="font-display text-lg">{b.label}</strong>
-                        <em className={`mt-1 block text-xs not-italic ${ageBand === b.id ? "text-cream/75" : "text-ink-soft"}`}>{b.hint}</em>
+                        <em className={`mt-1 block text-xs not-italic ${ageBand === b.id ? "text-cream/75" : "text-ink-soft"}`}>Suggested for ages {b.ages}. {b.hint}</em>
                       </button>
                     ))}
                   </div>
                 </div>
-              ) : null}
+              )}
             </div>
             {error ? <p className="text-sm text-stamp">{error}</p> : null}
             <button
