@@ -2,13 +2,12 @@ import { NextResponse } from "next/server";
 import { accessFor } from "@/lib/billing";
 import { currentUserKey } from "@/lib/userKey";
 import { renderPdfFromUrl } from "@/lib/pdf";
-import { BOOKLET_LIMITS, buildBookletHtml, type BookletKind, type BookletLayout } from "@/lib/booklet";
+import { ALL_PUZZLE_KINDS, BOOKLET_LIMITS, buildBookletHtml, type BookletLayout, type PuzzleKind } from "@/lib/booklet";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
-const KINDS: BookletKind[] = ["maze", "wordfind", "colorbynumber", "mix"];
 
 const num = (v: string | null, d: number, lo: number, hi: number) => {
   const n = Number(v);
@@ -17,7 +16,7 @@ const num = (v: string | null, d: number, lo: number, hi: number) => {
 
 /**
  * GET /api/booklet — a no-header, binder-ready puzzle booklet.
- * ?kind=maze|wordfind|colorbynumber|mix &layout=full|half &pages=25 &d=1..20
+ * ?kinds=maze,sudoku,… (or kind=mix for all) &layout=full|half (half = doubled up) &pages=25 &d=1..20
  * &seed=… &binder=1 &duplex=1 &answers=1 &format=html|print|pdf
  */
 export async function GET(req: Request) {
@@ -26,11 +25,13 @@ export async function GET(req: Request) {
   const access = await accessFor(await currentUserKey());
   if (!access.active) return NextResponse.json({ error: "Plan required" }, { status: 402 });
 
-  const kindRaw = q.get("kind") as BookletKind | null;
-  const kind: BookletKind = kindRaw && KINDS.includes(kindRaw) ? kindRaw : "mix";
+  const raw = (q.get("kinds") ?? q.get("kind") ?? "").split(",").map((x) => x.trim());
+  const picked = raw.filter((k): k is PuzzleKind => (ALL_PUZZLE_KINDS as string[]).includes(k));
+  const kinds: PuzzleKind[] = picked.length ? picked : ALL_PUZZLE_KINDS;
+  const kind = kinds.length === ALL_PUZZLE_KINDS.length ? "mix" : kinds.join("-");
   const layout: BookletLayout = q.get("layout") === "half" ? "half" : "full";
   const opts = {
-    kind,
+    kinds,
     layout,
     pages: num(q.get("pages"), 25, BOOKLET_LIMITS.minPages, BOOKLET_LIMITS.maxPages),
     difficulty: num(q.get("d"), 6, 1, 20),

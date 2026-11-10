@@ -3,17 +3,10 @@
 import { useMemo, useState } from "react";
 import { AppShell } from "@/components/AppNav";
 
-type Kind = "mix" | "maze" | "wordfind" | "colorbynumber";
-
-const KINDS: { id: Kind; label: string }[] = [
-  { id: "mix", label: "Mix of everything" },
-  { id: "maze", label: "Mazes" },
-  { id: "wordfind", label: "Word finds" },
-  { id: "colorbynumber", label: "Color by number" },
-];
+import { ALL_PUZZLE_KINDS, PUZZLE_KINDS, perSheet, type PuzzleKind } from "@/lib/booklet";
 
 export default function BookletPage() {
-  const [kind, setKind] = useState<Kind>("mix");
+  const [kinds, setKinds] = useState<PuzzleKind[]>(ALL_PUZZLE_KINDS);
   const [layout, setLayout] = useState<"full" | "half">("full");
   const [pages, setPages] = useState(25);
   const [d, setD] = useState(6);
@@ -25,7 +18,7 @@ export default function BookletPage() {
   const qs = useMemo(
     () =>
       new URLSearchParams({
-        kind,
+        kinds: kinds.join(","),
         layout,
         pages: String(pages),
         d: String(d),
@@ -34,8 +27,10 @@ export default function BookletPage() {
         duplex: duplex ? "1" : "0",
         answers: answers ? "1" : "0",
       }).toString(),
-    [kind, layout, pages, d, seed, binder, duplex, answers],
+    [kinds, layout, pages, d, seed, binder, duplex, answers],
   );
+
+  const puzzleCount = Array.from({ length: pages }, (_, i) => perSheet(kinds[i % kinds.length], layout)).reduce((a, b) => a + b, 0);
 
   const pill = (on: boolean) =>
     `rounded-full border px-3 py-1.5 text-sm font-semibold transition ${on ? "border-ink bg-ink text-cream" : "border-rule bg-paper text-ink-soft hover:border-ink/40"}`;
@@ -50,21 +45,31 @@ export default function BookletPage() {
           <div>
             <div className="mb-2 text-xs font-bold uppercase tracking-wide text-ink-soft">Puzzles</div>
             <div className="flex flex-wrap gap-2">
-              {KINDS.map((k) => (
-                <button key={k.id} type="button" onClick={() => setKind(k.id)} className={pill(kind === k.id)}>
+              <button type="button" onClick={() => setKinds(kinds.length === ALL_PUZZLE_KINDS.length ? [PUZZLE_KINDS[0].id] : ALL_PUZZLE_KINDS)} className={pill(kinds.length === ALL_PUZZLE_KINDS.length)}>
+                All puzzles
+              </button>
+              {PUZZLE_KINDS.map((k) => (
+                <button
+                  key={k.id}
+                  type="button"
+                  onClick={() =>
+                    setKinds(kinds.includes(k.id) ? (kinds.length > 1 ? kinds.filter((x) => x !== k.id) : kinds) : [...kinds, k.id])
+                  }
+                  className={pill(kinds.includes(k.id))}
+                >
                   {k.label}
                 </button>
               ))}
             </div>
           </div>
           <div>
-            <div className="mb-2 text-xs font-bold uppercase tracking-wide text-ink-soft">Size on the page</div>
+            <div className="mb-2 text-xs font-bold uppercase tracking-wide text-ink-soft">Puzzles per sheet</div>
             <div className="flex gap-2">
               <button type="button" onClick={() => setLayout("full")} className={pill(layout === "full")}>
-                Full page
+                Standard
               </button>
               <button type="button" onClick={() => setLayout("half")} className={pill(layout === "half")}>
-                Half page (2 per sheet)
+                Doubled up
               </button>
             </div>
           </div>
@@ -106,8 +111,11 @@ export default function BookletPage() {
             </button>
           </div>
           <p className="text-xs text-ink-soft">
-            {layout === "half" ? pages * 2 : pages} puzzles on {pages} sheets
-            {answers ? ", plus answer pages for mazes and word finds" : ""}. For a booklet, print double-sided
+            Big puzzles (mazes, word finds, crosswords…) get a full sheet each; smaller ones (sudoku, battleship, logic grids…) go two to a sheet. Doubled up halves the size again.
+          </p>
+          <p className="text-xs text-ink-soft">
+            {puzzleCount} puzzles on {pages} sheets
+            {answers ? ", plus answer pages" : ""}. For a booklet, print double-sided
             (flip on the long edge) and staple at the left.
           </p>
         </div>
