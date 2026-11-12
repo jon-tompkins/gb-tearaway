@@ -4,6 +4,7 @@ import { INTERESTS, LEVELS, addIfFits, pickFromInterests } from "@/lib/interests
 import { MODULE_CATALOG, isModuleId, moduleAudience, moduleById } from "@/lib/modules";
 import { moduleExample } from "@/lib/moduleExample";
 import { createRun, runUrls } from "@/lib/runs";
+import { renderPdfFromUrl } from "@/lib/pdf";
 import { sendOneDispatch } from "@/lib/sendDispatch";
 import { packModulesIntoSlots, flattenSlotModules } from "@/lib/slots";
 import { patchStore, readStore } from "@/lib/store";
@@ -38,6 +39,7 @@ const str = (v: unknown, max = 80) => (typeof v === "string" ? v.trim().slice(0,
 const strList = (v: unknown) => (Array.isArray(v) ? v.filter((x): x is string => typeof x === "string") : []);
 
 class ToolError extends Error {}
+class Attach { constructor(public info: unknown, public extra: Json) {} }
 
 async function requirePlan(ctx: Ctx) {
   if (process.env.MCP_REQUIRE_PLAN !== "1") return;
@@ -232,14 +234,19 @@ export const TOOLS: Tool[] = [
     name: "get_todays_page",
     title: "Get today's page",
     description: "Build today's page and return links: `view` to look at it, `print` to open the print dialog, `pdf` to download. Share these links with the person.",
-    inputSchema: { type: "object", properties: { page_id: { type: "string" } } },
+    inputSchema: { type: "object", properties: { page_id: { type: "string" }, attach_pdf: { type: "boolean", description: "Attach the PDF file itself (default true)." } } },
     readOnly: false,
     run: async (a, ctx) => {
       const { store, kid } = await findKid(ctx, a.page_id);
       const date = dateISOInZone(kid.timezone || store.settings.timezone);
       const { token } = await createRun({ userKey: ctx.userKey, kidId: kid.id, date, kidName: kid.name, delivery: kid.deliveryMethod === "app" ? "app" : "email" });
       const u = runUrls(token);
-      return { page: kid.name, date, view: u.view, print: u.print, pdf: u.pdf };
+      const info = { page: kid.name, date, view: u.view, print: u.print, pdf: u.pdf };
+      // Also attach the PDF itself so clients that can show embedded files do, not just a link.
+      const pdf = a.attach_pdf === false ? null : await renderPdfFromUrl(u.view).catch(() => null);
+      if (!pdf) return info;
+      const slug = kid.name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+      return new Attach(info, { type: "resource", resource: { uri: u.pdf, name: `back-of-the-box-${slug}-${date}.pdf`, mimeType: "application/pdf", blob: Buffer.from(pdf).toString("base64") } });
     },
   },
   {
@@ -284,11 +291,12 @@ export const TOOLS: Tool[] = [
   },
 ];
 
-export async function callTool(name: string, args: Json, ctx: Ctx): Promise<{ content: { type: "text"; text: string }[]; isError?: boolean }> {
+export async function callTool(name: string, args: Json, ctx: Ctx): Promise<{ content: Json[]; isError?: boolean }> {
   const tool = TOOLS.find((t) => t.name === name);
   if (!tool) return { content: [{ type: "text", text: `Unknown tool ${name}` }], isError: true };
   try {
     const out = await tool.run(args ?? {}, ctx);
+    if (out instanceof Attach) return { content: [{ type: "text", text: JSON.stringify(out.info, null, 2) }, out.extra] };
     return { content: [{ type: "text", text: JSON.stringify(out, null, 2) }] };
   } catch (e) {
     const msg = e instanceof ToolError ? e.message : e instanceof Error ? e.message : "Something went wrong";
