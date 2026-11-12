@@ -10,29 +10,12 @@ import { moduleById } from "@/lib/modules";
 import { packModulesIntoSlots } from "@/lib/slots";
 import { detectTimezone } from "@/lib/tz";
 import type { ExampleMap } from "@/lib/setupExamples";
+import { INTERESTS, LEVELS, pickFromInterests } from "@/lib/interests";
 
 /**
  * One-question-per-screen page builder. Big targets, plain words, always a way
  * back, and a final "here's your page" screen before anything is saved.
  */
-
-type Interest = { id: string; emoji: string; title: string; blurb: string; ids: ModuleId[]; kidsOnly?: boolean };
-
-const INTERESTS: Interest[] = [
-  { id: "cross", emoji: "✏️", title: "Crosswords & word games", blurb: "Crossword, word find, word scramble", ids: ["crossword", "wordfind", "scramble"] },
-  { id: "num", emoji: "🔢", title: "Number puzzles", blurb: "Sudoku, number patterns, number cross", ids: ["sudoku", "sequence", "numbercross"] },
-  { id: "logic", emoji: "🧠", title: "Brain teasers", blurb: "Logic grid and secret codes", ids: ["logicgrid", "cryptogram"] },
-  { id: "read", emoji: "📖", title: "Poems & quotes", blurb: "A poem, a famous quote, a word of the day", ids: ["poem", "quote", "word"] },
-  { id: "hist", emoji: "🏛️", title: "History & trivia", blurb: "This day in history, fun facts, world records", ids: ["history", "fact", "records"] },
-  { id: "maze", emoji: "🌀", title: "Mazes & pictures", blurb: "Mazes, connect the dots, color by number", ids: ["maze", "dots", "colorbynumber"], kidsOnly: true },
-  { id: "animals", emoji: "🦁", title: "Animals & nature", blurb: "An animal of the day, jokes and riddles", ids: ["animal", "joke", "riddle"], kidsOnly: true },
-];
-
-const LEVELS: { id: AgeBand; title: string; blurb: string }[] = [
-  { id: "4-6", title: "Easier", blurb: "Short, simple, quick wins" },
-  { id: "7-9", title: "Medium", blurb: "A good everyday mix" },
-  { id: "10-12", title: "Harder", blurb: "A real challenge" },
-];
 
 export const WIZARD_PREVIEW_IDS: ModuleId[] = Array.from(new Set(INTERESTS.flatMap((i) => i.ids))).concat(["weather"]);
 
@@ -78,26 +61,7 @@ export default function BuildWizard({ examples }: { examples: ExampleMap }) {
   const chosen = interests.filter((i) => likes.includes(i.id));
 
   // Build the page: round-robin one card per chosen interest until the page is full.
-  const picked: ModuleId[] = (() => {
-    const out: ModuleId[] = [];
-    const queues = chosen.map((c) => [...c.ids]);
-    const tryAdd = (id: ModuleId) => {
-      if (out.includes(id)) return;
-      const next = [...out, id];
-      const slots = packModulesIntoSlots(next, DEFAULT_SETTINGS.paperSize);
-      if (packedCount(slots) === next.length) out.push(id);
-    };
-    let progress = true;
-    while (progress) {
-      progress = false;
-      for (const q of queues) {
-        const id = q.shift();
-        if (id) { tryAdd(id); progress = true; }
-      }
-    }
-    if (chosen.length) tryAdd("weather");
-    return out;
-  })();
+  const picked: ModuleId[] = pickFromInterests(chosen);
   const slots = packModulesIntoSlots(picked, DEFAULT_SETTINGS.paperSize);
 
   const label = who === "self" ? "your" : name.trim() ? `${name.trim()}'s` : "their";
@@ -279,8 +243,4 @@ export default function BuildWizard({ examples }: { examples: ExampleMap }) {
       </div>
     </AppShell>
   );
-}
-
-function packedCount(slots: ReturnType<typeof packModulesIntoSlots>): number {
-  return slots.reduce((n, s) => n + s.moduleIds.length, 0);
 }
