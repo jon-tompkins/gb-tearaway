@@ -26,7 +26,12 @@ const LAUNCH_BUDGET_MS = 200_000;
  */
 export async function GET(req: Request) {
   if (!cronAuthorized(req)) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
-  const force = new URL(req.url).searchParams.get("force") === "1";
+  const q = new URL(req.url).searchParams;
+  const force = q.get("force") === "1";
+  // Targeted resend: ?force=1&name=max (case-insensitive kid name); add &dry=1 to just list matches.
+  const onlyName = q.get("name")?.trim().toLowerCase() || null;
+  const dry = q.get("dry") === "1";
+  const matches: { userKey: string; kidId: string; name: string; to: string | null }[] = [];
   const started = Date.now();
 
   const jobs: SendJob[] = [];
@@ -39,12 +44,15 @@ export async function GET(req: Request) {
       continue;
     }
     for (const kid of state.kids) {
+      if (onlyName && kid.name.trim().toLowerCase() !== onlyName) continue;
       const { delivery, due } = dueInfo(kid, state);
+      if (onlyName) matches.push({ userKey, kidId: kid.id, name: kid.name, to: kid.deliveryEmail ? kid.deliveryEmail.replace(/^(.).*(@.*)$/, "$1***$2") : null });
       if (delivery && (due || force)) jobs.push({ userKey, kidId: kid.id });
       else skipped++;
     }
   }
 
+  if (dry) return NextResponse.json({ dry: true, matches });
   const secret = process.env.CRON_SECRET;
   async function sendViaWorker(job: SendJob): Promise<SendResult> {
     try {
