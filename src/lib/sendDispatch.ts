@@ -53,7 +53,7 @@ export async function emailRun(opts: {
   const urls = runUrls(opts.token);
   const { weekday, dateLabel } = formatStripDate(opts.date);
   // The PDF is made from the saved run, so it matches exactly what's on file.
-  const pdf = await renderPdfFromUrl(urls.view);
+  const pdf = (await renderPdfFromUrl(urls.view)) ?? (await renderPdfFromUrl(urls.view));
   const attachments = pdf
     ? [{ filename: `back-of-the-box-${opts.kidName.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${opts.date}.pdf`, content: pdf.toString("base64") }]
     : undefined;
@@ -97,7 +97,13 @@ async function sendCombined(
     let result: SendResult = { status: "saved", token: mine.token };
     if (!opts.noEmail) {
       const { weekday, dateLabel } = formatStripDate(localDate);
-      const pdfs = await Promise.all(runs.map((r) => renderPdfFromUrl(runUrls(r.token).view)));
+      // One Chromium at a time (parallel launches can exhaust serverless memory and drop attachments),
+      // with a single retry per page.
+      const pdfs: (Buffer | null)[] = [];
+      for (const r of runs) {
+        const url = runUrls(r.token).view;
+        pdfs.push((await renderPdfFromUrl(url)) ?? (await renderPdfFromUrl(url)));
+      }
       const attachments = runs.flatMap((r, i) =>
         pdfs[i] ? [{ filename: pdfName(r.kid.name, localDate), content: pdfs[i]!.toString("base64") }] : [],
       );
