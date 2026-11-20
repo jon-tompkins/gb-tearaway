@@ -2,6 +2,7 @@ import { generateStrip } from "./generateStrip";
 import { DEMO_KEY, getSettings, readStore, writeStore } from "./store";
 import { fetchWeather } from "./weather";
 import { gatherDailyNews } from "./news/daily";
+import type { LiveNewsEntry, NewsModuleId } from "./content/news";
 import { gatherDailyExtras } from "./content/live-extras";
 import { gatherDailyHistory } from "./news/history-live";
 import { gatherSports } from "./sports";
@@ -24,6 +25,11 @@ export async function buildJobForKid(
     advanceCursors?: boolean;
     /** Which user's store to read/write (defaults to the shared demo store). */
     userKey?: string;
+    /**
+     * Public sample pages only. Fills a news feed when the live pool is empty.
+     * Real dispatches omit this and still print nothing rather than invent a story.
+     */
+    sampleNews?: Partial<Record<NewsModuleId, LiveNewsEntry[]>>;
   } = {},
 ): Promise<PrintJob> {
   const userKey = opts.userKey ?? DEMO_KEY;
@@ -37,7 +43,7 @@ export async function buildJobForKid(
   // add up (weather + news RSS + Wikimedia history + sports + 6 Haiku content
   // calls). Serial awaits here pushed the uncached morning render past the PDF
   // render timeout, dropping the emailed attachment.
-  const [weather, newsByFeed, historyLive, sports, extras, sportsNews] = await Promise.all([
+  const [weather, liveNews, historyLive, sports, extras, sportsNews] = await Promise.all([
     pool.includes("weather")
       ? fetchWeather({
           city: settings.weatherCity,
@@ -55,6 +61,8 @@ export async function buildJobForKid(
     // Self-capped (~12s) so an uncached Haiku call can't sink the PDF render.
     pool.includes("sportsnews") ? gatherTeamNews(kid.sportsTeams ?? []) : Promise.resolve(undefined),
   ]);
+
+  const newsByFeed = mergeSampleNews(liveNews, opts.sampleNews);
 
   const job = generateStrip(kidNorm, settings, {
     nonce,
@@ -80,6 +88,20 @@ export async function buildJobForKid(
   }
 
   return job;
+}
+
+/** Live stories win. A sample fallback is used only for a feed that came back empty. */
+function mergeSampleNews(
+  live: Partial<Record<NewsModuleId, LiveNewsEntry[]>> | undefined,
+  sample: Partial<Record<NewsModuleId, LiveNewsEntry[]>> | undefined,
+): Partial<Record<NewsModuleId, LiveNewsEntry[]>> | undefined {
+  if (!sample) return live;
+  const merged: Partial<Record<NewsModuleId, LiveNewsEntry[]>> = { ...(live ?? {}) };
+  for (const feed of Object.keys(sample) as NewsModuleId[]) {
+    const fallback = sample[feed];
+    if ((!merged[feed] || merged[feed]!.length === 0) && fallback?.length) merged[feed] = fallback;
+  }
+  return Object.keys(merged).length ? merged : undefined;
 }
 
 export function estimateJobHeight(job: PrintJob): number {

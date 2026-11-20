@@ -604,7 +604,7 @@ export function generateStrip(
         moduleId,
         title: meta.name,
         kind: "text",
-        lines: [riddle.question, "Think… then check the app."],
+        lines: [riddle.question, "Think first. The answer is not on this page."],
         // Answer shows only in the app (Parent key) — never printed.
         answer: riddle.answer,
       });

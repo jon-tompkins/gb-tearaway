@@ -29,8 +29,6 @@ import { pickSpanish } from "./content/spanish";
 import { pickPoem, poemLines } from "./content/poems";
 import { pickScramble, scrambleWord } from "./content/scramble";
 import { pickHistory } from "./content/history";
-import { mockWeather } from "./weather";
-import { mockStocks } from "./stocks";
 
 export interface ModuleExample {
   /** Pre-rendered SVG figure (puzzles / maps). */
@@ -45,6 +43,38 @@ export interface ModuleExample {
 
 const BAND: AgeBand = "7-9";
 const DIFF = 8;
+
+/** Gentle sample stories for the public module tiles. Not live headlines. */
+const SHOWCASE_NEWS: Record<
+  "news_world" | "news_national" | "news_city" | "news_tech" | "news_gamer",
+  { headline: string; blurb: string }
+> = {
+  news_world: {
+    headline: "Penguins take turns staying warm",
+    blurb:
+      "Emperor penguins huddle when the wind is cold. Birds in the middle get cozy, then they shuffle so friends on the edge get a turn.",
+  },
+  news_national: {
+    headline: "Borrow a telescope like a book",
+    blurb:
+      "Some libraries let kids check out a telescope the way they check out a story. On a clear night, the Moon’s craters show up from the backyard.",
+  },
+  news_city: {
+    headline: "The park has a new swing set",
+    blurb:
+      "A shady bench sits nearby, and there is room for a picnic under the trees. Families can bring a snack and stay for a story.",
+  },
+  news_tech: {
+    headline: "Rovers still send pictures from Mars",
+    blurb:
+      "Small robots drive across Mars, stop to study a rock, and send photos home. They roll about as fast as a person walks.",
+  },
+  news_gamer: {
+    headline: "A garden game with no losers",
+    blurb:
+      "You plant seeds, trade flowers with friends, and design a path. There is no timer, and nobody has to lose. Save the garden for after breakfast.",
+  },
+};
 
 /** A representative example of a module's output (deterministic, seeded). */
 export function moduleExample(id: ModuleId): ModuleExample {
@@ -68,7 +98,7 @@ export function moduleExample(id: ModuleId): ModuleExample {
       return {
         svg: crosswordToSvg(cw),
         text: [`Theme: ${t.theme}`, "Across:", ...clues("across"), "Down:", ...clues("down")],
-        note: "Answers (in the app): " + cw.words.map((w) => `${w.num}${w.dir === "across" ? "A" : "D"} ${w.word}`).join(", "),
+        note: "Answers (scan the QR code on the page): " + cw.words.map((w) => `${w.num}${w.dir === "across" ? "A" : "D"} ${w.word}`).join(", "),
       };
     }
     case "battleship":
@@ -77,7 +107,7 @@ export function moduleExample(id: ModuleId): ModuleExample {
       const p = generateSequence(rng, DIFF);
       return {
         text: [`${p.terms.join(",  ")},  __`, "What number comes next?"],
-        note: `Answer (in the app): ${p.answer} — ${p.ruleLabel}`,
+        note: `Answer (scan the QR code on the page): ${p.answer} — ${p.ruleLabel}`,
       };
     }
     case "usstate": {
@@ -117,11 +147,11 @@ export function moduleExample(id: ModuleId): ModuleExample {
     }
     case "cryptogram": {
       const cg = generateCryptogram(pickCryptogram(BAND, rng), BAND, rng);
-      return { text: cg.lines, note: `Answer (in the app): ${cg.answer}` };
+      return { text: cg.lines, note: `Answer (scan the QR code on the page): ${cg.answer}` };
     }
     case "logicgrid": {
       const lg = generateLogicGrid(BAND, rng);
-      return { text: lg.lines, svg: lg.svg, note: `Answer (in the app): ${lg.answer}` };
+      return { text: lg.lines, svg: lg.svg, note: `Answer (scan the QR code on the page): ${lg.answer}` };
     }
     case "animal": {
       const a = pickAnimal(BAND, rng);
@@ -152,7 +182,7 @@ export function moduleExample(id: ModuleId): ModuleExample {
     }
     case "riddle": {
       const r = pickRiddle(BAND, rng);
-      return { text: [r.question, "Think… then check the app."], note: `Answer (in the app): ${r.answer}` };
+      return { text: [r.question, "Think first. The answer is not on this page."], note: `Answer (scan the QR code on the page): ${r.answer}` };
     }
     case "spanish": {
       const s = pickSpanish(BAND, rng);
@@ -167,24 +197,32 @@ export function moduleExample(id: ModuleId): ModuleExample {
       const scrambled = scrambleWord(item.word, rng);
       return {
         text: [`Unscramble:  ${scrambled}`, `${item.word.length} letters`, `Hint: ${item.hint}`],
-        note: `Answer (in the app): ${item.word.toUpperCase()}`,
+        note: `Answer (scan the QR code on the page): ${item.word.toUpperCase()}`,
       };
     }
     case "history": {
       const h = pickHistory("2026-07-20", BAND, rng);
       return { text: h.year ? [String(h.year), h.text] : [h.text] };
     }
-    case "weather": {
-      const w = mockWeather(BAND, "Brooklyn");
-      return { text: [`${w.tempF ?? ""}°  ·  ${w.summary}`, w.tip], note: "Live from Open-Meteo for your city." };
-    }
-    case "stocks": {
-      const s = mockStocks(["AAPL", "DIS", "NKE"], 42);
+    case "weather":
       return {
-        text: s.map((x) => `${x.ticker}  $${x.price.toFixed(2)}  ${x.changePct >= 0 ? "▲" : "▼"}${Math.abs(x.changePct).toFixed(1)}%`),
-        note: "Demo prices — not live market data yet.",
+        text: [
+          "Sample forecast for your city",
+          "Partly cloudy, jacket weather",
+          "Look up before you zip the backpack.",
+        ],
+        note: "A sample of the card. Live pages use the forecast for your city.",
       };
-    }
+    case "stocks":
+      return {
+        text: [
+          "Sample card — not a price quote",
+          "Apple — up from yesterday",
+          "Disney — down from yesterday",
+          "Nike — about the same",
+        ],
+        note: "A sample of the card. Parents pick the companies. This preview does not show prices.",
+      };
     case "sports":
       return {
         text: ["Arsenal · English Premier League", "Last: 2–1 vs Chelsea · Sep 6", "Next: vs Leeds United · Oct 10"],
@@ -193,8 +231,8 @@ export function moduleExample(id: ModuleId): ModuleExample {
     case "sportsnews":
       return {
         text: [
-          "Your team wins its home opener",
-          "YOUR TEAM — Your team won its first home game of the season. Fans cheered as the players waved to the crowd.",
+          "Fans cheer a home opener",
+          "The home team won its first game of the season. Players waved, and the crowd waved back.",
         ],
         note: "Example only. Live daily: real recent headlines about your favorite team, summarized kid-safe. Injuries, betting and rumors are left out.",
       };
@@ -207,13 +245,12 @@ export function moduleExample(id: ModuleId): ModuleExample {
     case "news_national":
     case "news_city":
     case "news_tech":
-    case "news_gamer":
+    case "news_gamer": {
+      const story = SHOWCASE_NEWS[id];
       return {
-        text: [
-          "(A real, kid-safe headline for today)",
-          "A short, factual, age-appropriate blurb — rewritten from a real news story.",
-        ],
-        note: "Live daily. Real headlines only — if nothing is kid-safe today, the card doesn't print.",
+        text: [story.headline, story.blurb],
+        note: "A sample story. A live page uses a real, kid-safe article when one is ready that day.",
       };
+    }
   }
 }

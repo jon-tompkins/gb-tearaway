@@ -97,7 +97,7 @@ export default async function ModuleDetail({ params }: { params: Promise<{ id: s
         </div>
         {info.answerInApp ? (
           <p className="mt-2 text-xs text-ink-soft">
-            🔒 The answer is never printed — it shows in the app (and via the page&apos;s QR code).
+            The answer stays off the paper. A parent scans the QR code on the page to check.
           </p>
         ) : null}
       </section>
