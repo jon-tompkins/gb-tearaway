@@ -132,6 +132,48 @@ export async function listPayloadFields(
   return rows.map(({ user_key, ...rest }) => ({ key: user_key ?? "", ...rest }));
 }
 
+/** Every payload whose key starts with `prefix`, including file-mode storage. */
+export async function listPayloadsByPrefix<T>(prefix: string, max = 5000): Promise<Array<{ key: string; value: T }>> {
+  if (SUPA_URL && SUPA_KEY) {
+    const out: Array<{ key: string; value: T }> = [];
+    const page = 1000;
+    try {
+      for (let offset = 0; offset < max; offset += page) {
+        const res = await fetch(
+          `${SUPA_URL}/rest/v1/${TABLE}?user_key=like.${prefix}*&select=user_key,state&order=user_key.asc&limit=${page}&offset=${offset}`,
+          { headers: { apikey: SUPA_KEY, Authorization: `Bearer ${SUPA_KEY}` }, cache: "no-store" },
+        );
+        if (!res.ok) return out;
+        const rows = (await res.json()) as Array<{ user_key: string; state: T }>;
+        for (const row of rows) {
+          if (typeof row.user_key === "string" && row.user_key.startsWith(prefix)) out.push({ key: row.user_key, value: row.state });
+        }
+        if (rows.length < page) break;
+      }
+    } catch {
+      return out;
+    }
+    return out;
+  }
+  try {
+    const files = await fs.readdir(FILE_DIR);
+    const out: Array<{ key: string; value: T }> = [];
+    for (const f of files) {
+      if (!f.endsWith(".json") || out.length >= max) continue;
+      const key = decodeURIComponent(f.replace(/\.json$/, ""));
+      if (!key.startsWith(prefix)) continue;
+      try {
+        out.push({ key, value: JSON.parse(await fs.readFile(path.join(FILE_DIR, f), "utf8")) as T });
+      } catch {
+        // skip unreadable
+      }
+    }
+    return out;
+  } catch {
+    return [];
+  }
+}
+
 /** Load a JSON payload previously stored with savePayload. */
 export async function loadPayload<T>(key: string): Promise<T | null> {
   return (await loadRaw(key)) as T | null;

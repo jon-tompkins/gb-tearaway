@@ -3,6 +3,9 @@ import { listUserStates } from "@/lib/persist";
 import { cronAuthorized } from "@/lib/cronAuth";
 import { accessFor } from "@/lib/billing";
 import { dueInfo, sendOneDispatch, type SendJob, type SendResult } from "@/lib/sendDispatch";
+import { alertFreeFailure } from "@/lib/free/alert";
+import { dispatchFreeEditions, sendOneFreeSubscriber, type FreeDispatchReport, type FreeOneResult } from "@/lib/free/dispatch";
+import { freeEditionsEnabled } from "@/lib/free/flag";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -90,6 +93,22 @@ export async function GET(req: Request) {
   await Promise.all(Array.from({ length: Math.min(CONCURRENCY, jobs.length) }, lane));
 
   const sent = results.filter((r) => r.result.status === "sent");
+
+  // Free editions run after paid delivery. A failure here must not change who
+  // already got a paid page, and `?force=1` does not resend free mail.
+  let free: FreeDispatchReport;
+  try {
+    free = await dispatchFreeEditions({
+      deadlineMs: started + 280_000,
+      sendOne: (subscriberId) => sendFreeViaWorker(subscriberId),
+    });
+  } catch (e) {
+    const message = e instanceof Error ? e.message : "free edition dispatch failed";
+    console.error("[free-editions] dispatch crashed", e);
+    await alertFreeFailure("dispatch", message);
+    free = { enabled: freeEditionsEnabled(), outcome: "error", sent: 0, failed: 0, skipped: 0, deferred: 0, errors: [message] };
+  }
+
   return NextResponse.json({
     due: jobs.length,
     sent: sent.length,
@@ -102,5 +121,25 @@ export async function GET(req: Request) {
       .filter((r) => r.result.status === "failed")
       .map((r) => `${r.job.userKey}/${r.job.kidId}: ${r.result.status === "failed" ? r.result.reason : ""}`),
     ms: Date.now() - started,
+    free,
   });
+}
+
+async function sendFreeViaWorker(subscriberId: string): Promise<FreeOneResult> {
+  const secret = process.env.CRON_SECRET;
+  try {
+    const res = await fetch(`${SITE}/api/cron/send-one`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(secret ? { Authorization: `Bearer ${secret}` } : {}),
+      },
+      body: JSON.stringify({ kind: "free", subscriberId }),
+    });
+    if (res.ok) return (await res.json()) as FreeOneResult;
+    if (res.status === 404) return sendOneFreeSubscriber(subscriberId);
+    return { status: "failed", reason: `worker HTTP ${res.status}` };
+  } catch (e) {
+    return { status: "failed", reason: e instanceof Error ? e.message : "worker error" };
+  }
 }

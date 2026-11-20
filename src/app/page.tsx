@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { connection } from "next/server";
 import { GetStartedButton } from "@/components/GetStartedButton";
 import { HomeHeaderActions } from "@/components/HomeHeaderActions";
 import { MODULE_CATALOG, MODULE_CATEGORIES } from "@/lib/modules";
@@ -6,6 +7,7 @@ import { getHiddenModules } from "@/lib/visibility";
 import { FAQ } from "@/lib/faq";
 import { PLANS } from "@/lib/plans";
 import { AGE_BANDS } from "@/lib/types";
+import { freeEditionsEnabled } from "@/lib/free/flag";
 import { moduleExample, type ModuleExample } from "@/lib/moduleExample";
 
 function safeExample(id: Parameters<typeof moduleExample>[0]): ModuleExample | null {
@@ -42,6 +44,8 @@ const STEPS = [
 
 
 export default async function HomePage() {
+  // The free-edition flag is read per request, so turning it on does not wait on the ISR cache.
+  await connection();
   const hidden = new Set<string>(await getHiddenModules().catch(() => []));
   const visible = MODULE_CATALOG.filter((m) => !hidden.has(m.id));
   const showcase = MODULE_CATEGORIES.map((c) => ({
@@ -77,6 +81,13 @@ export default async function HomePage() {
                 See Modules
               </Link>
             </div>
+            {freeEditionsEnabled() ? (
+              <p className="mt-4 text-sm text-ink-soft">
+                <Link href="/free" className="font-semibold text-ink underline decoration-stamp/60 underline-offset-4 hover:decoration-stamp">
+                  Or get a free daily page by email
+                </Link>
+              </p>
+            ) : null}
             <div className="mt-5">
               <p className="text-sm font-semibold text-ink">Try one first. Download today’s sample page (PDF), no sign-in:</p>
               <div className="mt-2 flex flex-wrap gap-2">

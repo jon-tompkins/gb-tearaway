@@ -8,6 +8,8 @@ export async function sendEmail(opts: {
   html: string;
   /** Resend attachments: base64 `content`. */
   attachments?: Array<{ filename: string; content: string }>;
+  /** Extra headers (List-Unsubscribe on free editions). Omitted for paid mail. */
+  headers?: Record<string, string>;
 }): Promise<boolean> {
   if (!RESEND_KEY) return false;
   try {
@@ -23,6 +25,7 @@ export async function sendEmail(opts: {
         subject: opts.subject,
         html: opts.html,
         ...(opts.attachments?.length ? { attachments: opts.attachments } : {}),
+        ...(opts.headers && Object.keys(opts.headers).length ? { headers: opts.headers } : {}),
       }),
     });
     return res.ok;

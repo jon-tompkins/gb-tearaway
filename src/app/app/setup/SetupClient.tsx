@@ -95,6 +95,22 @@ export default function SetupClient({ examples }: { examples: ExampleMap }) {
 
   useEffect(() => setTimezone(detectTimezone()), []);
   useEffect(() => {
+    const q = new URLSearchParams(window.location.search);
+    if (q.get("utm_source") !== "free_edition") return;
+    const mark = "botb-free-setup";
+    try {
+      if (sessionStorage.getItem(mark)) return;
+      sessionStorage.setItem(mark, "1");
+    } catch {
+      // Private mode can block sessionStorage. One extra beacon is harmless.
+    }
+    void fetch("/api/free/arrived", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ editionId: q.get("utm_content") ?? "" }),
+    });
+  }, []);
+  useEffect(() => {
     if (accountEmail && !deliveryEmail) setDeliveryEmail(accountEmail);
   }, [accountEmail, deliveryEmail]);
 
