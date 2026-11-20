@@ -70,13 +70,13 @@ export default async function HomePage() {
               Morning ritual · screen-free
             </p>
             <h1 className="mt-3 font-display text-4xl leading-[1.05] tracking-tight text-ink sm:text-5xl">
-              A new puzzle page for your kid, every morning.
+              Made for your kid. Weather for your town.
             </h1>
             <p className="mt-5 max-w-xl text-lg leading-relaxed text-ink-soft">
-              Kid-safe news, a maze, a crossword and a joke, emailed as a PDF. Print it, no screen. 30 days free, no card needed.
+              A printable morning page with puzzles at the right difficulty — you set it for each kid, and you can tune every card — plus today's sky for your ZIP. Kid-safe news, checked against the source. 30 days free, no card needed.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <GetStartedButton className="btn-primary" />
+              <GetStartedButton className="btn-primary" label="Start 30 days free" />
               <Link href="/modules" className="btn-secondary">
                 See Modules
               </Link>
