@@ -18,7 +18,7 @@ export default function A() {
         <p className="mx-auto mt-4 max-w-xl text-2xl text-ink-soft">On paper. No screen needed.</p>
         <img src="/dispatch-preview.png" alt="A Back of the Box puzzle page with a crossword, a maze, a joke and the weather" className="mx-auto mt-8 w-full max-w-md rounded-2xl border border-rule shadow-xl" />
         <div className="mt-10"><Start /></div>
-        <p className="mt-4 text-xl text-ink-soft">Free for a month.</p>
+        <p className="mt-4 text-xl text-ink-soft">30 days free, no card needed.</p>
         <div className="mt-12 grid grid-cols-1 gap-5 sm:grid-cols-3">
           {STEPS.map((s, i) => (
             <div key={s.t} className="rounded-3xl border border-rule bg-paper p-6">

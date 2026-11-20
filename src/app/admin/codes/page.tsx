@@ -25,13 +25,13 @@ export default async function AdminCodesPage() {
     <AppShell title="Admin">
       <AdminTabs active="codes" />
       <p className="-mt-2 mb-4 text-sm text-ink-soft">
-        Free first month, then $5/month or $39/year (up to 5 kids). Codes add free months (or forever) on top.{" "}
+        30 days free, no card needed, then $5/month or $39/year (up to 5 kids). Codes add free months (or forever) on top.{" "}
         {stripeConfigured ? "Payments are on." : "Payments are off (no STRIPE_SECRET_KEY), so expired trials still get their pages."}
       </p>
       <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
         {(
           [
-            ["Free month", counts.trial],
+            ["30-day trial", counts.trial],
             ["Paying", counts.paid],
             ["On a code", counts.code],
             ["Lapsed", counts.expired],

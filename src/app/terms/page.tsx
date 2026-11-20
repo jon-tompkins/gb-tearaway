@@ -15,7 +15,7 @@ export default function TermsPage() {
         ← Back of the Box
       </Link>
       <h1 className="mt-3 font-display text-3xl text-ink sm:text-4xl">Terms of Service</h1>
-      <p className="mt-1 text-sm text-ink-soft">Last updated October 28, 2026</p>
+      <p className="mt-1 text-sm text-ink-soft">Last updated November 20, 2026</p>
       <p className={P}>
         These terms cover your use of Back of the Box (the &ldquo;Service&rdquo;). By creating an account or using the Service, you agree to them. If you
         don&rsquo;t agree, please don&rsquo;t use it.
@@ -35,7 +35,12 @@ export default function TermsPage() {
 
       <h2 className={H2}>Free trial, plans and billing</h2>
       <ul className="mt-2 list-disc space-y-1.5 pl-5 text-ink-soft">
-        <li>New accounts get a free first month. It starts when you first open the app.</li>
+        <li>
+          New accounts get 30 days free, starting the first time you open the app while signed in. You don&rsquo;t need a card during the trial. If you
+          pick a plan while free time remains, the first charge is when that free time ends, including any access-code time still left. If fewer than 49
+          hours remain, the first charge is 49 hours after you pick the plan. If you picked a plan and there&rsquo;s no card on file when the free time
+          ends, pages continue for 3 more days and then pause until you add one. Paused days aren&rsquo;t billed.
+        </li>
         <li>After that, a paid plan is needed to keep pages active and delivered. Plans are billed monthly ($5) or yearly ($39) through Stripe, and renew automatically until you cancel.</li>
         <li>Prices and plan limits are shown on the Plan page. We may change prices going forward, and we&rsquo;ll give notice before a change applies to your renewal.</li>
         <li>You can cancel any time from the Plan page. Your plan stays active until the end of the period you&rsquo;ve paid for. Except where the law requires otherwise, payments are non-refundable, though if something went wrong, email us and we&rsquo;ll try to make it right.</li>

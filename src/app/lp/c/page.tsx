@@ -20,7 +20,7 @@ export default function C() {
             <h1 className="mt-2 font-display text-5xl leading-tight text-ink">A fresh puzzle page for your kid, every morning.</h1>
             <p className="mt-4 text-2xl text-ink-soft">You set it up once. Mazes, puzzles and real kid-safe news show up every day, ready to print.</p>
             <div className="mt-8"><Start label="Set it up for my kid" /></div>
-            <p className="mt-4 text-xl text-ink-soft">Free for a month.</p>
+            <p className="mt-4 text-xl text-ink-soft">30 days free, no card needed.</p>
           </div>
           <img src="/dispatch-preview.png" alt="A Back of the Box puzzle page with a crossword, a maze, a joke and the weather" className="mx-auto w-full max-w-sm rounded-2xl border border-rule shadow-xl" />
         </section>
