@@ -12,6 +12,19 @@ test("homepage no longer says first month", () => {
   assert.match(home, /30 days free\. No card needed during your trial\. Pick a plan whenever you.re ready, and nothing is charged until the trial ends\./);
 });
 
+test("homepage hero headline and primary button", () => {
+  const home = read("src/app/page.tsx");
+  const hero = home.slice(home.indexOf("<h1"), home.indexOf("See Modules"));
+  assert.match(hero, /Made for your kid\. Weather for your town\./);
+  assert.equal(hero.includes("A new puzzle page for your kid, every morning."), false);
+  assert.match(
+    hero,
+    /A printable morning page with puzzles at the right difficulty — you set it for each kid, and you can tune every card — plus today's sky for your ZIP\. Kid-safe news, checked against the source\. 30 days free, no card needed\./,
+  );
+  assert.match(hero, /<GetStartedButton className="btn-primary" label="Start 30 days free" \/>/);
+  assert.equal(hero.includes("callbackUrl"), false);
+});
+
 test("faq, terms, and landing pages use the 30-day no-card wording", () => {
   const faq = read("src/lib/faq.ts");
   assert.equal(faq.toLowerCase().includes("first month"), false);
