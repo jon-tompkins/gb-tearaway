@@ -184,9 +184,8 @@ export const MODULE_INFO: Record<ModuleId, ModuleInfo> = {
     config: ["Appropriateness starts at 5 — news is written for readers about 7 and up."],
   },
   news_city: {
-    source:
-      "Real local headlines for your town — a Google News search on your city, biased to wholesome topics and rewritten kid-safe.",
-    config: ["Set your city in Settings (it uses your weather city)."],
+    source: "Not offered. Hometown and city news are parked.",
+    config: ["Nothing to set. A ZIP is only for the weather forecast."],
   },
   news_tech: {
     source: "Real tech headlines (Science News Explores, Popular Science, IEEE Spectrum, ScienceDaily, New Atlas) — inventions, robots and gadgets — picked for interest, written up kid-safe from the full article, and fact-checked.",

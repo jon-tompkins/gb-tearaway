@@ -39,7 +39,7 @@ export const MODULE_CATEGORIES: ModuleCategoryMeta[] = [
 
 export const MODULE_CATALOG: ModuleMeta[] = [
   // Play / puzzles
-  { id: "maze", name: "Maze", blurb: "A fresh, solvable maze. Harder as they grow.", category: "play", defaultOn: true, size: "double" },
+  { id: "maze", name: "Maze", blurb: "A fresh, solvable maze. You set how tricky.", category: "play", defaultOn: true, size: "double" },
   { id: "wordfind", name: "Word Find", blurb: "A word-search tuned to the difficulty you pick.", category: "play", defaultOn: false, size: "double" },
   { id: "dots", name: "Connect the Dots", blurb: "Funny numbered dots + a silly caption.", category: "play", defaultOn: false, size: "double" },
   { id: "colorbynumber", name: "Color by Number", blurb: "A numbered picture to color in with crayons, plus a color key.", category: "play", defaultOn: false, size: "double" },

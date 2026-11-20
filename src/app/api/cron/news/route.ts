@@ -18,8 +18,9 @@ function authorized(req: Request): boolean {
 
 /**
  * News warm-up — run hourly, ahead of the delivery cron. Generates today's
- * stories for every feed (and every hometown in use) once per UTC day; later
- * runs are cheap cache hits. Dispatch renders only ever read this cache.
+ * stories for every live feed once per UTC day; later runs are cheap cache
+ * hits. Hometown news is parked, so there are no per-city feeds. Dispatch
+ * renders only ever read this cache.
  */
 /** Model mixes to compare with ?dry=1&variant=… (nothing is saved in a dry run). */
 const VARIANTS: Record<string, NewsConfig> = {
