@@ -1,9 +1,7 @@
 import { NextResponse } from "next/server";
-import { buildJobForKid } from "@/lib/serverStrip";
 import { buildPrintHtml } from "@/lib/printHtml";
 import { renderPdfFromUrl } from "@/lib/pdf";
-import { seedKid, DEMO_KEY } from "@/lib/store";
-import { START_TEMPLATES, templateSlots } from "@/lib/templates";
+import { buildSampleJob } from "@/lib/samplePage";
 import { AGE_BANDS, type AgeBand } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -12,8 +10,9 @@ export const maxDuration = 60;
 
 /**
  * Public, no-sign-in sample page: GET /api/sample/7-9 → a printable PDF of today's page
- * for that age band (a generic "Puzzle Whiz" layout). ?format=print returns the print HTML
+ * for that age band (puzzles, world news, and a joke). ?format=print returns the print HTML
  * (also what the PDF renderer loads). Edge-cached so shares don't re-render each time.
+ * When live news isn't available, the page uses the static sample-news bank.
  */
 export async function GET(req: Request, { params }: { params: Promise<{ band: string }> }) {
   const { band } = await params;
@@ -21,15 +20,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ band: st
     return NextResponse.json({ error: "Unknown age band" }, { status: 404 });
   }
   const url = new URL(req.url);
-  const tpl = START_TEMPLATES.find((t) => t.id === "puzzle") ?? START_TEMPLATES[0];
-  const kid = seedKid({
-    id: `sample-${band}`,
-    name: "Sample",
-    ageBand: band as AgeBand,
-    paperSize: "letter",
-    slots: templateSlots(tpl, "letter"),
-  });
-  const job = await buildJobForKid(kid, { userKey: DEMO_KEY, nonce: 0 });
+  const job = await buildSampleJob(band as AgeBand);
 
   if (url.searchParams.get("format") === "print") {
     return new NextResponse(buildPrintHtml(job, {}), {

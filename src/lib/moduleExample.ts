@@ -31,6 +31,7 @@ import { pickScramble, scrambleWord } from "./content/scramble";
 import { pickHistory } from "./content/history";
 import { mockWeather } from "./weather";
 import { mockStocks } from "./stocks";
+import { SAMPLE_NEWS } from "./content/sampleNews";
 
 export interface ModuleExample {
   /** Pre-rendered SVG figure (puzzles / maps). */
@@ -207,13 +208,12 @@ export function moduleExample(id: ModuleId): ModuleExample {
     case "news_national":
     case "news_city":
     case "news_tech":
-    case "news_gamer":
+    case "news_gamer": {
+      const story = SAMPLE_NEWS[0];
       return {
-        text: [
-          "(A real, kid-safe headline for today)",
-          "A short, factual, age-appropriate blurb — rewritten from a real news story.",
-        ],
-        note: "Live daily. Real headlines only — if nothing is kid-safe today, the card doesn't print.",
+        text: [story.headline, story.blurb, story.wonder],
+        note: "Example from the sample-news bank. A live page uses real headlines, and the card is left off when nothing kid-safe is ready.",
       };
+    }
   }
 }

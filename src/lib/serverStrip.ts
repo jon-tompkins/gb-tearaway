@@ -1,6 +1,7 @@
 import { generateStrip } from "./generateStrip";
 import { DEMO_KEY, getSettings, readStore, writeStore } from "./store";
 import { fetchWeather } from "./weather";
+import type { LiveNewsEntry, NewsModuleId } from "./content/news";
 import { gatherDailyNews } from "./news/daily";
 import { gatherDailyExtras } from "./content/live-extras";
 import { gatherDailyHistory } from "./news/history-live";
@@ -24,6 +25,11 @@ export async function buildJobForKid(
     advanceCursors?: boolean;
     /** Which user's store to read/write (defaults to the shared demo store). */
     userKey?: string;
+    /**
+     * Used by the public sample page only. Fills a news card when live news
+     * is missing. A live feed with stories still wins for that feed.
+     */
+    newsFallback?: Partial<Record<NewsModuleId, LiveNewsEntry[]>>;
   } = {},
 ): Promise<PrintJob> {
   const userKey = opts.userKey ?? DEMO_KEY;
@@ -37,7 +43,7 @@ export async function buildJobForKid(
   // add up (weather + news RSS + Wikimedia history + sports + 6 Haiku content
   // calls). Serial awaits here pushed the uncached morning render past the PDF
   // render timeout, dropping the emailed attachment.
-  const [weather, newsByFeed, historyLive, sports, extras, sportsNews] = await Promise.all([
+  const [weather, liveNews, historyLive, sports, extras, sportsNews] = await Promise.all([
     pool.includes("weather")
       ? fetchWeather({
           city: settings.weatherCity,
@@ -55,6 +61,15 @@ export async function buildJobForKid(
     // Self-capped (~12s) so an uncached Haiku call can't sink the PDF render.
     pool.includes("sportsnews") ? gatherTeamNews(kid.sportsTeams ?? []) : Promise.resolve(undefined),
   ]);
+
+  let newsByFeed = liveNews;
+  if (opts.newsFallback) {
+    const merged: Partial<Record<NewsModuleId, LiveNewsEntry[]>> = { ...opts.newsFallback };
+    for (const [id, items] of Object.entries(liveNews ?? {})) {
+      if (items?.length) merged[id as NewsModuleId] = items;
+    }
+    newsByFeed = merged;
+  }
 
   const job = generateStrip(kidNorm, settings, {
     nonce,

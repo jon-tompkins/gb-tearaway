@@ -69,7 +69,7 @@ const BASE_FACTS: FactEntry[] = [
   { bands: ["4-6"], fact: "Our Moon has no air, so there is no wind or sound there.", extra: "Astronauts’ footprints can stay for a very long time." },
   { bands: ["4-6"], fact: "A rainbow is made when sunlight shines through raindrops.", extra: "The drops split the light into different colors." },
   { bands: ["4-6"], fact: "Spiders are not insects — they have eight legs.", extra: "Insects have six legs; spiders belong to a group called arachnids." },
-  { bands: ["4-6"], fact: "A group of crows is called a murder.", extra: "Crows are very clever birds." },
+  { bands: ["4-6"], fact: "Crows remember faces and like to stay in a group.", extra: "Crows are very clever birds." },
   { bands: ["4-6", "7-9"], fact: "Camels store fat, not water, in their humps.", extra: "The fat gives them energy when food is scarce." },
   { bands: ["4-6", "7-9"], fact: "A seahorse dad, not the mom, carries the babies.", extra: "He keeps the eggs in a pouch until they hatch." },
   { bands: ["4-6", "7-9"], fact: "Dolphins sleep with one half of their brain awake.", extra: "That way they remember to come up for air." },
