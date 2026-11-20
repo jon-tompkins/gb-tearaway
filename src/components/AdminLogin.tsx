@@ -20,7 +20,7 @@ export function AdminLogin() {
       window.location.href = "/admin";
       return;
     }
-    setError(r ? "Wrong password." : "Couldn't reach the server.");
+    setError(r?.status === 429 ? "Too many attempts. Try again later." : r ? "Wrong password." : "Couldn't reach the server.");
     setBusy(false);
   }
 

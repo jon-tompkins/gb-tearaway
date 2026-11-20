@@ -3,7 +3,7 @@
 import { signIn, signOut, useSession } from "next-auth/react";
 
 /** Google sign-in / sign-out control. Optional for now — demo works signed out. */
-export function AuthButton({ compact = false }: { compact?: boolean }) {
+export function AuthButton({ compact = false, callbackUrl = "/app" }: { compact?: boolean; callbackUrl?: string }) {
   const { data: session, status } = useSession();
 
   if (status === "loading") {
@@ -37,7 +37,7 @@ export function AuthButton({ compact = false }: { compact?: boolean }) {
   return (
     <button
       type="button"
-      onClick={() => void signIn("google", { callbackUrl: "/app" })}
+      onClick={() => void signIn("google", { callbackUrl })}
       className="flex shrink-0 cursor-pointer items-center gap-2 whitespace-nowrap rounded-full border border-rule bg-paper px-3 py-1.5 text-sm font-semibold text-ink transition hover:border-ink/30"
     >
       <GoogleGlyph />
