@@ -60,7 +60,7 @@ export function buildSubscriptionCheckoutParams(input: {
     client_reference_id: `user:${email}`,
     ...(duringFreeTime ? { payment_method_collection: "if_required" } : {}),
     subscription_data: {
-      metadata: { userKey: `user:${email}`, plan: plan.id, maxKids: String(plan.kids) },
+      metadata: { userKey: `user:${email}`, plan: plan.id, interval, maxKids: String(plan.kids) },
       ...(duringFreeTime
         ? {
             trial_end: trialEnd,

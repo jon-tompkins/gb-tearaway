@@ -1,6 +1,7 @@
 import { randomInt } from "node:crypto";
 import { isAdminEmail } from "./admin";
 import { listPayloadFields, loadPayload, savePayload } from "./persist";
+import type { PlanInterval } from "./plans";
 import { isStripeConfigured, paymentMethodId, periodEnd, type StripeSubscription } from "./stripe";
 export { showMissingCardBanner, TRIAL_ENDING_BANNER_DAYS } from "./billingView";
 
@@ -62,6 +63,8 @@ export interface Billing {
   hasPaymentMethod?: boolean;
   /** ISO timestamp of the trial end we already emailed a card reminder for. */
   trialReminderFor?: string;
+  /** Billing interval from the Stripe subscription they picked. */
+  planInterval?: PlanInterval;
 }
 
 export interface Access {
@@ -199,6 +202,7 @@ export async function applySubscription(
   const b = await getBilling(email);
   const end = periodEnd(sub);
   const customerId = typeof sub.customer === "string" ? sub.customer : b.customerId;
+  const planInterval = subscriptionPlanInterval(sub);
   await saveBilling(email, {
     ...b,
     customerId,
@@ -207,8 +211,19 @@ export async function applySubscription(
     paidUntil: end ? new Date(end * 1000).toISOString() : null,
     cancelAtPeriodEnd: !!sub.cancel_at_period_end,
     maxKids: Number(sub.metadata?.maxKids) > 0 ? Number(sub.metadata?.maxKids) : undefined,
+    ...(planInterval ? { planInterval } : {}),
     ...(extra?.hasPaymentMethod === undefined ? {} : { hasPaymentMethod: extra.hasPaymentMethod }),
   });
+}
+
+/** month or year from subscription metadata, or from the price when metadata is absent. */
+export function subscriptionPlanInterval(sub: StripeSubscription): PlanInterval | undefined {
+  const raw =
+    sub.metadata?.interval ??
+    sub.items?.data?.[0]?.price?.recurring?.interval ??
+    sub.items?.data?.[0]?.plan?.interval ??
+    sub.plan?.interval;
+  return raw === "month" || raw === "year" ? raw : undefined;
 }
 
 /** True when the subscription payload itself carries a card. Does not call Stripe. */

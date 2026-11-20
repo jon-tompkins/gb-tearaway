@@ -1,5 +1,6 @@
 import { PAYMENT_GRACE_DAYS, getBilling, saveBilling, type Billing } from "./billing";
 import { sendEmail } from "./email";
+import { PLANS, centsFor, type PlanInterval } from "./plans";
 import { claimPayload, deletePayload } from "./persist";
 
 const DAY = 86_400_000;
@@ -29,23 +30,44 @@ function esc(s: string): string {
   return s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c] ?? c);
 }
 
-export function trialReminderContent(endIso: string, site: string): { subject: string; html: string; text: string } {
+/** "monthly" or "yearly", matching the subscription interval. */
+export function reminderPlanName(interval: PlanInterval): "monthly" | "yearly" {
+  return interval === "year" ? "yearly" : "monthly";
+}
+
+/** Dollar price for that interval, from plans.ts. */
+export function reminderPrice(interval: PlanInterval): string {
+  const dollars = centsFor(PLANS[0], interval) / 100;
+  return Number.isInteger(dollars) ? `$${dollars}` : `$${dollars.toFixed(2)}`;
+}
+
+export function trialReminderContent(
+  endIso: string,
+  site: string,
+  interval: PlanInterval,
+): { subject: string; html: string; text: string } {
   const date = formatReminderDate(endIso);
   const url = `${site.replace(/\/$/, "")}/app/billing`;
+  const plan = reminderPlanName(interval);
+  const price = reminderPrice(interval);
   const text = [
     `Your free trial ends on ${date}.`,
-    "",
-    "You already picked a plan, and we haven't charged you. There's no card on file yet.",
-    `Add one before ${date} and the morning pages keep coming. The first charge is that day, for the plan you picked.`,
-    "",
-    `If the trial ends with no card, pages keep arriving for ${PAYMENT_GRACE_DAYS} more days, then delivery pauses until you add one. Your pages and settings stay saved.`,
-    "",
+    `You picked the ${plan} plan, and we haven't charged you anything. There's no card on file yet. Add one before ${date} and the morning pages keep coming. The first charge is on ${date}: ${price} for ${plan}.`,
+    `If the trial ends without a card, pages keep arriving for ${PAYMENT_GRACE_DAYS} more days, then delivery pauses until you add one. Paused days aren't billed, and your pages and settings stay saved.`,
     `Add a card: ${url}`,
-    "",
     "You can change or cancel anytime from that page.",
-    "",
-    "— Back of the Box",
+    "Thanks for printing with us.",
+    "— Jonto and son, Back of the Box",
   ].join("\n");
+  const paragraphs = text
+    .split("\n")
+    .map((line) => {
+      if (line.startsWith("Add a card: ")) {
+        return `<p style="margin:0 0 14px">Add a card: <a href="${esc(url)}">${esc(url)}</a></p>`;
+      }
+      return `<p style="margin:0 0 14px">${esc(line)}</p>`;
+    })
+    .join("");
   const html = `<!DOCTYPE html><html><body style="margin:0;background:#f4eee3;font-family:Georgia,'Times New Roman',serif;color:#1c1915">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4eee3;padding:28px 16px">
     <tr><td align="center">
@@ -54,16 +76,9 @@ export function trialReminderContent(endIso: string, site: string): { subject: s
           <div style="font-size:26px;font-weight:700;letter-spacing:-.01em">Back of the Box</div>
         </td></tr>
         <tr><td style="padding:18px 8px 6px;font-size:16px;line-height:1.55">
-          <p style="margin:0 0 14px">Your free trial ends on <strong>${esc(date)}</strong>.</p>
-          <p style="margin:0 0 14px">You already picked a plan, and we haven't charged you. There's no card on file yet. Add one before ${esc(date)} and the morning pages keep coming. The first charge is that day, for the plan you picked.</p>
-          <p style="margin:0 0 14px">If the trial ends with no card, pages keep arriving for ${PAYMENT_GRACE_DAYS} more days, then delivery pauses until you add one. Your pages and settings stay saved.</p>
+          ${paragraphs}
         </td></tr>
-        <tr><td align="center" style="padding:8px 0 16px">
-          <a href="${esc(url)}" style="display:inline-block;background:#1c1915;color:#faf6ec;text-decoration:none;font-family:ui-monospace,Menlo,monospace;font-size:14px;font-weight:700;letter-spacing:.02em;padding:14px 26px;border-radius:999px">Add a card</a>
-        </td></tr>
-        <tr><td align="center" style="font-size:12px;color:#8a7d63;line-height:1.5">You can change or cancel anytime from that page.</td></tr>
       </table>
-      <div style="max-width:520px;margin-top:14px;font-size:11px;color:#a99e86;text-align:center">Made for the fridge, not the feed.</div>
     </td></tr>
   </table>
 </body></html>`;
@@ -93,12 +108,14 @@ export async function sendTrialEndReminder(email: string, now = Date.now()): Pro
   if (!trialReminderEmailsEnabled()) return "skipped";
   const b = await getBilling(email);
   const decision = shouldSendTrialReminder(b, now, true);
+  const interval = b.planInterval;
   if (!decision.send || !decision.endIso || decision.endMs == null) return "skipped";
+  if (interval !== "month" && interval !== "year") return "skipped";
   const claimKey = `remind:${email}:${decision.endMs}`;
   const claimed = await claimPayload(claimKey, { at: new Date(now).toISOString() });
   if (!claimed) return "skipped";
   const site = process.env.EMAIL_SITE_URL || "https://www.backofthebox.xyz";
-  const { subject, html } = trialReminderContent(decision.endIso, site);
+  const { subject, html } = trialReminderContent(decision.endIso, site, interval);
   const ok = await sendEmail({ to: email, subject, html });
   if (!ok) {
     await deletePayload(claimKey);

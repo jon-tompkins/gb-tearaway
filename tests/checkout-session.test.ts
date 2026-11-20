@@ -40,6 +40,7 @@ test("in-trial checkout does not collect a card and pauses if none is added", ()
   };
   const line = (params.line_items as Array<{ price_data: { unit_amount: number } }>)[0];
   assert.equal(params.mode, "subscription");
+  assert.equal((params.subscription_data as { metadata: { interval: string } }).metadata.interval, "month");
   assert.equal(params.payment_method_collection, "if_required");
   assert.equal(sub.trial_end, trialEnd);
   assert.equal(sub.trial_settings?.end_behavior.missing_payment_method, "pause");

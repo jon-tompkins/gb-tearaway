@@ -84,7 +84,15 @@ export interface StripeSubscription {
   customer: string;
   cancel_at_period_end?: boolean;
   current_period_end?: number;
-  items?: { data?: Array<{ current_period_end?: number }> };
+  items?: {
+    data?: Array<{
+      current_period_end?: number;
+      price?: { recurring?: { interval?: string } | null };
+      plan?: { interval?: string };
+    }>;
+  };
+  /** Legacy subscription-level plan, present on older API versions. */
+  plan?: { interval?: string };
   metadata?: Record<string, string>;
   default_payment_method?: string | { id: string } | null;
   default_source?: string | { id: string } | null;
