@@ -28,11 +28,11 @@ function planLine(a: Access): string {
     case "code":
       return a.until ? `Free with a code until ${shortDate(a.until)} (${left} days left).` : "Free with a code. No end date.";
     case "trial":
-      return `Free month: ${left} day${left === 1 ? "" : "s"} left (ends ${shortDate(a.until)}).`;
+      return `30 days free: ${left} day${left === 1 ? "" : "s"} left (ends ${shortDate(a.until)}). No card needed during the trial.`;
     default:
       return a.subStatus === "paused"
         ? "Delivery is paused because there's no card on file. Add one to resume the plan you picked."
-        : "Your free month is over.";
+        : "Your 30 free days are over.";
   }
 }
 
@@ -162,7 +162,7 @@ function BillingInner() {
   if (!status.signedIn) {
     return (
       <div className="card max-w-xl space-y-3">
-        <p className="text-ink-soft">Sign in to start your free month.</p>
+        <p className="text-ink-soft">Sign in to start your 30 free days.</p>
         <button type="button" className="btn-primary" onClick={() => void signIn("google", { callbackUrl: "/app/billing" })}>
           Sign in with Google
         </button>
@@ -187,7 +187,7 @@ function BillingInner() {
       <section className="card space-y-3">
         <h2 className="font-display text-xl text-ink">Pick a plan</h2>
         <p className="text-sm text-ink-soft">
-          Every account starts with a free month. After that, one simple plan covers up to five {NOUN.many}: $5 a month or $39 a year (best value). Cancel any time.
+          Every account starts with 30 days free, and you don&rsquo;t need a card during the trial. After that, one simple plan covers up to five {NOUN.many}: $5 a month or $39 a year (best value). Cancel any time.
         </p>
         <p className="font-semibold text-ink">{planLine(a)}</p>
         {a.reason === "admin" ? null : a.cardAction !== "none" ? (

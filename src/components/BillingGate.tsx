@@ -73,7 +73,7 @@ function CardBanner({ access }: { access: Access }) {
 function Paywall({ access }: { access: Access }) {
   const needsCard = access.cardAction !== "none" || access.subStatus === "paused";
   return (
-    <AppShell title={needsCard ? "Pages are paused" : "Your free month is up"}>
+    <AppShell title={needsCard ? "Pages are paused" : "Your 30 days are up"}>
       <div className="card max-w-xl space-y-4">
         <p className="text-ink-soft">
           {access.cardAction === "resume"

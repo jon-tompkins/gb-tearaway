@@ -69,8 +69,7 @@ export default async function HomePage() {
               A new puzzle page for your kid, every morning.
             </h1>
             <p className="mt-5 max-w-xl text-lg leading-relaxed text-ink-soft">
-              Kid-safe news, a maze, a crossword and a joke, emailed as a PDF. Print it, no screen.
-              Free for a month.
+              Kid-safe news, a maze, a crossword and a joke, emailed as a PDF. Print it, no screen. 30 days free, no card needed.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <GetStartedButton className="btn-primary" />
@@ -203,7 +202,7 @@ export default async function HomePage() {
         <div className="mx-auto max-w-3xl px-4 py-14">
           <h2 className="font-display text-2xl text-ink sm:text-3xl">Simple pricing</h2>
           <p className="mt-2 text-ink-soft">
-            Your first month is free, and you don’t need a card to start. Pick a plan when you’re ready.
+            30 days free. No card needed during your trial. Pick a plan whenever you’re ready, and nothing is charged until the trial ends.
           </p>
           <div className="mt-6 grid gap-4 sm:grid-cols-2">
             <div className="card">

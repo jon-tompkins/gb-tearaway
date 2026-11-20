@@ -11,6 +11,7 @@ import { formatTime12, nextPrintLabel } from "@/lib/dates";
 import { moduleById } from "@/lib/modules";
 import { AGE_BANDS, PAPER_SIZE_META, isKidActive, type KidProfile } from "@/lib/types";
 import { NOUN } from "@/lib/copy";
+import { PLANS } from "@/lib/plans";
 import { HowItWorks } from "@/components/HowItWorks";
 import { StatusBadge } from "@/components/StatusBadge";
 
@@ -90,7 +91,7 @@ export default function DashboardPage() {
       {trialLeft !== null ? (
         <div className="mb-4 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-rule bg-paper px-4 py-2 text-sm">
           <span className="text-ink">
-            Free month: {trialLeft} day{trialLeft === 1 ? "" : "s"} left. Then from $20 a year.
+            30 days free: {trialLeft} day{trialLeft === 1 ? "" : "s"} left. Then ${PLANS[0].monthCents / 100} a month or ${PLANS[0].yearCents / 100} a year.
           </span>
           <Link href="/app/billing" className="font-semibold text-stamp hover:underline">
             Subscribe or use a code

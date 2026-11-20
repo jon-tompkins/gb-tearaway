@@ -18,7 +18,7 @@ export default function B() {
         </div>
         <p className="mt-6 text-center text-xl text-ink-soft">…plus poems, quotes, history, trivia and the weather.</p>
         <div className="mt-8 text-center"><Start label="Choose mine" /></div>
-        <p className="mt-4 text-center text-xl text-ink-soft">Free for a month. Printed at home.</p>
+        <p className="mt-4 text-center text-xl text-ink-soft">30 days free, no card needed. Printed at home.</p>
         <div className="mt-8 text-center"><Sample /></div>
       </main>
     </div>
