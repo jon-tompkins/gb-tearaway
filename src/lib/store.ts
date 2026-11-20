@@ -13,6 +13,7 @@ import {
 } from "./types";
 import { defaultDemoEvents } from "./content/stubs";
 import { uid } from "./rng";
+import { assertKidFirstName } from "./kidName";
 import {
   defaultSlotsForNewKid,
   ensureKidSlots,
@@ -213,48 +214,64 @@ export async function patchStore(
     createKid?: Partial<KidProfile>;
   },
 ): Promise<AppState> {
+  const createKid = patch.createKid
+    ? {
+        ...patch.createKid,
+        ...(patch.createKid.name !== undefined ? { name: assertKidFirstName(patch.createKid.name) } : {}),
+      }
+    : undefined;
+  const kidPatch = patch.kid
+    ? {
+        ...patch.kid,
+        ...(patch.kid.name !== undefined ? { name: assertKidFirstName(patch.kid.name) } : {}),
+      }
+    : undefined;
+  const kidsPatch = patch.kids?.map((k) =>
+    k.name !== undefined ? { ...k, name: assertKidFirstName(k.name) } : k,
+  );
+
   const store = await readStore(userKey);
 
-  if (patch.createKid) {
+  if (createKid) {
     const { maxKids, active: hasAccess } = await accessFor(userKey);
     if (maxKids && store.kids.length >= maxKids) {
       throw new Error(`Your plan covers up to ${countNoun(maxKids)}. Switch to a bigger plan on the billing page to add more.`);
     }
-    const paperSize = isPaperSize(patch.createKid.paperSize)
-      ? patch.createKid.paperSize
+    const paperSize = isPaperSize(createKid.paperSize)
+      ? createKid.paperSize
       : store.settings.paperSize || DEFAULT_SETTINGS.paperSize;
     const kid = seedKid({
-      ...patch.createKid,
+      ...createKid,
       paperSize,
       slots:
-        patch.createKid.slots ??
+        createKid.slots ??
         defaultSlotsForNewKid(paperSize),
-      id: patch.createKid.id || uid("kid"),
-      status: patch.createKid.status === "active" && hasAccess ? "active" : "inactive",
+      id: createKid.id || uid("kid"),
+      status: createKid.status === "active" && hasAccess ? "active" : "inactive",
       createdAt: new Date().toISOString(),
     });
     store.kids.push(ensureKidSlots(kid));
     store.activeKidId = kid.id;
   }
 
-  if (patch.kid) {
-    const id = patch.kid.id || store.activeKidId;
+  if (kidPatch) {
+    const id = kidPatch.id || store.activeKidId;
     const idx = store.kids.findIndex((k) => k.id === id);
     if (idx >= 0) {
-      if (patch.kid.status === "active" && store.kids[idx].status === "inactive") {
+      if (kidPatch.status === "active" && store.kids[idx].status === "inactive") {
         if (!(await accessFor(userKey)).active) {
           throw new Error("Activating a page needs a plan. Pick one on the Plan page.");
         }
       }
-      if (patch.kid.status && patch.kid.status !== "active" && patch.kid.status !== "inactive") {
-        delete patch.kid.status;
+      if (kidPatch.status && kidPatch.status !== "active" && kidPatch.status !== "inactive") {
+        delete kidPatch.status;
       }
-      const merged = { ...store.kids[idx], ...patch.kid, id: store.kids[idx].id };
+      const merged = { ...store.kids[idx], ...kidPatch, id: store.kids[idx].id };
       // If paperSize changed, resize slots
-      if (patch.kid.paperSize && patch.kid.paperSize !== store.kids[idx].paperSize) {
+      if (kidPatch.paperSize && kidPatch.paperSize !== store.kids[idx].paperSize) {
         merged.slots = resizeSlotsForPaper(
-          patch.kid.slots ?? store.kids[idx].slots,
-          patch.kid.paperSize,
+          kidPatch.slots ?? store.kids[idx].slots,
+          kidPatch.paperSize,
         );
       }
       store.kids[idx] = ensureKidSlots(merged);
@@ -272,7 +289,7 @@ export async function patchStore(
   }
 
   if (patch.activeKidId !== undefined) store.activeKidId = patch.activeKidId;
-  if (patch.kids) store.kids = patch.kids.map((k) => ensureKidSlots(k));
+  if (kidsPatch) store.kids = kidsPatch.map((k) => ensureKidSlots(k));
   if (patch.lastPrintByKid) store.lastPrintByKid = patch.lastPrintByKid;
   if (patch.nonceByKid) store.nonceByKid = patch.nonceByKid;
 

@@ -11,6 +11,7 @@ import { packModulesIntoSlots } from "@/lib/slots";
 import { detectTimezone } from "@/lib/tz";
 import type { ExampleMap } from "@/lib/setupExamples";
 import { INTERESTS, LEVELS, pickFromInterests } from "@/lib/interests";
+import { KID_NAME_MAX, kidNameError } from "@/lib/kidName";
 
 /**
  * One-question-per-screen page builder. Big targets, plain words, always a way
@@ -79,7 +80,7 @@ export default function BuildWizard({ examples }: { examples: ExampleMap }) {
       await save({
         ...(zip.trim() ? { settings: { weatherZip: zip.trim() } } : {}),
         createKid: {
-          name: who === "self" ? "My page" : name.trim() || "My page",
+          name: who === "self" ? "Me" : name.trim(),
           ageBand: level,
           paperSize: DEFAULT_SETTINGS.paperSize,
           slots,
@@ -101,6 +102,13 @@ export default function BuildWizard({ examples }: { examples: ExampleMap }) {
   function next() {
     setError(null);
     if (!canNext) return;
+    if (step === 1 && who !== "self") {
+      const err = kidNameError(name);
+      if (err) {
+        setError(err);
+        return;
+      }
+    }
     if (step < TOTAL) setStep(step + 1);
     else void create();
   }
@@ -138,7 +146,7 @@ export default function BuildWizard({ examples }: { examples: ExampleMap }) {
             {who && who !== "self" && (
               <div className="mt-6">
                 <label htmlFor="nm" className="text-xl font-semibold text-ink">Their first name</label>
-                <input id="nm" value={name} onChange={(e) => setName(e.target.value)} maxLength={40} autoComplete="off" placeholder={kid ? "Sam" : "Grandpa Joe"} className="mt-2 w-full rounded-2xl border-2 border-rule bg-paper px-5 py-4 text-xl" />
+                <input id="nm" value={name} onChange={(e) => setName(e.target.value)} maxLength={KID_NAME_MAX} autoComplete="off" placeholder="Sam" className="mt-2 w-full rounded-2xl border-2 border-rule bg-paper px-5 py-4 text-xl" />
               </div>
             )}
           </section>

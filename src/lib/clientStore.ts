@@ -15,7 +15,10 @@ async function putStore(body: Record<string, unknown>): Promise<AppState> {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
-  if (!res.ok) throw new Error("store save failed");
+  if (!res.ok) {
+    const err = (await res.json().catch(() => ({}))) as { error?: string };
+    throw new Error(err.error || "store save failed");
+  }
   return res.json() as Promise<AppState>;
 }
 

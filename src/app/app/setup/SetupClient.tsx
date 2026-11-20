@@ -18,6 +18,7 @@ import { packModulesIntoSlots } from "@/lib/slots";
 import { useModuleVisibility } from "@/lib/useModuleVisibility";
 import type { ModuleId } from "@/lib/types";
 import { detectTimezone, timezoneOptions } from "@/lib/tz";
+import { KID_NAME_MAX, kidNameError } from "@/lib/kidName";
 import { NOUN } from "@/lib/copy";
 import { HowItWorks } from "@/components/HowItWorks";
 
@@ -144,15 +145,16 @@ export default function SetupClient({ examples }: { examples: ExampleMap }) {
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     // Enter inside a field on an earlier step should advance, not create.
+    const nameError = kidNameError(name);
     if (step !== 3) {
-      if (step === 1 && !name.trim()) return setError("Give it a name.");
+      if (step === 1 && nameError) return setError(nameError);
       setError(null);
       setStep((step + 1) as 2 | 3);
       return;
     }
-    if (!name.trim()) {
+    if (nameError) {
       setStep(1);
-      setError("Give it a name.");
+      setError(nameError);
       return;
     }
     setBusy(true);
@@ -230,7 +232,7 @@ export default function SetupClient({ examples }: { examples: ExampleMap }) {
               </div>
               <div className="field">
                 <label htmlFor="name">{who === "kid" ? "Child's first name" : "First name"}</label>
-                <input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder={who === "kid" ? "Sam" : "Grandpa Joe"} autoComplete="off" maxLength={40} />
+                <input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Sam" autoComplete="off" maxLength={KID_NAME_MAX} />
               </div>
               {(
                 <div>
@@ -251,7 +253,8 @@ export default function SetupClient({ examples }: { examples: ExampleMap }) {
               type="button"
               className="btn-primary"
               onClick={() => {
-                if (!name.trim()) return setError("Give it a name.");
+                const nameError = kidNameError(name);
+                if (nameError) return setError(nameError);
                 setError(null);
                 setStep(2);
               }}
