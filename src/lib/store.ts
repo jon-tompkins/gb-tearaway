@@ -293,7 +293,16 @@ export async function patchStore(
   if (patch.lastPrintByKid) store.lastPrintByKid = patch.lastPrintByKid;
   if (patch.nonceByKid) store.nonceByKid = patch.nonceByKid;
 
-  return writeStore(userKey, store);
+  const next = await writeStore(userKey, store);
+  if (createKid && userKey.startsWith("user:")) {
+    try {
+      const { pauseFreeForUpgrade } = await import("./free/upgrade");
+      await pauseFreeForUpgrade(userKey.slice("user:".length), "custom_page");
+    } catch (e) {
+      console.error("[free-editions] pause on custom page failed", e instanceof Error ? e.message : e);
+    }
+  }
+  return next;
 }
 
 export async function savePrintJob(userKey: string, job: PrintJob): Promise<AppState> {

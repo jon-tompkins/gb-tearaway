@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { cronAuthorized } from "@/lib/cronAuth";
+import { sendOneFreeSubscriber } from "@/lib/free/dispatch";
 import { sendOneDispatch } from "@/lib/sendDispatch";
 
 export const runtime = "nodejs";
@@ -15,7 +16,13 @@ export async function POST(req: Request) {
     kidId?: string;
     force?: boolean;
     noEmail?: boolean;
+    kind?: string;
+    subscriberId?: string;
   };
+  if (body.kind === "free") {
+    if (!body.subscriberId) return NextResponse.json({ error: "subscriberId required" }, { status: 400 });
+    return NextResponse.json(await sendOneFreeSubscriber(body.subscriberId));
+  }
   if (!body.userKey || !body.kidId) return NextResponse.json({ error: "userKey and kidId required" }, { status: 400 });
   const result = await sendOneDispatch({ userKey: body.userKey, kidId: body.kidId }, { force: !!body.force, noEmail: !!body.noEmail });
   return NextResponse.json(result);

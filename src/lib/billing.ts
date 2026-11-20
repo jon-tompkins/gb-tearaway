@@ -120,6 +120,12 @@ export async function getBilling(email: string): Promise<Billing> {
     trialEndsAt: new Date(now + TRIAL_DAYS * DAY).toISOString(),
   };
   await savePayload(billingKey(email), fresh);
+  try {
+    const { pauseFreeForUpgrade } = await import("./free/upgrade");
+    await pauseFreeForUpgrade(email, "trial");
+  } catch (e) {
+    console.error("[free-editions] pause on trial failed", e instanceof Error ? e.message : e);
+  }
   return fresh;
 }
 

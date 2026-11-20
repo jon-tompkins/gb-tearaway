@@ -14,7 +14,14 @@ import { sectionHtml } from "./previewHtml";
  */
 export function buildPrintHtml(
   job: PrintJob,
-  opts: { autoPrint?: boolean; qrSvg?: string; qrLabel?: string; embed?: boolean } = {},
+  opts: {
+    autoPrint?: boolean;
+    qrSvg?: string;
+    qrLabel?: string;
+    embed?: boolean;
+    /** Free-edition upgrade line. Omitted on paid pages, which keep the original footer. */
+    upgrade?: { text: string; href: string };
+  } = {},
 ): string {
   const qrBlock = opts.qrSvg
     ? `<div class="qr"><span class="qrcap">${opts.qrLabel ?? "Scan for<br/>answers"}</span>${opts.qrSvg}</div>`
@@ -52,7 +59,10 @@ export function buildPrintHtml(
         .map(sectionHtml)
         .join("\n")}</div>`;
     const bodyHtml = `<div class="cols">${col(colA)}${col(colB)}</div>`;
-    const ftr1 = `<div class="ftr1"><div class="ftr1-mid"><div class="tear1">— tear here —</div><div class="brand1">Back of the Box · backofthebox.xyz</div></div>${qrBlock}</div>`;
+    const upgradeBlock = opts.upgrade
+      ? `<div class="upgrade1"><a href="${esc(opts.upgrade.href)}">${esc(opts.upgrade.text)}</a></div>`
+      : "";
+    const ftr1 = `<div class="ftr1"><div class="ftr1-mid"><div class="tear1">— tear here —</div><div class="brand1">Back of the Box · backofthebox.xyz</div>${upgradeBlock}</div>${qrBlock}</div>`;
     inner = [hdr1, bodyHtml, ftr1].join("\n");
   } else {
     const footer = job.sections.find((s) => s.kind === "footer");
@@ -105,7 +115,7 @@ export function buildPrintHtml(
   .qr svg{width:20mm;height:20mm}
   .qrcap{font-size:6pt;letter-spacing:.08em;text-transform:uppercase;margin-top:.8mm}`;
 
-  const letterCss = `
+  let letterCss = `
   html,body{background:#fff;color:#000}
   /* newspaper: two balanced columns that fill the page, a light rule under each card */
   /* Fixed vertical budget: 15mm masthead + 224.4mm columns + 16mm footer =
@@ -166,6 +176,14 @@ export function buildPrintHtml(
   .geo-loc{padding-right:1mm;box-sizing:border-box;flex:0 0 42%;height:100%;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
   .geo-loc svg{width:100%;height:auto;min-height:0;max-height:calc(100% - 4mm)}
   .geo-cap{font-size:5.5pt;font-weight:700;letter-spacing:.12em;text-transform:uppercase;margin-top:1mm;text-align:center}`;
+  // Free editions add one line under the masthead footer. Paid pages leave
+  // these heights alone (15 + 224.4 + 16 = 255.4mm).
+  if (opts.upgrade) {
+    letterCss = letterCss
+      .replace(".ftr1{position:relative;height:16mm;", ".ftr1{position:relative;height:28mm;")
+      .replace(".cols{height:224.4mm;", ".cols{height:212.4mm;")
+      + "\n  .upgrade1{font-size:6.4pt;line-height:1.3;margin-top:1.2mm;max-width:148mm}.upgrade1 a{color:#000;text-decoration:underline}";
+  }
 
   // For the strip, size the print page to the actual content height so the PDF
   // is one continuous 58mm-wide page (no half-empty trailing page).

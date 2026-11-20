@@ -6,9 +6,20 @@
 const SUPA_URL = process.env.SUPABASE_URL;
 const SUPA_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
+export type UsageEventType =
+  | "pageview"
+  | "email_sent"
+  | "ai_usage"
+  | "free_signup_started"
+  | "free_signup_confirmed"
+  | "free_pdf_clicked"
+  | "free_unsubscribed"
+  | "free_to_custom_started"
+  | "free_to_trial_started";
+
 export interface UsageEvent {
   ts?: string;
-  type: "pageview" | "email_sent" | "ai_usage";
+  type: UsageEventType;
   path?: string | null;
   visitor?: string | null;
   user_key?: string | null;

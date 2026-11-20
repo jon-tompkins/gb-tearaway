@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { FreeEditionNotice } from "./FreeEditionNotice";
 import { AppShell } from "./AppNav";
 import type { Access } from "@/lib/billing";
 import { showMissingCardBanner } from "@/lib/billingView";
@@ -17,19 +18,19 @@ export function BillingGate({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { status } = useBilling();
   const onPlanPage = pathname.startsWith("/app/billing");
-  if (status && !status.access.active && !onPlanPage) return <Paywall access={status.access} />;
   const a = status?.access;
-  if (a?.enforced && !onPlanPage && showMissingCardBanner(a)) {
-    return (
+  let body: React.ReactNode = children;
+  if (status && !status.access.active && !onPlanPage) body = <Paywall access={status.access} />;
+  else if (a?.enforced && !onPlanPage && showMissingCardBanner(a)) {
+    body = (
       <>
         <CardBanner access={a} />
         {children}
       </>
     );
-  }
-  if (a?.enforced && a.reason === "trial" && !onPlanPage) {
+  } else if (a?.enforced && a.reason === "trial" && !onPlanPage) {
     const left = daysLeft(a.until);
-    return (
+    body = (
       <>
         <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 border-b border-amber-300 bg-amber-50 px-4 py-2 text-center text-sm text-amber-950">
           <span>
@@ -43,7 +44,12 @@ export function BillingGate({ children }: { children: React.ReactNode }) {
       </>
     );
   }
-  return children;
+  return (
+    <>
+      <FreeEditionNotice />
+      {body}
+    </>
+  );
 }
 
 function CardBanner({ access }: { access: Access }) {

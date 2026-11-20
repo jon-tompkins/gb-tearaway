@@ -49,6 +49,12 @@ export async function POST(req: Request) {
         priceId,
       }),
     );
+    try {
+      const { pauseFreeForUpgrade } = await import("@/lib/free/upgrade");
+      await pauseFreeForUpgrade(email, "billing");
+    } catch (e) {
+      console.error("[free-editions] pause on checkout failed", e instanceof Error ? e.message : e);
+    }
     return NextResponse.json({ url: session.url });
   } catch (e) {
     return NextResponse.json({ error: e instanceof Error ? e.message : "Checkout failed" }, { status: 502 });
