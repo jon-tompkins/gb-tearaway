@@ -84,7 +84,7 @@ export const MODULE_CATALOG: ModuleMeta[] = [
   { id: "stocks", name: "Stock Watchlist", blurb: "Parent-picked tickers — a simple up-or-down check.", category: "today", defaultOn: false, size: "double" },
   { id: "sports", name: "Sports Scores", blurb: "Pick your favorite teams — last result and next game, real scores.", category: "today", defaultOn: false, size: "full" },
   { id: "sportsnews", name: "Team News", blurb: "Pick your favorite team and get a kid-safe rundown of their latest news.", category: "today", defaultOn: false, size: "full" },
-  { id: "calendar", name: "Calendar", blurb: "Today’s events from a calendar you connect, or ones you add yourself.", category: "today", defaultOn: false, size: "half" },
+  { id: "calendar", name: "Calendar", blurb: "A short list of today’s events, added by a parent.", category: "today", defaultOn: false, size: "half" },
 ];
 
 /**
