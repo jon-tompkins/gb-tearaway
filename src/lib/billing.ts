@@ -1,7 +1,9 @@
 import { randomInt } from "node:crypto";
 import { isAdminEmail } from "./admin";
 import { listPayloadFields, loadPayload, savePayload } from "./persist";
-import { periodEnd, stripeConfigured, type StripeSubscription } from "./stripe";
+import type { PlanInterval } from "./plans";
+import { isStripeConfigured, paymentMethodId, periodEnd, type StripeSubscription } from "./stripe";
+export { showMissingCardBanner, TRIAL_ENDING_BANNER_DAYS } from "./billingView";
 
 /**
  * Plans: every account gets a free first month, then one plan ($5/month or $39/year, up to 5 kids) through Stripe (see plans.ts).
@@ -17,14 +19,26 @@ import { periodEnd, stripeConfigured, type StripeSubscription } from "./stripe";
  * BILLING_GRACE_UNTIL (ISO date, e.g. 2026-12-01) softens the switch-on: until
  * then, expired trials keep working even with Stripe live, so existing families
  * get time to subscribe instead of being cut off the day the key goes in.
+ *
+ * Choosing a plan during free time does not collect a card. Checkout uses
+ * payment_method_collection=if_required and, if the trial ends with no card,
+ * Stripe pauses the subscription without invoicing. Delivery continues for
+ * PAYMENT_GRACE_DAYS after that, then stops until the parent adds a card and
+ * resumes. Parents whose free time is already over still check out with a card
+ * collected immediately.
  */
 export const TRIAL_DAYS = 30;
+/** Pages keep arriving this long after a no-card trial ends. Stripe has already paused the subscription. */
+export const PAYMENT_GRACE_DAYS = 3;
 
 const DAY = 86_400_000;
+/** These Stripe statuses keep paid access. `paused` is handled separately, for PAYMENT_GRACE_DAYS only. */
 const PAID_STATUSES = new Set(["active", "trialing", "past_due"]);
 
-function graceActive(now: number): boolean {
-  const until = Date.parse(process.env.BILLING_GRACE_UNTIL ?? "");
+export type CardAction = "none" | "add" | "resume";
+
+function graceActive(now: number, override?: string | null): boolean {
+  const until = Date.parse((override === undefined ? process.env.BILLING_GRACE_UNTIL : override) ?? "");
   return Number.isFinite(until) && until > now;
 }
 
@@ -42,22 +56,37 @@ export interface Billing {
   compUntil?: string | null;
   compForever?: boolean;
   codes?: string[];
+  /**
+   * False when Stripe has no card. Missing means unknown — legacy rows that
+   * checked out while Checkout always collected a card.
+   */
+  hasPaymentMethod?: boolean;
+  /** ISO timestamp of the trial end we already emailed a card reminder for. */
+  trialReminderFor?: string;
+  /** Billing interval from the Stripe subscription they picked. */
+  planInterval?: PlanInterval;
 }
 
 export interface Access {
   active: boolean;
   enforced: boolean;
-  reason: "demo" | "admin" | "paid" | "code" | "trial" | "expired";
+  reason: "demo" | "admin" | "paid" | "code" | "trial" | "grace" | "expired";
   /** When the current free/paid access runs out (null = no end). */
   until: string | null;
   trialEndsAt: string | null;
   subscribed: boolean;
   cancelAtPeriodEnd: boolean;
   codes: string[];
-    /** Most kids this account may have (null = no cap). */
+  /** Most kids this account may have (null = no cap). */
   maxKids: number | null;
   /** Expired, but still active because BILLING_GRACE_UNTIL hasn't passed. */
   inGrace?: boolean;
+  /** What the plan page should offer when a card is missing or a paused plan can resume. */
+  cardAction: CardAction;
+  /** Stripe subscription status, when we have one. */
+  subStatus: string | null;
+  /** End of the post-trial no-card delivery window, when that window is still open. */
+  paymentGraceUntil: string | null;
 }
 
 export interface AccessCode {
@@ -98,17 +127,40 @@ export async function saveBilling(email: string, b: Billing): Promise<void> {
   await savePayload(billingKey(email), b);
 }
 
-export function accessFrom(b: Billing, opts: { admin?: boolean; now?: number } = {}): Access {
+/** Add a card, resume a paused plan, or neither. Unknown legacy rows are treated as having a card. */
+export function cardActionFor(b: Billing): CardAction {
+  if (b.subStatus === "paused") return b.hasPaymentMethod === true ? "resume" : "add";
+  if (b.hasPaymentMethod === false && (b.subStatus === "trialing" || b.subStatus === "past_due" || b.subStatus === "incomplete")) {
+    return "add";
+  }
+  return "none";
+}
+
+/** When a paused no-card subscription stops granting access. Null unless status is paused. */
+export function paymentGraceUntil(b: Billing): string | null {
+  if (b.subStatus !== "paused") return null;
+  const anchor = Date.parse(b.paidUntil ?? "") || Date.parse(b.trialEndsAt) || NaN;
+  if (!Number.isFinite(anchor)) return null;
+  return new Date(anchor + PAYMENT_GRACE_DAYS * DAY).toISOString();
+}
+
+export function accessFrom(b: Billing, opts: { admin?: boolean; now?: number; enforced?: boolean; billingGraceUntil?: string | null } = {}): Access {
   const now = opts.now ?? Date.now();
+  const enforced = opts.enforced ?? isStripeConfigured();
   const subscribed = !!b.subStatus && PAID_STATUSES.has(b.subStatus);
+  const graceUntil = paymentGraceUntil(b);
+  const inPaymentGrace = !!graceUntil && Date.parse(graceUntil) > now;
+  const holdsPlan = subscribed || b.subStatus === "paused";
   const base = {
-    enforced: stripeConfigured,
+    enforced,
     trialEndsAt: b.trialEndsAt,
     subscribed,
     cancelAtPeriodEnd: !!b.cancelAtPeriodEnd,
     codes: b.codes ?? [],
-    
-    maxKids: subscribed && b.maxKids ? b.maxKids : null,
+    maxKids: holdsPlan && b.maxKids ? b.maxKids : null,
+    cardAction: cardActionFor(b),
+    subStatus: b.subStatus ?? null,
+    paymentGraceUntil: inPaymentGrace ? graceUntil : null,
   };
   const later = (iso?: string | null) => !!iso && Date.parse(iso) > now;
   let reason: Access["reason"] = "expired";
@@ -118,8 +170,9 @@ export function accessFrom(b: Billing, opts: { admin?: boolean; now?: number } =
   else if (b.compForever) reason = "code";
   else if (later(b.compUntil)) [reason, until] = ["code", b.compUntil!];
   else if (later(b.trialEndsAt)) [reason, until] = ["trial", b.trialEndsAt];
-  const inGrace = reason === "expired" && stripeConfigured && graceActive(now);
-  const active = reason !== "expired" || !stripeConfigured || inGrace;
+  else if (inPaymentGrace && graceUntil) [reason, until] = ["grace", graceUntil];
+  const inGrace = reason === "expired" && enforced && graceActive(now, opts.billingGraceUntil);
+  const active = reason !== "expired" || !enforced || inGrace;
   return { ...base, active, reason, until, ...(inGrace ? { inGrace } : {}) };
 }
 
@@ -128,26 +181,54 @@ export async function accessFor(userKey: string): Promise<Access> {
   const email = emailOf(userKey);
   if (!email) {
     return {
-      active: true, enforced: stripeConfigured, reason: "demo", until: null, trialEndsAt: null,
+      active: true, enforced: isStripeConfigured(), reason: "demo", until: null, trialEndsAt: null,
       subscribed: false, cancelAtPeriodEnd: false, codes: [], maxKids: null,
+      cardAction: "none", subStatus: null, paymentGraceUntil: null,
     };
   }
   return accessFrom(await getBilling(email), { admin: isAdminEmail(email) });
 }
 
-/** Mirror a Stripe subscription onto the user's billing record. */
-export async function applySubscription(email: string, sub: StripeSubscription): Promise<void> {
+/**
+ * Mirror a Stripe subscription onto the user's billing record.
+ * Pass `hasPaymentMethod` only when it is known. Omit it to leave a legacy value alone
+ * (a failed customer lookup must not flip a paying parent to "no card").
+ */
+export async function applySubscription(
+  email: string,
+  sub: StripeSubscription,
+  extra?: { hasPaymentMethod?: boolean },
+): Promise<void> {
   const b = await getBilling(email);
   const end = periodEnd(sub);
+  const customerId = typeof sub.customer === "string" ? sub.customer : b.customerId;
+  const planInterval = subscriptionPlanInterval(sub);
   await saveBilling(email, {
     ...b,
-    customerId: sub.customer,
+    customerId,
     subscriptionId: sub.id,
     subStatus: sub.status,
     paidUntil: end ? new Date(end * 1000).toISOString() : null,
     cancelAtPeriodEnd: !!sub.cancel_at_period_end,
     maxKids: Number(sub.metadata?.maxKids) > 0 ? Number(sub.metadata?.maxKids) : undefined,
+    ...(planInterval ? { planInterval } : {}),
+    ...(extra?.hasPaymentMethod === undefined ? {} : { hasPaymentMethod: extra.hasPaymentMethod }),
   });
+}
+
+/** month or year from subscription metadata, or from the price when metadata is absent. */
+export function subscriptionPlanInterval(sub: StripeSubscription): PlanInterval | undefined {
+  const raw =
+    sub.metadata?.interval ??
+    sub.items?.data?.[0]?.price?.recurring?.interval ??
+    sub.items?.data?.[0]?.plan?.interval ??
+    sub.plan?.interval;
+  return raw === "month" || raw === "year" ? raw : undefined;
+}
+
+/** True when the subscription payload itself carries a card. Does not call Stripe. */
+export function subscriptionRecordHasCard(sub: StripeSubscription): boolean {
+  return !!(paymentMethodId(sub.default_payment_method) || paymentMethodId(sub.default_source));
 }
 
 // ---- Access codes ----
