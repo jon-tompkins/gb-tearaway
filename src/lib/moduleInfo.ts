@@ -126,19 +126,19 @@ export const MODULE_INFO: Record<ModuleId, ModuleInfo> = {
   },
   numbercross: {
     source:
-      "Fully procedural: a real criss-cross grid where every answer is a number and every clue is a quick calculation. Little kids add, subtract, double and halve; middle ages use times tables and day/hour facts; olders get squares, cubes, roots, percents and perimeters. Crossing squares must share a digit, so you can check yourself. Answers show in the app only.",
+      "Fully procedural: a real criss-cross grid where every answer is a number and every clue is a quick calculation. Little kids add, subtract, double and halve; middle ages use times tables and day/hour facts; olders get squares, cubes, roots, percents and perimeters. Crossing squares must share a digit, so you can check yourself. Answers stay off the paper. A parent scans the QR code on the page to check.",
     config: [DIAL + " Picks the difficulty set (which kinds of clues appear)."],
     answerInApp: true,
   },
   cryptogram: {
     source:
-      "Short kid-safe messages encoded fresh each day. Ages 4–6 crack a number code (A=1…) with the key printed; 7–9 decode a letter shift and get one clue letter; 10–12 solve a random substitution cipher with two letters given. Decoded message shows in the app only.",
+      "Short kid-safe messages encoded fresh each day. Ages 4–6 crack a number code (A=1…) with the key printed; 7–9 decode a letter shift and get one clue letter; 10–12 solve a random substitution cipher with two letters given. The decoded message stays off the paper. A parent scans the QR code on the page to read it.",
     config: [DIAL + " Picks the difficulty set and cipher type."],
     answerInApp: true,
   },
   logicgrid: {
     source:
-      "Generated fresh each day: kids are matched to pets, lunches or sports. A solver checks every possible answer so the puzzle has exactly one solution, then trims the clues to the minimum. Ages 4–9: 3×3 with about 3 clues; 10–12: 4×4 with about 6. Solution shows in the app only.",
+      "Generated fresh each day: kids are matched to pets, lunches or sports. A solver checks every possible answer so the puzzle has exactly one solution, then trims the clues to the minimum. Ages 4–9: 3×3 with about 3 clues; 10–12: 4×4 with about 6. The solution stays off the paper. A parent scans the QR code on the page to check.",
     config: [DIAL + " Picks the grid size."],
     answerInApp: true,
   },

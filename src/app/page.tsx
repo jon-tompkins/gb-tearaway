@@ -143,7 +143,7 @@ export default async function HomePage() {
               <h2 className="font-display text-2xl text-ink sm:text-3xl">
                 {visible.length} cards to build with
               </h2>
-              <p className="mt-1 text-sm font-semibold text-stamp">Over 25 modules and growing</p>
+              <p className="mt-1 text-sm font-semibold text-stamp">{visible.length} modules and growing</p>
               <p className="mt-2 max-w-2xl text-ink-soft">
                 Mix and match cards in three sizes, from a quick joke to a big crossword. One card
                 can also rotate through a few modules, like sudoku one day and battleship the next.
