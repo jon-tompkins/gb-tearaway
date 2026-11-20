@@ -105,7 +105,7 @@ Content is seeded by **date + kid first name + nonce**. Same inputs → same str
 
 | Module | Notes |
 |--------|--------|
-| Maze | Perfect maze; size by age band |
+| Maze | Perfect maze. A parent sets how tricky with the difficulty dial. |
 | **Word Find** | Tiny word-search (6×6–8×8) that fits 58mm |
 | **Connect the Dots** | Funny numbered dots + silly caption (SVG) |
 | Riddle | Question + answer on the strip (think first) |
@@ -129,13 +129,12 @@ Content is seeded by **date + kid first name + nonce**. Same inputs → same str
 
 ### Kid-friendly news (static banks, not live scrapes)
 
-Wonder + discovery tone. No violence / politics anxiety. City news is generic “hometown” style (no geo API yet).
+Wonder + discovery tone. No violence / politics anxiety. There is no hometown or city news.
 
 | Module | Notes |
 |--------|--------|
 | World News | Animals, space, discoveries |
 | National News | Parks, science fairs, kindness |
-| Hometown News | Library, playground, neighbors |
 | Tech News | Robots, code, gadgets |
 | Gamer News | Games, makers, fair play |
 

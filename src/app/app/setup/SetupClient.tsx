@@ -386,7 +386,7 @@ export default function SetupClient({ examples }: { examples: ExampleMap }) {
                 <div className="field">
                   <label htmlFor="zip">Zip code</label>
                   <input id="zip" value={zip} onChange={(e) => setZip(e.target.value)} placeholder="11201" inputMode="numeric" maxLength={10} autoComplete="postal-code" />
-                  <p className="mt-1 text-xs text-ink-soft">For the weather{picked.some((id) => id.startsWith("news")) ? " and local stories" : ""}. That's all we need.</p>
+                  <p className="mt-1 text-xs text-ink-soft">For your weather forecast. That's all we need.</p>
                 </div>
               ) : null}
               <div className="grid gap-4 sm:grid-cols-2">

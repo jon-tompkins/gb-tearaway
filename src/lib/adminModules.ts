@@ -304,7 +304,7 @@ export const ADMIN_MODULES: Record<ModuleId, AdminModule> = {
   news_gamer: newsModule("news_gamer", `Sources: ${feedNames("news_gamer")}.`),
   news_city: {
     kind: "live",
-    how: "A Google News search on each dispatch's city, then the same pick → read → write news job. No backup bank.",
+    how: "Parked, and not in the catalog. The kept job would search Google News for a city, then pick, read, and write. No backup bank.",
     recent: async () => {
       const cities = new Set<string>();
       for (const { state } of await listUserStates()) {
