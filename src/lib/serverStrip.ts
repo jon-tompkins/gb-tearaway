@@ -1,8 +1,8 @@
 import { generateStrip } from "./generateStrip";
 import { DEMO_KEY, getSettings, readStore, writeStore } from "./store";
 import { fetchWeather } from "./weather";
-import { gatherDailyNews } from "./news/daily";
 import type { LiveNewsEntry, NewsModuleId } from "./content/news";
+import { gatherDailyNews } from "./news/daily";
 import { gatherDailyExtras } from "./content/live-extras";
 import { gatherDailyHistory } from "./news/history-live";
 import { gatherSports } from "./sports";
@@ -26,10 +26,10 @@ export async function buildJobForKid(
     /** Which user's store to read/write (defaults to the shared demo store). */
     userKey?: string;
     /**
-     * Public sample pages only. Fills a news feed when the live pool is empty.
-     * Real dispatches omit this and still print nothing rather than invent a story.
+     * Used by the public sample page only. Fills a news card when live news
+     * is missing. A live feed with stories still wins for that feed.
      */
-    sampleNews?: Partial<Record<NewsModuleId, LiveNewsEntry[]>>;
+    newsFallback?: Partial<Record<NewsModuleId, LiveNewsEntry[]>>;
   } = {},
 ): Promise<PrintJob> {
   const userKey = opts.userKey ?? DEMO_KEY;
@@ -62,7 +62,14 @@ export async function buildJobForKid(
     pool.includes("sportsnews") ? gatherTeamNews(kid.sportsTeams ?? []) : Promise.resolve(undefined),
   ]);
 
-  const newsByFeed = mergeSampleNews(liveNews, opts.sampleNews);
+  let newsByFeed = liveNews;
+  if (opts.newsFallback) {
+    const merged: Partial<Record<NewsModuleId, LiveNewsEntry[]>> = { ...opts.newsFallback };
+    for (const [id, items] of Object.entries(liveNews ?? {})) {
+      if (items?.length) merged[id as NewsModuleId] = items;
+    }
+    newsByFeed = merged;
+  }
 
   const job = generateStrip(kidNorm, settings, {
     nonce,
@@ -88,20 +95,6 @@ export async function buildJobForKid(
   }
 
   return job;
-}
-
-/** Live stories win. A sample fallback is used only for a feed that came back empty. */
-function mergeSampleNews(
-  live: Partial<Record<NewsModuleId, LiveNewsEntry[]>> | undefined,
-  sample: Partial<Record<NewsModuleId, LiveNewsEntry[]>> | undefined,
-): Partial<Record<NewsModuleId, LiveNewsEntry[]>> | undefined {
-  if (!sample) return live;
-  const merged: Partial<Record<NewsModuleId, LiveNewsEntry[]>> = { ...(live ?? {}) };
-  for (const feed of Object.keys(sample) as NewsModuleId[]) {
-    const fallback = sample[feed];
-    if ((!merged[feed] || merged[feed]!.length === 0) && fallback?.length) merged[feed] = fallback;
-  }
-  return Object.keys(merged).length ? merged : undefined;
 }
 
 export function estimateJobHeight(job: PrintJob): number {

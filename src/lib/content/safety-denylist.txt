@@ -1,0 +1,63 @@
+# Kid-content denylist. One term per line. Blank lines and # comments are ignored.
+#
+# A term made only of letters, spaces, and hyphens matches as a whole word
+# (case-insensitive), so "stub" does not flag "stubble".
+# Anything else, such as "(A real", matches as a case-insensitive substring.
+#
+# Words that already appear in reviewed kid-safe copy are intentionally absent:
+# blood (science), war and death (history and poems), gun (a pirate crossword
+# clue), weapon (a Mandela quotation), kill (penicillin). Add a term here only
+# when it should fail the bank check.
+
+# Scary / violent
+# "assault" is omitted: a public-domain poem uses "sweet assault".
+murder
+murdered
+murderer
+suicide
+terrorist
+terrorism
+gore
+gory
+genocide
+massacre
+assassination
+porn
+pornography
+rape
+nude
+naked
+stabbed
+stabbing
+gunman
+torture
+molest
+molested
+beheading
+nazi
+holocaust
+school shooting
+mass shooting
+
+# Adult / substance
+cocaine
+heroin
+marijuana
+fuck
+shit
+damn
+hell
+
+# Partisan politics (named figures and party labels, not "president" or "election",
+# which show up in history and vocabulary)
+trump
+biden
+democrat
+republican
+maga
+
+# Leftover placeholder copy
+stub
+lorem
+TODO
+(A real

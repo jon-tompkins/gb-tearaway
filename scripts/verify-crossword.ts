@@ -12,6 +12,8 @@ function mulberry32(a: number) {
 }
 
 type Theme = { theme: string; entries: { word: string; clue: string }[] };
+
+async function main() {
 const banks: Theme[][] = [];
 for (const f of ["crossword-46", "crossword-79", "crossword-1012"]) {
   try {
@@ -19,7 +21,7 @@ for (const f of ["crossword-46", "crossword-79", "crossword-1012"]) {
     banks.push(Object.values(m)[0] as Theme[]);
   } catch { /* not written yet */ }
 }
-let themes: Theme[] = banks.flat();
+const themes: Theme[] = banks.flat();
 if (!themes.length) {
   // Stand-in until the clue banks exist: word-find themes with dummy clues.
   for (const f of ["wordfind-46", "wordfind-79", "wordfind-1012"]) {
@@ -56,9 +58,14 @@ for (const [d, v] of Object.entries(byD)) {
   console.log(`dial ${d.padStart(2)}: target ${cfg.target} in ≤${cfg.maxSize}² → avg ${avg(v.words)} words (min ${Math.min(...v.words)}), avg ${avg(v.ms)}ms, max ${max}ms, e.g. ${v.sizes.slice(0, 4).join(" ")}`);
 }
 console.log(`${total} built, ${fails} returned null, ${bad} INVALID`);
+if (bad) process.exitCode = 1;
 // one sample, printed as text
 const rng = mulberry32(42); const t = themes[3];
 const cw = buildCrossword(rng, t.theme, t.entries, crosswordConfigForDifficulty(9))!;
 console.log(`\nSample "${t.theme}":`); for (const row of cw.grid) console.log("  " + row.map((c) => c ?? "·").join(" "));
 for (const w of cw.words) console.log(`  ${w.num} ${w.dir.padEnd(6)} ${w.word}`);
 void crosswordToSvg;
+if (bad) process.exit(1);
+}
+
+main();

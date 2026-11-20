@@ -1,23 +1,8 @@
 import { NextResponse } from "next/server";
-import { buildJobForKid } from "@/lib/serverStrip";
 import { buildPrintHtml } from "@/lib/printHtml";
 import { renderPdfFromUrl } from "@/lib/pdf";
-import { seedKid, DEMO_KEY } from "@/lib/store";
-import { templateSlots, type StartTemplate } from "@/lib/templates";
-import { sampleWorldNews } from "@/lib/content/sampleNews";
+import { buildSampleJob } from "@/lib/samplePage";
 import { AGE_BANDS, type AgeBand } from "@/lib/types";
-
-/**
- * Public sample layout: the landing page promises kid-safe news, a maze, a
- * crossword, and a joke. Biggest cards first so both Letter columns fill.
- */
-const SAMPLE_TEMPLATE: StartTemplate = {
-  id: "public-sample",
-  name: "Public sample",
-  emoji: "📰",
-  blurb: "News, a crossword, a maze, and a joke",
-  cards: [["crossword"], ["maze"], ["news_world"], ["joke"], ["weather"], ["word"], ["fact"]],
-};
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -25,8 +10,9 @@ export const maxDuration = 60;
 
 /**
  * Public, no-sign-in sample page: GET /api/sample/7-9 → a printable PDF of today's page
- * for that age band (news, a maze, a crossword, and a joke). ?format=print returns the print HTML
+ * for that age band (puzzles, world news, and a joke). ?format=print returns the print HTML
  * (also what the PDF renderer loads). Edge-cached so shares don't re-render each time.
+ * When live news isn't available, the page uses the static sample-news bank.
  */
 export async function GET(req: Request, { params }: { params: Promise<{ band: string }> }) {
   const { band } = await params;
@@ -34,20 +20,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ band: st
     return NextResponse.json({ error: "Unknown age band" }, { status: 404 });
   }
   const url = new URL(req.url);
-  const ageBand = band as AgeBand;
-  const kid = seedKid({
-    id: `sample-${band}`,
-    name: "Sample",
-    ageBand,
-    paperSize: "letter",
-    slots: templateSlots(SAMPLE_TEMPLATE, "letter"),
-  });
-  const job = await buildJobForKid(kid, {
-    userKey: DEMO_KEY,
-    nonce: 0,
-    // Live news wins when the morning feed is ready. Otherwise print a gentle static story.
-    sampleNews: { news_world: sampleWorldNews(ageBand) },
-  });
+  const job = await buildSampleJob(band as AgeBand);
 
   if (url.searchParams.get("format") === "print") {
     return new NextResponse(buildPrintHtml(job, {}), {

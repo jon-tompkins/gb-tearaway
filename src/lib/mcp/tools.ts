@@ -139,7 +139,7 @@ export const TOOLS: Tool[] = [
     inputSchema: {
       type: "object",
       properties: {
-        name: { type: "string", description: "Who it's for, e.g. 'Grandpa Joe'. Use 'My page' for the user themselves." },
+        name: { type: "string", description: "First name only, e.g. 'Sam'. Use 'Me' for the user themselves. No spaces, email addresses, or numbers." },
         interests: { type: "array", items: { type: "string" }, description: "Interest ids from list_interests." },
         modules: { type: "array", items: { type: "string" }, description: "Optional exact card ids from list_modules." },
         difficulty: { type: "string", enum: LEVEL_KEYS },

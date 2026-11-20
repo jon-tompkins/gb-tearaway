@@ -1,35 +1,37 @@
 import type { AgeBand } from "../types";
-import type { LiveNewsEntry } from "./news";
+
+export interface SampleNewsStory {
+  bands: AgeBand[];
+  headline: string;
+  location: string;
+  blurb: string;
+  wonder: string;
+}
 
 /**
- * Gentle, true, evergreen stories for the public sample PDF.
- * Used only when that morning's live kid-safe feed is empty.
- * Real dispatches still skip a news card rather than invent a headline.
+ * Printed on the public sample page when live news is unavailable (no API key,
+ * or nothing kid-safe cached). Real dispatches never fall back to these.
  */
-const SAMPLE_WORLD: Record<AgeBand, Omit<LiveNewsEntry, "bands">> = {
-  "4-6": {
-    headline: "Penguins take turns staying warm",
-    location: "Antarctica",
-    blurb:
-      "Emperor penguins stand close together when the wind is cold. Birds in the middle get cozy, then they shuffle so friends on the edge get a turn too.",
-    wonder: "A dad penguin balances the egg on his feet so it never touches the ice.",
+export const SAMPLE_NEWS: SampleNewsStory[] = [
+  {
+    bands: ["4-6", "7-9", "10-12"],
+    headline: "Library opens a reading treehouse",
+    location: "Portland",
+    blurb: "A neighborhood library built a small treehouse full of cushions and picture books. Kids can climb up, pick a story, and read in the leaves.",
+    wonder: "A group of flamingos is called a flamboyance.",
   },
-  "7-9": {
-    headline: "Borrow a telescope like a book",
-    location: "Public libraries",
-    blurb:
-      "Some libraries let you check out a telescope the way you check out a story. You take it home, wait for a clear night, and look at the Moon from the yard.",
-    wonder: "The Moon is close enough that a small telescope shows its craters.",
+  {
+    bands: ["4-6", "7-9", "10-12"],
+    headline: "Students grow lunch on the school roof",
+    location: "Chicago",
+    blurb: "A class planted tomatoes and herbs in boxes on the school roof. The cooks used the first harvest in Friday’s soup.",
+    wonder: "Honey never spoils. Jars thousands of years old can still be eaten.",
   },
-  "10-12": {
-    headline: "Astronauts grow lettuce above Earth",
-    location: "International Space Station",
-    blurb:
-      "On the space station, astronauts grow red lettuce under special lamps. They water the plants, pick a few leaves, and taste a space salad.",
-    wonder: "The station circles Earth about 16 times in a single day.",
+  {
+    bands: ["4-6", "7-9", "10-12"],
+    headline: "Park adds a butterfly path",
+    location: "Austin",
+    blurb: "Gardeners planted flowers that butterflies like to visit. Families can walk the path and count the colors they see.",
+    wonder: "Butterflies taste with their feet.",
   },
-};
-
-export function sampleWorldNews(band: AgeBand): LiveNewsEntry[] {
-  return [{ ...SAMPLE_WORLD[band], bands: [band] }];
-}
+];

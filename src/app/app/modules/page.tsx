@@ -23,6 +23,7 @@ import {
 import { useBilling } from "@/lib/useBilling";
 import { NOUN } from "@/lib/copy";
 import { detectTimezone, timezoneOptions } from "@/lib/tz";
+import { KID_NAME_MAX, kidNameError } from "@/lib/kidName";
 import { HowItWorks } from "@/components/HowItWorks";
 import { StatusBadge } from "@/components/StatusBadge";
 import { isKidActive } from "@/lib/types";
@@ -112,8 +113,9 @@ export default function EditDispatchPage() {
 
   async function onSave(activate = false): Promise<boolean> {
     if (!activeKid) return false;
-    if (!name.trim()) {
-      setStatus("Give the page a name.");
+    const nameError = kidNameError(name);
+    if (nameError) {
+      setStatus(nameError);
       return false;
     }
     setBusy(true);
@@ -217,7 +219,7 @@ export default function EditDispatchPage() {
             onChange={(e) => setName(e.target.value)}
             placeholder="Sam"
             autoComplete="off"
-            maxLength={40}
+            maxLength={KID_NAME_MAX}
           />
         </div>
 

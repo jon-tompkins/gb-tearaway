@@ -29,6 +29,7 @@ import { pickSpanish } from "./content/spanish";
 import { pickPoem, poemLines } from "./content/poems";
 import { pickScramble, scrambleWord } from "./content/scramble";
 import { pickHistory } from "./content/history";
+import { SAMPLE_NEWS } from "./content/sampleNews";
 
 export interface ModuleExample {
   /** Pre-rendered SVG figure (puzzles / maps). */
@@ -44,36 +45,13 @@ export interface ModuleExample {
 const BAND: AgeBand = "7-9";
 const DIFF = 8;
 
-/** Gentle sample stories for the public module tiles. Not live headlines. */
-const SHOWCASE_NEWS: Record<
-  "news_world" | "news_national" | "news_city" | "news_tech" | "news_gamer",
-  { headline: string; blurb: string }
-> = {
-  news_world: {
-    headline: "Penguins take turns staying warm",
-    blurb:
-      "Emperor penguins huddle when the wind is cold. Birds in the middle get cozy, then they shuffle so friends on the edge get a turn.",
-  },
-  news_national: {
-    headline: "Borrow a telescope like a book",
-    blurb:
-      "Some libraries let kids check out a telescope the way they check out a story. On a clear night, the Moon’s craters show up from the backyard.",
-  },
-  news_city: {
-    headline: "The park has a new swing set",
-    blurb:
-      "A shady bench sits nearby, and there is room for a picnic under the trees. Families can bring a snack and stay for a story.",
-  },
-  news_tech: {
-    headline: "Rovers still send pictures from Mars",
-    blurb:
-      "Small robots drive across Mars, stop to study a rock, and send photos home. They roll about as fast as a person walks.",
-  },
-  news_gamer: {
-    headline: "A garden game with no losers",
-    blurb:
-      "You plant seeds, trade flowers with friends, and design a path. There is no timer, and nobody has to lose. Save the garden for after breakfast.",
-  },
+/** Each public news tile shows a different story from the sample-news bank. */
+const NEWS_TILE: Record<"news_world" | "news_national" | "news_city" | "news_tech" | "news_gamer", number> = {
+  news_world: 0,
+  news_national: 1,
+  news_city: 2,
+  news_tech: 0,
+  news_gamer: 1,
 };
 
 /** A representative example of a module's output (deterministic, seeded). */
@@ -246,10 +224,10 @@ export function moduleExample(id: ModuleId): ModuleExample {
     case "news_city":
     case "news_tech":
     case "news_gamer": {
-      const story = SHOWCASE_NEWS[id];
+      const story = SAMPLE_NEWS[NEWS_TILE[id] % SAMPLE_NEWS.length];
       return {
-        text: [story.headline, story.blurb],
-        note: "A sample story. A live page uses a real, kid-safe article when one is ready that day.",
+        text: [story.headline, story.blurb, story.wonder],
+        note: "Example from the sample-news bank. A live page uses real headlines, and the card is left off when nothing kid-safe is ready.",
       };
     }
   }
