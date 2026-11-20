@@ -60,9 +60,11 @@ export async function sendFreeConfirmEmail(opts: {
   subscriber: FreeSubscriber;
   edition: FreeEdition;
   secret: string;
+  upgradeText?: string;
+  address?: string;
   now?: number;
 }): Promise<boolean> {
-  const address = freeMailingAddress();
+  const address = (opts.address ?? freeMailingAddress()).trim();
   if (!address) {
     console.error("[free-editions] FREE_EDITION_MAILING_ADDRESS is empty; refusing confirmation email");
     return false;
@@ -72,7 +74,7 @@ export async function sendFreeConfirmEmail(opts: {
   const token = mintFreeToken("confirm", { s: opts.subscriber.id, e: opts.edition.id }, opts.secret, now);
   const confirmUrl = `${site}/api/free/confirm?token=${encodeURIComponent(token)}`;
   const { unsubUrl, switchUrl, listUnsub } = links(opts.secret, opts.subscriber, now);
-  const upgrade = freeUpgradeUrl(opts.edition.id, site);
+  const upgrade = freeUpgradeUrl(opts.edition.id, site, "email");
   const html = shell("Confirm your email", `
         <tr><td style="padding:18px 0 6px;font-size:16px;line-height:1.5">
           Confirm and you'll get the <strong>${esc(opts.edition.label)}</strong> page each morning. It's the same page for every family on this edition. No child names are stored.
@@ -81,7 +83,7 @@ export async function sendFreeConfirmEmail(opts: {
           <a href="${esc(confirmUrl)}" style="display:inline-block;background:#1c1915;color:#faf6ec;text-decoration:none;font-family:ui-monospace,Menlo,monospace;font-size:14px;font-weight:700;padding:14px 26px;border-radius:999px">Confirm my email</a>
         </td></tr>
         <tr><td style="padding-top:8px;font-size:13px;line-height:1.5;color:#5c564c">This link expires in 72 hours.</td></tr>
-        <tr><td style="padding-top:16px;font-size:14px;line-height:1.5"><a href="${esc(upgrade)}" style="color:#1c1915">${esc(FREE_UPGRADE_TEXT)}</a></td></tr>
+        <tr><td style="padding-top:16px;font-size:14px;line-height:1.5"><a href="${esc(upgrade)}" style="color:#1c1915">${esc(opts.upgradeText || FREE_UPGRADE_TEXT)}</a></td></tr>
         ${footer({ address, unsubUrl, switchUrl })}
       `);
   return sendEmail({
@@ -100,6 +102,7 @@ export async function sendFreeDailyEmail(opts: {
   pdf: Buffer;
   secret: string;
   address: string;
+  upgradeText?: string;
   now?: number;
 }): Promise<boolean> {
   const now = opts.now ?? Date.now();
@@ -108,7 +111,7 @@ export async function sendFreeDailyEmail(opts: {
   const openToken = mintFreeToken("open", { s: opts.subscriber.id, e: opts.edition.id, d: opts.date }, opts.secret, now);
   const openUrl = `${site}/api/free/open?token=${encodeURIComponent(openToken)}`;
   const { unsubUrl, switchUrl, listUnsub } = links(opts.secret, opts.subscriber, now);
-  const upgrade = freeUpgradeUrl(opts.edition.id, site);
+  const upgrade = freeUpgradeUrl(opts.edition.id, site, "email");
   const html = shell(`${weekday} · ${dateLabel}`, `
         <tr><td align="center" style="padding:18px 0 6px;font-size:16px;line-height:1.5">
           Today's <strong>${esc(opts.edition.label)}</strong> page is ready to print. Everyone on this edition gets the same one.
@@ -117,7 +120,7 @@ export async function sendFreeDailyEmail(opts: {
           <a href="${esc(openUrl)}" style="display:inline-block;background:#1c1915;color:#faf6ec;text-decoration:none;font-family:ui-monospace,Menlo,monospace;font-size:14px;font-weight:700;padding:14px 26px;border-radius:999px">Open today's page</a>
         </td></tr>
         <tr><td align="center" style="font-size:12px;color:#8a7d63">The PDF is attached.</td></tr>
-        <tr><td style="padding-top:18px;font-size:14px;line-height:1.5"><a href="${esc(upgrade)}" style="color:#1c1915">${esc(FREE_UPGRADE_TEXT)}</a></td></tr>
+        <tr><td style="padding-top:18px;font-size:14px;line-height:1.5"><a href="${esc(upgrade)}" style="color:#1c1915">${esc(opts.upgradeText || FREE_UPGRADE_TEXT)}</a></td></tr>
         ${footer({ address: opts.address, unsubUrl, switchUrl })}
       `);
   const file = `back-of-the-box-${opts.edition.id}-${opts.date}.pdf`;

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { freeEditionAccess } from "@/lib/free/flag";
+import { freeEditionGate } from "@/lib/free/runtime";
 import { FreeShell } from "../shell";
 
 export const dynamic = "force-dynamic";
@@ -10,7 +10,7 @@ export default async function UnsubscribedPage({
 }: {
   searchParams: Promise<{ status?: string }>;
 }) {
-  if (!freeEditionAccess().ok) notFound();
+  if (!(await freeEditionGate()).ok) notFound();
   const { status } = await searchParams;
   const invalid = status === "expired";
   return (

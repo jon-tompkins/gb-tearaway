@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { editionSendLabel } from "@/lib/free/copy";
 import { editionById } from "@/lib/free/editions";
-import { freeEditionAccess } from "@/lib/free/flag";
+import { freeEditionGate } from "@/lib/free/runtime";
 import { FreeShell } from "../shell";
 
 export const dynamic = "force-dynamic";
@@ -11,10 +11,11 @@ export default async function ConfirmedPage({
 }: {
   searchParams: Promise<{ status?: string; edition?: string }>;
 }) {
-  if (!freeEditionAccess().ok) notFound();
+  const gate = await freeEditionGate();
+  if (!gate.ok) notFound();
   const { status, edition: editionId } = await searchParams;
   const expired = status === "expired";
-  const edition = editionId ? editionById(editionId) : undefined;
+  const edition = editionId ? gate.runtime.editions.find((e) => e.id === editionId) ?? editionById(editionId) : undefined;
   const when = editionSendLabel(edition ?? { sendHour: 6, timezone: "America/New_York" });
   return (
     <FreeShell>

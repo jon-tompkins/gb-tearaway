@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { freeEditionsEnabled } from "@/lib/free/flag";
+import { freeRuntime } from "@/lib/free/runtime";
 import { subscriberFromOpenToken } from "@/lib/free/flow";
 import { loadEditionPdf } from "@/lib/free/repo";
 
@@ -7,7 +7,7 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function GET(req: Request) {
-  if (!freeEditionsEnabled()) return NextResponse.json({ error: "not found" }, { status: 404 });
+  if (!(await freeRuntime()).active) return NextResponse.json({ error: "not found" }, { status: 404 });
   const token = new URL(req.url).searchParams.get("token") ?? "";
   const opened = await subscriberFromOpenToken(token);
   if (!opened) return NextResponse.json({ error: "not found" }, { status: 404 });

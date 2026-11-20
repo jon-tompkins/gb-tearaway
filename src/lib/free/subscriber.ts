@@ -87,10 +87,11 @@ export function planFreeSends(args: {
   for (const sub of args.subscribers) {
     if (sub.status !== "confirmed") continue;
     const edition = byId.get(sub.editionId);
-    if (!edition?.live) continue;
+    if (!edition?.live || edition.paused || edition.archived) continue;
     const date = dateISOInZone(edition.timezone, args.now);
-    const { hour } = partsInZone(edition.timezone, args.now);
-    if (hour < edition.sendHour) continue;
+    const { hour, minute } = partsInZone(edition.timezone, args.now);
+    const sendMinute = edition.sendMinute ?? 0;
+    if (hour < edition.sendHour || (hour === edition.sendHour && minute < sendMinute)) continue;
     dueCount++;
     if (sub.lastSentDate === date) continue;
     const claimKey = freeSendClaimKey(sub.id, date);

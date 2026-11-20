@@ -1,7 +1,8 @@
 import { logEvent } from "../events";
 import { alertFreeFailure } from "./alert";
 import { editionById, type FreeEdition } from "./editions";
-import { freeEditionsEnabled, freeMailingAddress } from "./flag";
+import { freeTokenSecret, hashIp, verifyFreeToken } from "./tokens";
+import { freeRuntime } from "./runtime";
 import { sendFreeConfirmEmail } from "./mail";
 import { findSubscriberByEmail, loadSubscriber, newSubscriberId, saveSubscriber } from "./repo";
 import {
@@ -12,15 +13,15 @@ import {
   normalizeEmail,
   type FreeSubscriber,
 } from "./subscriber";
-import { freeTokenSecret, hashIp, verifyFreeToken } from "./tokens";
 
 const GENERIC_OK = { ok: true as const };
 
 export async function startFreeSignup(emailRaw: string, edition: FreeEdition): Promise<
   { ok: true } | { ok: false; status: number; error: string }
 > {
-  if (!freeEditionsEnabled()) return { ok: false, status: 404, error: "not found" };
-  const address = freeMailingAddress();
+  const runtime = await freeRuntime();
+  if (!runtime.active) return { ok: false, status: 404, error: "not found" };
+  const address = runtime.address;
   const secret = freeTokenSecret();
   if (!address) {
     console.error("[free-editions] FREE_EDITION_MAILING_ADDRESS is empty; refusing to send");
@@ -54,6 +55,8 @@ export async function startFreeSignup(emailRaw: string, edition: FreeEdition): P
       subscriber: { ...sub, editionId: edition.id },
       edition,
       secret,
+      upgradeText: runtime.upgradeText,
+      address: runtime.address,
     });
     if (!mailed) return { ok: false, status: 502, error: "We couldn't send the confirmation email. Please try again." };
     await logEvent({
@@ -68,13 +71,14 @@ export async function confirmFreeSignup(
   token: string,
   ip: string,
 ): Promise<{ status: "ok"; editionId: string } | { status: "invalid" }> {
-  if (!freeEditionsEnabled()) return { status: "invalid" };
+  const runtime = await freeRuntime();
+  if (!runtime.active) return { status: "invalid" };
   const secret = freeTokenSecret();
   if (!secret) return { status: "invalid" };
   const payload = verifyFreeToken(token, secret, Date.now(), "confirm");
   if (!payload?.e) return { status: "invalid" };
-  const edition = editionById(payload.e);
-  if (!edition?.live) return { status: "invalid" };
+  const edition = runtime.editions.find((e) => e.id === payload.e) ?? editionById(payload.e);
+  if (!edition?.live || edition.archived) return { status: "invalid" };
   const sub = await loadSubscriber(payload.s);
   if (!sub) return { status: "invalid" };
   const at = new Date().toISOString();
@@ -90,7 +94,7 @@ export async function confirmFreeSignup(
 }
 
 export async function unsubscribeFree(token: string): Promise<"ok" | "invalid"> {
-  if (!freeEditionsEnabled()) return "invalid";
+  if (!(await freeRuntime()).active) return "invalid";
   const secret = freeTokenSecret();
   if (!secret) return "invalid";
   const payload = verifyFreeToken(token, secret, Date.now(), "unsubscribe");
@@ -109,11 +113,12 @@ export async function unsubscribeFree(token: string): Promise<"ok" | "invalid"> 
 }
 
 export async function switchFreeEdition(token: string, editionId: string): Promise<"ok" | "invalid"> {
-  if (!freeEditionsEnabled()) return "invalid";
+  const runtime = await freeRuntime();
+  if (!runtime.active) return "invalid";
   const secret = freeTokenSecret();
   if (!secret) return "invalid";
-  const edition = editionById(editionId);
-  if (!edition?.live) return "invalid";
+  const edition = runtime.editions.find((e) => e.id === editionId) ?? editionById(editionId);
+  if (!edition?.live || edition.archived) return "invalid";
   const payload = verifyFreeToken(token, secret, Date.now(), "switch");
   if (!payload) return "invalid";
   const sub = await loadSubscriber(payload.s);
@@ -132,15 +137,17 @@ export async function keepFreeForEmail(email: string): Promise<boolean> {
 }
 
 export async function freeNoticeForEmail(email: string | null): Promise<{ show: boolean; label?: string }> {
-  if (!email || !freeEditionsEnabled()) return { show: false };
+  const runtime = await freeRuntime();
+  if (!email || !runtime.active) return { show: false };
   const sub = await findSubscriberByEmail(email);
   if (!sub || sub.keepFree || sub.status !== "paused") return { show: false };
-  return { show: true, label: editionById(sub.editionId)?.label };
+  return { show: true, label: runtime.editions.find((e) => e.id === sub.editionId)?.label ?? editionById(sub.editionId)?.label };
 }
 
 export async function noteFreeCustomStart(email: string | null, editionId: string | null): Promise<void> {
-  if (!freeEditionsEnabled()) return;
-  const edition = editionId ? editionById(editionId) : undefined;
+  const runtime = await freeRuntime();
+  if (!runtime.active) return;
+  const edition = editionId ? runtime.editions.find((e) => e.id === editionId) ?? editionById(editionId) : undefined;
   let subscriberId: string | undefined;
   if (email) {
     const sub = await findSubscriberByEmail(email);
