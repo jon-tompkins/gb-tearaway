@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { editionSendLabel } from "@/lib/free/copy";
 import { liveEditions } from "@/lib/free/editions";
 import { freeEditionAccess } from "@/lib/free/flag";
 import { readSwitchToken } from "@/lib/free/flow";
@@ -44,8 +45,8 @@ export default async function SwitchPage({
                 <span className="block text-sm text-ink-soft">
                   {e.levelLabel}
                   {e.weatherCity ? ` · ${e.weatherCity} weather` : " · no city weather"}
-                  {" · 6:00 a.m. "}
-                  {e.timezone === "America/Los_Angeles" ? "Pacific" : "Eastern"}
+                  {" · "}
+                  {editionSendLabel(e)}
                 </span>
               </span>
             </label>

@@ -9,6 +9,6 @@ export async function GET(req: Request) {
   if (!freeEditionsEnabled()) return NextResponse.json({ error: "not found" }, { status: 404 });
   const token = new URL(req.url).searchParams.get("token") ?? "";
   const result = await confirmFreeSignup(token, clientIp(req));
-  const path = result === "ok" ? "/free/confirmed" : "/free/confirmed?status=expired";
+  const path = result.status === "ok" ? `/free/confirmed?edition=${encodeURIComponent(result.editionId)}` : "/free/confirmed?status=expired";
   return NextResponse.redirect(new URL(path, requestOrigin(req)));
 }

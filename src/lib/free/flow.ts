@@ -64,16 +64,19 @@ export async function startFreeSignup(emailRaw: string, edition: FreeEdition): P
   return GENERIC_OK;
 }
 
-export async function confirmFreeSignup(token: string, ip: string): Promise<"ok" | "invalid"> {
-  if (!freeEditionsEnabled()) return "invalid";
+export async function confirmFreeSignup(
+  token: string,
+  ip: string,
+): Promise<{ status: "ok"; editionId: string } | { status: "invalid" }> {
+  if (!freeEditionsEnabled()) return { status: "invalid" };
   const secret = freeTokenSecret();
-  if (!secret) return "invalid";
+  if (!secret) return { status: "invalid" };
   const payload = verifyFreeToken(token, secret, Date.now(), "confirm");
-  if (!payload?.e) return "invalid";
+  if (!payload?.e) return { status: "invalid" };
   const edition = editionById(payload.e);
-  if (!edition?.live) return "invalid";
+  if (!edition?.live) return { status: "invalid" };
   const sub = await loadSubscriber(payload.s);
-  if (!sub) return "invalid";
+  if (!sub) return { status: "invalid" };
   const at = new Date().toISOString();
   const next = applyConfirm(sub, edition.id, at, hashIp(ip, secret));
   await saveSubscriber(next.subscriber);
@@ -83,7 +86,7 @@ export async function confirmFreeSignup(token: string, ip: string): Promise<"ok"
       meta: { subscriberId: sub.id, editionId: edition.id },
     });
   }
-  return "ok";
+  return { status: "ok", editionId: edition.id };
 }
 
 export async function unsubscribeFree(token: string): Promise<"ok" | "invalid"> {

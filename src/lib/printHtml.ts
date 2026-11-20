@@ -19,8 +19,11 @@ export function buildPrintHtml(
     qrSvg?: string;
     qrLabel?: string;
     embed?: boolean;
-    /** Free-edition upgrade line. Omitted on paid pages, which keep the original footer. */
-    upgrade?: { text: string; href: string };
+    /**
+     * Free-edition upgrade line. Omitted on paid pages, which keep the original footer.
+     * `qrSvg` is a second code (the upgrade link) and sits opposite the answers QR.
+     */
+    upgrade?: { text: string; href: string; qrSvg?: string; printLabel?: string };
   } = {},
 ): string {
   const qrBlock = opts.qrSvg
@@ -62,7 +65,10 @@ export function buildPrintHtml(
     const upgradeBlock = opts.upgrade
       ? `<div class="upgrade1"><a href="${esc(opts.upgrade.href)}">${esc(opts.upgrade.text)}</a></div>`
       : "";
-    const ftr1 = `<div class="ftr1"><div class="ftr1-mid"><div class="tear1">— tear here —</div><div class="brand1">Back of the Box · backofthebox.xyz</div>${upgradeBlock}</div>${qrBlock}</div>`;
+    const upgradeQr = opts.upgrade?.qrSvg
+      ? `<div class="upqr">${opts.upgrade.qrSvg}<div class="upurl">${esc(opts.upgrade.printLabel ?? "")}</div></div>`
+      : "";
+    const ftr1 = `<div class="ftr1">${upgradeQr}<div class="ftr1-mid"><div class="tear1">— tear here —</div><div class="brand1">Back of the Box · backofthebox.xyz</div>${upgradeBlock}</div>${qrBlock}</div>`;
     inner = [hdr1, bodyHtml, ftr1].join("\n");
   } else {
     const footer = job.sections.find((s) => s.kind === "footer");
@@ -179,10 +185,15 @@ export function buildPrintHtml(
   // Free editions add one line under the masthead footer. Paid pages leave
   // these heights alone (15 + 224.4 + 16 = 255.4mm).
   if (opts.upgrade) {
+    // 15mm masthead + 208.4mm columns + 32mm footer = 255.4mm. The extra footer
+    // holds the upgrade sentence, its QR, and the answers QR without a second page.
     letterCss = letterCss
-      .replace(".ftr1{position:relative;height:16mm;", ".ftr1{position:relative;height:28mm;")
-      .replace(".cols{height:224.4mm;", ".cols{height:212.4mm;")
-      + "\n  .upgrade1{font-size:6.4pt;line-height:1.3;margin-top:1.2mm;max-width:148mm}.upgrade1 a{color:#000;text-decoration:underline}";
+      .replace(".ftr1{position:relative;height:16mm;", ".ftr1{position:relative;height:32mm;")
+      .replace(".cols{height:224.4mm;", ".cols{height:208.4mm;")
+      + "\n  .upgrade1{font-size:6.4pt;line-height:1.3;margin-top:1.2mm;max-width:100mm}.upgrade1 a{color:#000;text-decoration:underline}"
+      + "\n  .ftr1 .upqr{position:absolute;left:0;bottom:0.4mm;width:46mm;text-align:center;line-height:0}"
+      + "\n  .ftr1 .upqr svg{width:13mm;height:13mm}"
+      + "\n  .ftr1 .upurl{font-size:5.5pt;line-height:1.15;margin-top:0.7mm;letter-spacing:0}";
   }
 
   // For the strip, size the print page to the actual content height so the PDF
