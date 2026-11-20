@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { editionSendLabel } from "@/lib/free/copy";
 import { liveEditions } from "@/lib/free/editions";
 import { freeEditionAccess } from "@/lib/free/flag";
 import { FreeSignup, type FreeEditionChoice } from "./FreeSignup";
@@ -24,12 +25,15 @@ export default function FreePage() {
     timezone: e.timezone,
   }));
 
+  const clocks = [...new Set(editions.map((e) => editionSendLabel(e)))];
+  const when = clocks.length ? clocks.join(" or ") : "6:00 a.m. Eastern";
+
   return (
     <FreeShell>
       <p className="text-xs font-bold uppercase tracking-[0.22em] text-stamp">Free daily edition</p>
       <h1 className="mt-3 font-display text-4xl leading-tight text-ink">A free daily page, by email.</h1>
       <p className="mt-4 text-lg leading-relaxed text-ink-soft">
-        Pick an edition and your email. After you confirm, the same page goes to every family on that edition, around 6:00 a.m.
+        Pick an edition and your email. After you confirm, the same page goes to every family on that edition, around {when}.
         We don&apos;t ask for a child&apos;s name, birthday, or anything beyond the edition you pick.
       </p>
       <div className="mt-8">
