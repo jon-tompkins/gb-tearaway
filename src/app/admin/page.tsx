@@ -1,6 +1,6 @@
 import { AppShell } from "@/components/AppNav";
 import { AdminTabs } from "@/components/AdminTabs";
-import { requireAdmin } from "@/lib/admin";
+import { passwordLoginEnabled, requireAdmin } from "@/lib/admin";
 import { accessFrom, type Billing } from "@/lib/billing";
 import { trialReminderEmailsEnabled } from "@/lib/trialReminder";
 import { eventsSince } from "@/lib/events";
@@ -183,9 +183,15 @@ export default async function AdminMetricsPage() {
             detail={env("AMAZON_TAG") ? "Set." : "AMAZON_TAG not set: supplies links earn nothing."}
           />
           <Check
-            level={env("ADMIN_PASSWORD") ? "ok" : "warn"}
+            level={passwordLoginEnabled() ? "ok" : env("ADMIN_PASSWORD") ? "bad" : "warn"}
             name="Admin password"
-            detail={env("ADMIN_PASSWORD") ? "Custom ADMIN_PASSWORD set." : "Using the default password. Set ADMIN_PASSWORD on Vercel to change it."}
+            detail={
+              passwordLoginEnabled()
+                ? "ADMIN_PASSWORD is set. Password login is on."
+                : env("ADMIN_PASSWORD")
+                  ? "ADMIN_PASSWORD is shorter than 16 characters, so password login is off."
+                  : "Not set. Password login is off. Admin access is the owner's Google account."
+            }
           />
         </ul>
       </section>
