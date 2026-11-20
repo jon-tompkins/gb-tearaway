@@ -2,6 +2,7 @@ import { AppShell } from "@/components/AppNav";
 import { AdminTabs } from "@/components/AdminTabs";
 import { requireAdmin } from "@/lib/admin";
 import { accessFrom, type Billing } from "@/lib/billing";
+import { trialReminderEmailsEnabled } from "@/lib/trialReminder";
 import { eventsSince } from "@/lib/events";
 import { listPayloadFields, listUserStates, persistenceMode } from "@/lib/persist";
 import { stripeConfigured, stripeTestMode } from "@/lib/stripe";
@@ -56,7 +57,7 @@ export default async function AdminMetricsPage() {
     eventsSince(since),
   ]);
 
-  const counts = { trial: 0, paid: 0, code: 0, expired: 0, admin: 0 };
+  const counts = { trial: 0, paid: 0, code: 0, expired: 0, admin: 0, grace: 0 };
   let endingSoon = 0;
   const signups = new Map<string, number>();
   for (const r of rows) {
@@ -102,6 +103,7 @@ export default async function AdminMetricsPage() {
         <Stat label="Free trial" value={counts.trial} sub={endingSoon ? `${endingSoon} ending within 7 days` : "none ending this week"} />
         <Stat label="On a code" value={counts.code} />
         <Stat label="Lapsed" value={counts.expired} />
+        <Stat label="Card grace" value={counts.grace} sub="Plan picked, trial ended, no card yet" />
         <Stat label="Pages" value={kids.length} sub={`${activeKids} active · ${kids.length - activeKids} inactive`} />
         <Stat label="Emails sent" value={emails7} sub={`7 days · ${emailsToday} today`} />
       </div>
@@ -139,7 +141,16 @@ export default async function AdminMetricsPage() {
           <Check
             level={env("STRIPE_WEBHOOK_SECRET") ? "ok" : stripeConfigured ? "bad" : "warn"}
             name="Stripe webhook"
-            detail={env("STRIPE_WEBHOOK_SECRET") ? "Secret set." : "STRIPE_WEBHOOK_SECRET missing: paid plans won't activate."}
+            detail={env("STRIPE_WEBHOOK_SECRET") ? "Secret set. Include customer.subscription.trial_will_end and customer.updated." : "STRIPE_WEBHOOK_SECRET missing: paid plans won't activate."}
+          />
+          <Check
+            level={trialReminderEmailsEnabled() ? "ok" : "warn"}
+            name="Trial-end card reminder"
+            detail={
+              trialReminderEmailsEnabled()
+                ? "BILLING_TRIAL_REMINDER_EMAIL is on. One email, 3 days before a no-card trial ends."
+                : "Off (default). Set BILLING_TRIAL_REMINDER_EMAIL=1 to email parents 3 days before a no-card trial ends."
+            }
           />
           <Check
             level={env("RESEND_API_KEY") ? "ok" : "bad"}

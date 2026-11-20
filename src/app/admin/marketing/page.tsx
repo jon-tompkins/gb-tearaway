@@ -30,7 +30,7 @@ async function loadMetrics(): Promise<Record<GoalMetric, number>> {
     dispatches: kids.length,
     emailKids: kids.filter((k) => (k.deliveryMethod ?? "email") === "email" && k.deliveryEmail).length,
     active7: new Set(events.filter((e) => e.type === "email_sent" && e.user_key).map((e) => e.user_key)).size,
-    trials: reasons.filter((r) => r === "trial" || r === "code").length,
+    trials: reasons.filter((r) => r === "trial" || r === "code" || r === "grace").length,
     paying: reasons.filter((r) => r === "paid").length,
     codeUses: codes.reduce((n, c) => n + c.uses, 0),
   };

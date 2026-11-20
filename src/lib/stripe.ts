@@ -7,9 +7,17 @@ import { createHmac, timingSafeEqual } from "node:crypto";
  * Env: STRIPE_SECRET_KEY (sk_live_… / sk_test_…), STRIPE_WEBHOOK_SECRET (whsec_…),
  * optional STRIPE_PRICE_ID_KIDS{2,5}_{YEAR,QUARTER} — without them Checkout creates the price inline from plans.ts.
  */
-const KEY = process.env.STRIPE_SECRET_KEY;
+function stripeKey(): string | undefined {
+  return process.env.STRIPE_SECRET_KEY;
+}
+
+const KEY = stripeKey();
 
 export const stripeConfigured = !!KEY;
+/** Live read, so access checks follow the env even when tests set it after import. */
+export function isStripeConfigured(): boolean {
+  return !!stripeKey();
+}
 /** Sandbox keys (sk_test_…): checkout works with test cards only and nothing real is charged. */
 export const stripeTestMode = !!KEY && KEY.startsWith("sk_test_");
 
@@ -25,16 +33,28 @@ function encode(params: Record<string, unknown>, prefix = "", out = new URLSearc
   return out;
 }
 
+/**
+ * Form body for a Stripe call. `{CHECKOUT_SESSION_ID}` is put back after
+ * encoding so Stripe can substitute the real Checkout Session id.
+ */
+export function stripeRequestBody(params: Record<string, unknown>): string {
+  return encode(params).toString().replaceAll("%7BCHECKOUT_SESSION_ID%7D", "{CHECKOUT_SESSION_ID}");
+}
+
 export async function stripe<T = Record<string, unknown>>(
   method: "GET" | "POST",
   path: string,
   params?: Record<string, unknown>,
+  opts?: { version?: string },
 ): Promise<T> {
-  if (!KEY) throw new Error("Stripe is not configured");
-  const qs = params ? encode(params).toString() : "";
+  const key = stripeKey();
+  if (!key) throw new Error("Stripe is not configured");
+  const qs = params ? stripeRequestBody(params) : "";
+  const headers: Record<string, string> = { Authorization: `Bearer ${key}`, "Content-Type": "application/x-www-form-urlencoded" };
+  if (opts?.version) headers["Stripe-Version"] = opts.version;
   const res = await fetch(`https://api.stripe.com/v1/${path}${method === "GET" && qs ? `?${qs}` : ""}`, {
     method,
-    headers: { Authorization: `Bearer ${KEY}`, "Content-Type": "application/x-www-form-urlencoded" },
+    headers,
     body: method === "POST" ? qs : undefined,
     cache: "no-store",
   });
@@ -66,6 +86,17 @@ export interface StripeSubscription {
   current_period_end?: number;
   items?: { data?: Array<{ current_period_end?: number }> };
   metadata?: Record<string, string>;
+  default_payment_method?: string | { id: string } | null;
+  default_source?: string | { id: string } | null;
+}
+
+/** Stripe returns a payment method as an id string, or expanded `{ id }`. */
+export function paymentMethodId(value: unknown): string | null {
+  if (typeof value === "string" && value) return value;
+  if (value && typeof value === "object" && "id" in value && typeof (value as { id: unknown }).id === "string") {
+    return (value as { id: string }).id;
+  }
+  return null;
 }
 
 /** Period end moved onto subscription items in newer API versions — read either. */

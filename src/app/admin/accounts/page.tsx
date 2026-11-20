@@ -9,11 +9,12 @@ export const dynamic = "force-dynamic";
 export const metadata = { title: "Accounts · Admin · Back of the Box" };
 
 const FIELDS = ["trialStartedAt", "trialEndsAt", "subStatus", "paidUntil", "compUntil", "compForever", "maxKids", "codes"];
-const LABEL = { trial: "Free trial", paid: "Paying", code: "On a code", expired: "Lapsed", admin: "Admin", demo: "Demo" } as const;
+const LABEL = { trial: "Free trial", paid: "Paying", code: "On a code", grace: "Card grace", expired: "Lapsed", admin: "Admin", demo: "Demo" } as const;
 const TONE: Record<string, string> = {
   trial: "bg-amber-100 text-amber-900",
   paid: "bg-emerald-100 text-emerald-800",
   code: "bg-sky-100 text-sky-800",
+  grace: "bg-amber-100 text-amber-900",
   expired: "bg-rose-100 text-rose-800",
 };
 const day = (iso?: string | null) => (iso ? new Date(iso).toISOString().slice(0, 10) : "—");
