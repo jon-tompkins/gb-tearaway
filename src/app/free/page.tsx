@@ -20,6 +20,8 @@ export default function FreePage() {
     levelLabel: e.levelLabel,
     city: e.weatherCity ?? null,
     label: e.label,
+    sendHour: e.sendHour,
+    timezone: e.timezone,
   }));
 
   return (

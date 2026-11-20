@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { editionSendLabel } from "@/lib/free/copy";
 
 export interface FreeEditionChoice {
   id: string;
@@ -9,6 +10,8 @@ export interface FreeEditionChoice {
   levelLabel: string;
   city: string | null;
   label: string;
+  sendHour: number;
+  timezone: string;
 }
 
 export function FreeSignup({ editions }: { editions: FreeEditionChoice[] }) {
@@ -139,10 +142,10 @@ export function FreeSignup({ editions }: { editions: FreeEditionChoice[] }) {
         </label>
       </div>
 
-      {edition ? <p className="text-sm text-ink-soft">You&apos;ll get {edition.label}. Arrives around 6:00 a.m. local time for that edition.</p> : null}
+      {edition ? <p className="text-sm text-ink-soft">You&apos;ll get {edition.label}. Arrives around {editionSendLabel(edition)}.</p> : null}
       {error ? <p className="text-sm font-semibold text-stamp">{error}</p> : null}
       <button type="submit" className="btn-primary w-full" disabled={busy || !edition}>
-        {busy ? "Sending…" : "Email me this page"}
+        {busy ? "Sending…" : "Send me a confirmation link"}
       </button>
     </form>
   );

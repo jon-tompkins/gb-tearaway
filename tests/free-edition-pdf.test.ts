@@ -1,14 +1,19 @@
 import assert from "node:assert/strict";
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { test } from "node:test";
+import { answersToken } from "../src/lib/answers";
 import { SAMPLE_NEWS } from "../src/lib/content/sampleNews";
 import { isNewsModule, type LiveNewsEntry, type NewsModuleId } from "../src/lib/content/news";
 import { generateStrip } from "../src/lib/generateStrip";
-import { FREE_UPGRADE_TEXT, freeUpgradeUrl } from "../src/lib/free/copy";
+import { FREE_UPGRADE_TEXT, freeStartLabel, freeStartUrl, freeUpgradeUrl } from "../src/lib/free/copy";
 import { buildFreeKid, freeSettings, liveEditions } from "../src/lib/free/editions";
+import { freeEditionHtml } from "../src/lib/free/render";
 import { renderPdfFromHtml } from "../src/lib/pdf";
 import { buildPrintHtml } from "../src/lib/printHtml";
+import { qrSvg } from "../src/lib/qr";
 import type { WeatherSnapshot } from "../src/lib/types";
+
+const SITE = "https://www.backofthebox.xyz";
 
 const DATE = "2026-11-20";
 const WEATHER: WeatherSnapshot = {
@@ -38,14 +43,23 @@ test("each launch edition PDF carries the upgrade footer and UTM link", { timeou
       newsByFeed: news,
       weather: edition.weatherCity ? WEATHER : undefined,
     });
-    const href = freeUpgradeUrl(edition.id, "https://www.backofthebox.xyz");
-    const html = buildPrintHtml(job, { upgrade: { text: FREE_UPGRADE_TEXT, href } });
+    const answersUrl = `${SITE}/answers/${answersToken(job.kidId, job.date, job.nonce)}`;
+    const answersQr = qrSvg(answersUrl, { sizePx: 96 });
+    const startUrl = freeStartUrl(edition.id, SITE);
+    const upgradeQr = qrSvg(startUrl, { sizePx: 96 });
+    const html = freeEditionHtml(job, edition, answersQr, SITE);
     const plain = buildPrintHtml(job, {});
 
     assert.ok(html.includes(FREE_UPGRADE_TEXT), `${edition.id} is missing the upgrade line`);
     assert.ok(html.includes("utm_source=free_edition"), `${edition.id} is missing utm_source`);
-    assert.ok(html.includes("utm_medium=email"), `${edition.id} is missing utm_medium`);
+    assert.ok(html.includes("utm_medium=print"), `${edition.id} PDF link must use utm_medium=print`);
+    assert.equal(html.includes("utm_medium=email"), false, `${edition.id} PDF must not use the email medium`);
     assert.ok(html.includes(`utm_content=${edition.id}`), `${edition.id} is missing utm_content`);
+    assert.ok(html.includes(freeStartLabel(edition.id)), `${edition.id} is missing the short printed URL`);
+    assert.ok(html.includes(answersQr), `${edition.id} is missing the answers QR`);
+    assert.ok(html.includes(upgradeQr), `${edition.id} is missing the upgrade QR`);
+    assert.ok(html.includes('class="upqr"') && html.includes('class="qr"'), `${edition.id} should show both QR blocks`);
+    assert.equal(freeUpgradeUrl(edition.id, SITE, "print"), html.match(/href="([^"]*utm_medium=print[^"]*)"/)?.[1]?.replace(/&amp;/g, "&"));
     assert.equal(plain.includes(FREE_UPGRADE_TEXT), false, "paid pages must not gain the free footer");
     if (edition.weatherCity) assert.ok(html.includes("mod-weather") || html.includes("New York"), `${edition.id} weather`);
     else assert.equal(html.includes("mod-weather"), false);

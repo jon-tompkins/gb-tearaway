@@ -4,12 +4,16 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { findContentViolations, parseDenylist } from "../src/lib/content/safetyScan";
 import { slotSizeUnits, type ModuleId } from "../src/lib/types";
-import { FREE_UPGRADE_TEXT } from "../src/lib/free/copy";
+import { SAMPLE_NEWS } from "../src/lib/content/sampleNews";
+import { generateStrip } from "../src/lib/generateStrip";
+import { editionSendLabel, FREE_UPGRADE_TEXT, freeStartLabel, freeUpgradeUrl } from "../src/lib/free/copy";
 import {
   FREE_EDITIONS,
   buildFreeKid,
   editionById,
+  freeSettings,
   liveEditions,
+  replaceUnfilledNews,
   slotsForEdition,
   type FreeEdition,
 } from "../src/lib/free/editions";
@@ -256,15 +260,13 @@ test("edition rotation is deterministic, shared, and fills the page", () => {
     ids(nyc, date).filter((id) => id !== "weather"),
     ids(generic, date),
   );
-  assert.deepEqual(ids(medium, date), ids(generic, date));
   assert.ok(ids(nyc, date).includes("weather"));
   assert.equal(ids(generic, date).includes("weather"), false);
 
   const easy = slotsForEdition(generic, date)[0];
   const med = slotsForEdition(medium, date)[0];
-  const moduleId = easy.moduleIds[0];
-  assert.equal(easy.moduleDifficulty?.[moduleId], 3);
-  assert.equal(med.moduleDifficulty?.[moduleId], 8);
+  assert.equal(easy.moduleDifficulty?.[easy.moduleIds[0]], 3);
+  assert.equal(med.moduleDifficulty?.[med.moduleIds[0]], 8);
   assert.equal(buildFreeKid(generic, date).ageBand, "4-6");
   assert.equal(buildFreeKid(medium, date).ageBand, "7-9");
   assert.equal(buildFreeKid(generic, date).name, "Reader");
@@ -298,6 +300,51 @@ test("edition rotation is deterministic, shared, and fills the page", () => {
   for (const id of ["maze", "sudoku", "wordfind", "crossword", "joke", "poem", "news_world", "news_national", "dots", "fact"] as const) {
     assert.ok(seen.has(id), `rotation never picked ${id}`);
   }
+  for (const id of seen) assert.equal(String(id).startsWith("country_"), false);
+
+  const mediumSeen = new Set<ModuleId>();
+  for (let i = 0; i < 120; i++) {
+    for (const id of ids(medium, addDays("2026-01-01", i))) mediumSeen.add(id);
+  }
+  assert.ok([...mediumSeen].some((id) => id.startsWith("country_")), "medium editions should still rotate country cards");
+});
+
+test("a day with no live news swaps the news card and does not print the sample bank", () => {
+  const edition = editionById("generic-4-6")!;
+  const date = "2026-11-20";
+  const slots = slotsForEdition(edition, date);
+  assert.ok(slots.some((s) => s.moduleIds[0]?.startsWith("news_")));
+  const filled = replaceUnfilledNews(slots, {}, edition, date);
+  assert.ok(filled.swaps.length >= 1);
+  assert.equal(filled.slots.some((s) => s.moduleIds[0]?.startsWith("news_")), false);
+  for (const col of [0, 1]) {
+    const units = filled.slots
+      .filter((s) => (s.column ?? 0) === col)
+      .reduce((n, s) => n + (s.moduleIds.length ? slotSizeUnits(s.size) : 0), 0);
+    assert.equal(units, 8, `column ${col}`);
+  }
+  const kid = buildFreeKid(edition, date);
+  kid.slots = filled.slots;
+  kid.modules = filled.slots.flatMap((s) => s.moduleIds);
+  const job = generateStrip(kid, freeSettings(edition), { dateISO: date, nonce: 0 });
+  const text = job.sections.flatMap((s) => [...s.lines, ...(s.news ?? []).map((n) => n.headline)]).join("\n");
+  for (const story of SAMPLE_NEWS) assert.equal(text.includes(story.headline), false, story.headline);
+
+  const newsId = slots.find((s) => s.moduleIds[0]?.startsWith("news_"))!.moduleIds[0];
+  const kept = replaceUnfilledNews(slots, { [newsId]: 1 }, edition, date);
+  assert.equal(kept.swaps.length, 0);
+  assert.ok(kept.slots.some((s) => s.moduleIds[0] === newsId));
+});
+
+test("the printed clock names the edition timezone", () => {
+  assert.equal(editionSendLabel(editionById("generic-4-6")!), "6:00 a.m. Eastern");
+  assert.equal(editionSendLabel(editionById("nyc-4-6")!), "6:00 a.m. Eastern");
+  assert.equal(editionSendLabel(editionById("la-7-10")!), "6:00 a.m. Pacific");
+  const print = freeUpgradeUrl("nyc-4-6", "https://www.backofthebox.xyz", "print");
+  const email = freeUpgradeUrl("nyc-4-6", "https://www.backofthebox.xyz", "email");
+  assert.ok(print.includes("utm_medium=print"));
+  assert.ok(email.includes("utm_medium=email"));
+  assert.equal(freeStartLabel("nyc-4-6"), "backofthebox.xyz/start/nyc-4-6");
 });
 
 test("free edition copy stays inside the content denylist", () => {

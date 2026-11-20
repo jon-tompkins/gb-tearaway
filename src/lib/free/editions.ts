@@ -1,4 +1,5 @@
 import { parseISODate } from "../dates";
+import { isNewsModule } from "../content/news";
 import { moduleSizes } from "../modules";
 import { hashString } from "../rng";
 import type { AgeBand, AppSettings, KidProfile, ModuleId, ModuleSlot, SlotSize } from "../types";
@@ -133,6 +134,19 @@ export function freeSettings(edition: FreeEdition): AppSettings {
  */
 type Pool = "news" | "puzzleDouble" | "puzzleFull" | "feature" | "text" | "shrink" | "joke";
 
+/**
+ * Country cards name places and old names (Ubangi-Shari, Bangui) that are too
+ * much for the Easier band. There is no age flag on the country list, so this
+ * is the per-item flag the free rotation uses.
+ */
+const HEAVY_FOR_EASIER: ReadonlySet<ModuleId> = new Set([
+  "country_eu",
+  "country_af",
+  "country_asia_oce",
+  "country_americas",
+  "country_all",
+]);
+
 const POOLS: Record<Pool, readonly ModuleId[]> = {
   news: ["news_world", "news_national", "news_tech", "news_gamer"],
   puzzleDouble: ["maze", "wordfind", "crossword", "dots", "colorbynumber"],
@@ -233,6 +247,12 @@ function dayNumber(dateISO: string): number {
   return Math.floor(Date.UTC(year, month - 1, day) / 86_400_000);
 }
 
+function poolFor(pool: Pool, edition: FreeEdition): readonly ModuleId[] {
+  const list = POOLS[pool];
+  if (edition.level !== "easier") return list;
+  return list.filter((id) => !HEAVY_FOR_EASIER.has(id));
+}
+
 function pickModule(pool: readonly ModuleId[], dateISO: string, salt: number, used: Set<ModuleId>): ModuleId {
   // Hash the date so a pool whose length matches the layout cycle still rotates.
   const start = hashString(`${dateISO}|${salt}|${pool[0]}`) % pool.length;
@@ -258,6 +278,42 @@ function makeSlot(index: number, id: ModuleId, size: SlotSize, column: number, d
   };
 }
 
+const NEWS_FILL: Record<SlotSize, readonly ModuleId[]> = {
+  double: ["maze", "wordfind", "crossword", "dots", "colorbynumber", "sudoku", "battleship", "poem"],
+  full: ["sudoku", "battleship", "logicgrid", "numbercross", "animal", "planes", "dinosaurs", "usstate", "poem"],
+  half: ["joke", "word", "fact", "riddle", "sequence", "poem", "history"],
+};
+
+/**
+ * A news card with no live stories must not be filled with the sample bank.
+ * Swap it for another card from the rotation that fits the same footprint.
+ */
+export function replaceUnfilledNews(
+  slots: ModuleSlot[],
+  liveCounts: Partial<Record<string, number>>,
+  edition: FreeEdition,
+  dateISO: string,
+): { slots: ModuleSlot[]; swaps: { from: ModuleId; to: ModuleId | null }[] } {
+  const used = new Set(slots.flatMap((s) => s.moduleIds));
+  const swaps: { from: ModuleId; to: ModuleId | null }[] = [];
+  const next = slots.map((slot) => {
+    const id = slot.moduleIds[0];
+    if (!id || !isNewsModule(id) || (liveCounts[id] ?? 0) > 0) return slot;
+    const size = slot.size ?? "full";
+    const open = NEWS_FILL[size].filter(
+      (moduleId) => moduleSizes(moduleId).includes(size) && (edition.level !== "easier" || !HEAVY_FOR_EASIER.has(moduleId)) && !used.has(moduleId),
+    );
+    if (!open.length) {
+      swaps.push({ from: id, to: null });
+      return { ...slot, moduleIds: [] as ModuleId[] };
+    }
+    const to = pickModule(open, dateISO, hashString(`news-fill|${id}`), used);
+    swaps.push({ from: id, to });
+    return { ...slot, moduleIds: [to], moduleDifficulty: { [to]: edition.difficulty } };
+  });
+  return { slots: next, swaps };
+}
+
 /** Deterministic cards for this edition on this local date. */
 export function slotsForEdition(edition: FreeEdition, dateISO: string): ModuleSlot[] {
   checkLayouts();
@@ -268,7 +324,7 @@ export function slotsForEdition(edition: FreeEdition, dateISO: string): ModuleSl
     column.map((spec, i) => ({
       ...spec,
       column: col,
-      moduleId: pickModule(POOLS[spec.pool], dateISO, col * 17 + i * 5, used),
+      moduleId: pickModule(poolFor(spec.pool, edition), dateISO, col * 17 + i * 5, used),
     })),
   );
   const slots: ModuleSlot[] = [];

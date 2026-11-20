@@ -1,6 +1,5 @@
 import { collectAnswers, collectStories, answersToken } from "../answers";
-import { SAMPLE_NEWS } from "../content/sampleNews";
-import { isNewsModule, type LiveNewsEntry, type NewsModuleId } from "../content/news";
+import { type LiveNewsEntry, type NewsModuleId } from "../content/news";
 import { generateStrip } from "../generateStrip";
 import { gatherDailyNews } from "../news/daily";
 import { renderPdfFromHtml } from "../pdf";
@@ -9,33 +8,37 @@ import { qrSvg } from "../qr";
 import { savePayload } from "../persist";
 import type { ModuleId, PrintJob } from "../types";
 import { fetchWeather } from "../weather";
-import { FREE_UPGRADE_TEXT, freeUpgradeUrl } from "./copy";
-import { buildFreeKid, freeSettings, type FreeEdition } from "./editions";
+import { FREE_UPGRADE_TEXT, freeStartLabel, freeStartUrl, freeUpgradeUrl } from "./copy";
+import { buildFreeKid, freeSettings, replaceUnfilledNews, type FreeEdition } from "./editions";
 import { siteOrigin } from "./flag";
 import { loadEditionPdf, releaseClaim, saveEditionPdf, claimFresh } from "./repo";
 
-const GEN_STALE_MS = 3 * 60_000;
+const QR_PX = 96;
 
-function withNewsFallback(
-  live: Partial<Record<NewsModuleId, LiveNewsEntry[]>> | undefined,
-  modules: readonly ModuleId[],
-): Partial<Record<NewsModuleId, LiveNewsEntry[]>> {
-  const out: Partial<Record<NewsModuleId, LiveNewsEntry[]>> = { ...(live ?? {}) };
-  for (const id of modules) {
-    if (isNewsModule(id) && !(out[id]?.length)) out[id] = SAMPLE_NEWS;
-  }
-  return out;
-}
+const GEN_STALE_MS = 3 * 60_000;
 
 /** The shared print job for one edition on one local date. */
 export async function buildFreeEditionJob(edition: FreeEdition, dateISO: string): Promise<PrintJob> {
-  const kid = buildFreeKid(edition, dateISO);
+  const seeded = buildFreeKid(edition, dateISO);
   let live: Partial<Record<NewsModuleId, LiveNewsEntry[]>> | undefined;
   try {
-    live = await gatherDailyNews(kid.modules, { city: edition.weatherCity });
+    live = await gatherDailyNews(seeded.modules, { city: edition.weatherCity });
   } catch (e) {
     console.error("[free-editions] news fetch failed", edition.id, e instanceof Error ? e.message : e);
   }
+  const counts: Partial<Record<string, number>> = {};
+  for (const [id, items] of Object.entries(live ?? {})) counts[id] = items?.length ?? 0;
+  const filled = replaceUnfilledNews(seeded.slots, counts, edition, dateISO);
+  for (const swap of filled.swaps) {
+    console.error(
+      `[free-editions] no live news for ${edition.id} on ${dateISO} (${swap.from}); ${swap.to ? `using ${swap.to} instead` : "skipped the card"}`,
+    );
+  }
+  const modules: ModuleId[] = [];
+  for (const slot of filled.slots) {
+    for (const id of slot.moduleIds) if (!modules.includes(id)) modules.push(id);
+  }
+  const kid = { ...seeded, slots: filled.slots, modules, accessModules: modules };
   let weather = null;
   if (edition.weatherCity) {
     try {
@@ -53,15 +56,21 @@ export async function buildFreeEditionJob(edition: FreeEdition, dateISO: string)
   return generateStrip(kid, freeSettings(edition), {
     dateISO,
     nonce: 0,
-    newsByFeed: withNewsFallback(live, kid.modules),
+    newsByFeed: live,
     weather,
   });
 }
 
-export function freeEditionHtml(job: PrintJob, edition: FreeEdition, qr?: string): string {
+export function freeEditionHtml(job: PrintJob, edition: FreeEdition, answersQr?: string, site = siteOrigin()): string {
+  const start = freeStartUrl(edition.id, site);
   return buildPrintHtml(job, {
-    qrSvg: qr,
-    upgrade: { text: FREE_UPGRADE_TEXT, href: freeUpgradeUrl(edition.id) },
+    qrSvg: answersQr,
+    upgrade: {
+      text: FREE_UPGRADE_TEXT,
+      href: freeUpgradeUrl(edition.id, site, "print"),
+      qrSvg: qrSvg(start, { sizePx: QR_PX }),
+      printLabel: freeStartLabel(edition.id),
+    },
   });
 }
 
