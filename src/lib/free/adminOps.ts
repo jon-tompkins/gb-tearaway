@@ -2,7 +2,7 @@ import { logEvent } from "../events";
 import { eventsSince } from "../events";
 import { dateISOInZone } from "../dates";
 import type { FreeEdition } from "./editions";
-import { deletePayload } from "../persist";
+import { deletePayload, loadPayload, savePayload } from "../persist";
 import { freePdfCacheKey, type FreeSubscriber } from "./subscriber";
 import { listSubscribers } from "./repo";
 import { renderFreeEditionPdf } from "./render";
@@ -72,6 +72,41 @@ export async function regenerateEditionPdf(edition: FreeEdition, upgradeText: st
   await renderFreeEditionPdf(edition, today, upgradeText);
 }
 
+/** One row in botb_state. The day is UTC. */
+export const ADMIN_TEST_SEND_KEY = "free:admin:test-send";
+export const ADMIN_TEST_GAP_MS = 30_000;
+export const ADMIN_TEST_DAILY_CAP = 20;
+
+export interface AdminTestBudget {
+  lastAt: number;
+  day: string;
+  count: number;
+}
+
+/** At most one test send every 30 seconds, and 20 on a UTC day. */
+export function decideAdminTestSend(
+  current: AdminTestBudget | null,
+  now: number,
+): { ok: true; next: AdminTestBudget } | { ok: false; error: string } {
+  const day = new Date(now).toISOString().slice(0, 10);
+  const count = current?.day === day ? current.count : 0;
+  if (current && now - current.lastAt < ADMIN_TEST_GAP_MS) {
+    return { ok: false, error: "Wait 30 seconds between test sends." };
+  }
+  if (count >= ADMIN_TEST_DAILY_CAP) {
+    return { ok: false, error: "Test sends are limited to 20 a day." };
+  }
+  return { ok: true, next: { lastAt: now, day, count: count + 1 } };
+}
+
+export async function reserveAdminTestSend(now = Date.now()): Promise<{ ok: true } | { ok: false; error: string }> {
+  const current = await loadPayload<AdminTestBudget>(ADMIN_TEST_SEND_KEY);
+  const decision = decideAdminTestSend(current, now);
+  if (!decision.ok) return decision;
+  await savePayload(ADMIN_TEST_SEND_KEY, decision.next);
+  return { ok: true };
+}
+
 export async function sendAdminTest(opts: {
   to: string;
   kind: "confirm" | "edition";
@@ -83,6 +118,9 @@ export async function sendAdminTest(opts: {
   if (!recipient.ok) return recipient;
   const secret = freeTokenSecret();
   if (!secret) return { ok: false, error: "No token secret is set, so a test email cannot be signed." };
+  if (!opts.address.trim()) return { ok: false, error: "Add a mailing address before sending. The env var is empty too." };
+  const reserved = await reserveAdminTestSend();
+  if (!reserved.ok) return reserved;
   const subscriber = {
     id: "fs_admin_test",
     email: recipient.email,
@@ -90,7 +128,6 @@ export async function sendAdminTest(opts: {
     status: "pending" as const,
     createdAt: new Date().toISOString(),
   };
-  if (!opts.address.trim()) return { ok: false, error: "Add a mailing address before sending. The env var is empty too." };
   if (opts.kind === "confirm") {
     const ok = await sendFreeConfirmEmail({ subscriber, edition: opts.edition, secret, upgradeText: opts.upgradeText, address: opts.address });
     return ok ? { ok: true } : { ok: false, error: "The email provider rejected the test." };

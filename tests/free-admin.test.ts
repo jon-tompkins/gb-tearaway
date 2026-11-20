@@ -2,7 +2,8 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { FREE_UPGRADE_TEXT } from "../src/lib/free/copy";
 import { FREE_EDITIONS, editionById } from "../src/lib/free/editions";
-import { adminDenied } from "../src/lib/free/adminOps";
+import { ADMIN_TEST_DAILY_CAP, ADMIN_TEST_GAP_MS, ADMIN_TEST_SEND_KEY, adminDenied, decideAdminTestSend, reserveAdminTestSend, type AdminTestBudget } from "../src/lib/free/adminOps";
+import { deletePayload, loadPayload } from "../src/lib/persist";
 import {
   archiveEdition,
   defaultFreeAdminSettings,
@@ -67,6 +68,59 @@ test("saved settings start from the code edition list", () => {
   assert.equal(merged.editions.find((e) => e.id === "generic-4-6")?.sendHour, 8);
   assert.equal(merged.editions.find((e) => e.id === "generic-4-6")?.timezone, "America/New_York");
   assert.equal(merged.editions.find((e) => e.id === "nyc-4-6")?.live, true);
+});
+
+test("admin test sends wait 30 seconds and stop at 20 a day", () => {
+  const start = Date.parse("2026-11-20T15:00:00.000Z");
+  const first = decideAdminTestSend(null, start);
+  assert.equal(first.ok, true);
+  if (!first.ok) return;
+  assert.equal(first.next.count, 1);
+  assert.equal(first.next.day, "2026-11-20");
+
+  const tooSoon = decideAdminTestSend(first.next, start + ADMIN_TEST_GAP_MS - 1);
+  assert.equal(tooSoon.ok, false);
+  if (tooSoon.ok) return;
+  assert.match(tooSoon.error, /30 seconds/);
+
+  let budget: AdminTestBudget = first.next;
+  const later = decideAdminTestSend(budget, start + ADMIN_TEST_GAP_MS);
+  assert.equal(later.ok, true);
+  if (!later.ok) return;
+  budget = later.next;
+  while (budget.count < ADMIN_TEST_DAILY_CAP) {
+    const step = decideAdminTestSend(budget, budget.lastAt + ADMIN_TEST_GAP_MS);
+    assert.equal(step.ok, true);
+    if (!step.ok) return;
+    budget = step.next;
+  }
+  assert.equal(budget.count, 20);
+  const capped = decideAdminTestSend(budget, budget.lastAt + ADMIN_TEST_GAP_MS);
+  assert.equal(capped.ok, false);
+  if (capped.ok) return;
+  assert.match(capped.error, /20 a day/);
+
+  const nextDay = decideAdminTestSend(budget, Date.parse("2026-11-21T15:00:00.000Z"));
+  assert.equal(nextDay.ok, true);
+  if (!nextDay.ok) return;
+  assert.equal(nextDay.next.count, 1);
+  assert.equal(nextDay.next.day, "2026-11-21");
+});
+
+test("the test-send cooldown is stored in botb_state", async () => {
+  await deletePayload(ADMIN_TEST_SEND_KEY);
+  try {
+    const now = Date.parse("2026-11-20T15:00:00.000Z");
+    assert.equal((await reserveAdminTestSend(now)).ok, true);
+    const stored = await loadPayload<{ count: number; day: string; lastAt: number }>(ADMIN_TEST_SEND_KEY);
+    assert.equal(stored?.count, 1);
+    assert.equal(stored?.day, "2026-11-20");
+    assert.equal(stored?.lastAt, now);
+    const again = await reserveAdminTestSend(now + 1000);
+    assert.equal(again.ok, false);
+  } finally {
+    await deletePayload(ADMIN_TEST_SEND_KEY);
+  }
 });
 
 test("a test send accepts one address and rejects a list", () => {

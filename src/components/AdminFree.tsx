@@ -156,7 +156,7 @@ export function AdminFree({
 
       <section className="card space-y-3">
         <h2 className="font-display text-xl">Test send</h2>
-        <p className="text-sm text-ink-soft">Goes only to this one address. It does not mail subscribers.</p>
+        <p className="text-sm text-ink-soft">Goes only to this one address. It does not mail subscribers. One test every 30 seconds, and 20 a day.</p>
         <label className="field"><span>Address</span><input value={testTo} onChange={(e) => setTestTo(e.target.value)} placeholder="you@example.com" /></label>
       </section>
 
