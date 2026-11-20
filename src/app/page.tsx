@@ -7,7 +7,7 @@ import { getHiddenModules } from "@/lib/visibility";
 import { FAQ } from "@/lib/faq";
 import { PLANS } from "@/lib/plans";
 import { AGE_BANDS } from "@/lib/types";
-import { freeEditionsEnabled } from "@/lib/free/flag";
+import { freeEditionGate } from "@/lib/free/runtime";
 import { moduleExample, type ModuleExample } from "@/lib/moduleExample";
 
 function safeExample(id: Parameters<typeof moduleExample>[0]): ModuleExample | null {
@@ -81,7 +81,7 @@ export default async function HomePage() {
                 See Modules
               </Link>
             </div>
-            {freeEditionsEnabled() ? (
+            {(await freeEditionGate()).ok ? (
               <p className="mt-4 text-sm text-ink-soft">
                 <Link href="/free" className="font-semibold text-ink underline decoration-stamp/60 underline-offset-4 hover:decoration-stamp">
                   Or get a free daily page by email

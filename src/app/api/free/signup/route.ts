@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import { editionById } from "@/lib/free/editions";
-import { freeEditionsEnabled } from "@/lib/free/flag";
+import { freeRuntime } from "@/lib/free/runtime";
 import { clientIp, startFreeSignup } from "@/lib/free/flow";
 import { allowFreeSignup } from "@/lib/free/ratelimit";
 import { normalizeEmail, rejectSignup } from "@/lib/free/subscriber";
@@ -15,11 +14,13 @@ export async function POST(req: Request) {
     hp_field?: unknown;
     company?: unknown;
   };
+  const runtime = await freeRuntime();
   const email = normalizeEmail(typeof body.email === "string" ? body.email : "");
-  const edition = editionById(typeof body.editionId === "string" ? body.editionId : "");
+  const editionId = typeof body.editionId === "string" ? body.editionId : "";
+  const edition = runtime.editions.find((e) => e.id === editionId && e.live && !e.archived);
   const company = typeof body.hp_field === "string" ? body.hp_field : typeof body.company === "string" ? body.company : "";
   const gate = rejectSignup({
-    enabled: freeEditionsEnabled(),
+    enabled: runtime.active,
     company,
     email,
     editionLive: !!edition?.live,

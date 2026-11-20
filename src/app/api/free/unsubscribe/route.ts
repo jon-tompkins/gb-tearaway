@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { freeEditionsEnabled, requestOrigin } from "@/lib/free/flag";
+import { requestOrigin } from "@/lib/free/flag";
+import { freeRuntime } from "@/lib/free/runtime";
 import { unsubscribeFree } from "@/lib/free/flow";
 
 export const runtime = "nodejs";
@@ -17,7 +18,7 @@ async function tokenFrom(req: Request): Promise<{ token: string; oneClick: boole
 
 /** Mail clients that GET the List-Unsubscribe URL land on the confirm page. */
 export async function GET(req: Request) {
-  if (!freeEditionsEnabled()) return NextResponse.json({ error: "not found" }, { status: 404 });
+  if (!(await freeRuntime()).active) return NextResponse.json({ error: "not found" }, { status: 404 });
   const token = new URL(req.url).searchParams.get("token") ?? "";
   const dest = token ? `/free/unsubscribe?token=${encodeURIComponent(token)}` : "/free/unsubscribe";
   return NextResponse.redirect(new URL(dest, requestOrigin(req)));
@@ -25,7 +26,7 @@ export async function GET(req: Request) {
 
 /** One-click POST (RFC 8058) and the button on /free/unsubscribe. */
 export async function POST(req: Request) {
-  if (!freeEditionsEnabled()) return NextResponse.json({ error: "not found" }, { status: 404 });
+  if (!(await freeRuntime()).active) return NextResponse.json({ error: "not found" }, { status: 404 });
   const { token, oneClick, browserForm } = await tokenFrom(req);
   const result = await unsubscribeFree(token);
   if (browserForm && !oneClick) {

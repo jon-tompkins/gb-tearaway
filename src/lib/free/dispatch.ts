@@ -1,6 +1,6 @@
 import { alertFreeFailure } from "./alert";
-import { editionById, FREE_EDITIONS } from "./editions";
-import { freeEditionsEnabled, freeMailingAddress } from "./flag";
+import { editionById } from "./editions";
+import { freeRuntime } from "./runtime";
 import { sendFreeDailyEmail } from "./mail";
 import { ensureFreeEditionPdf } from "./render";
 import { claimFresh, listSubscribers, loadSubscriber, releaseClaim, saveSubscriber } from "./repo";
@@ -29,8 +29,9 @@ export type FreeOneResult =
  * claim and lastSentDate stop a second email the same local day.
  */
 export async function sendOneFreeSubscriber(subscriberId: string, now = new Date()): Promise<FreeOneResult> {
-  if (!freeEditionsEnabled()) return { status: "skipped", reason: "free editions disabled" };
-  const address = freeMailingAddress();
+  const runtime = await freeRuntime();
+  if (!runtime.active) return { status: "skipped", reason: "free editions disabled" };
+  const address = runtime.address;
   if (!address) {
     console.error("[free-editions] FREE_EDITION_MAILING_ADDRESS is empty; refusing to send");
     await alertFreeFailure(
@@ -47,7 +48,7 @@ export async function sendOneFreeSubscriber(subscriberId: string, now = new Date
   }
   const sub = await loadSubscriber(subscriberId);
   if (!sub || sub.status !== "confirmed") return { status: "skipped", reason: "not confirmed" };
-  const edition = editionById(sub.editionId);
+  const edition = runtime.editions.find((e) => e.id === sub.editionId) ?? editionById(sub.editionId);
   if (!edition?.live) return { status: "skipped", reason: "edition not live" };
 
   const plan = planFreeSends({
@@ -64,13 +65,13 @@ export async function sendOneFreeSubscriber(subscriberId: string, now = new Date
   if (!claimed) return { status: "skipped", reason: "already sent" };
 
   try {
-    const pdf = await ensureFreeEditionPdf(edition, job.date);
+    const pdf = await ensureFreeEditionPdf(edition, job.date, runtime.upgradeText);
     if (!pdf) {
       await releaseClaim(job.claimKey);
       await alertFreeFailure(`pdf-${edition.id}`, `Could not render the ${edition.id} free edition for ${job.date}.`);
       return { status: "failed", reason: "pdf unavailable" };
     }
-    const ok = await sendFreeDailyEmail({ subscriber: sub, edition, date: job.date, pdf, secret, address });
+    const ok = await sendFreeDailyEmail({ subscriber: sub, edition, date: job.date, pdf, secret, address, upgradeText: runtime.upgradeText });
     if (!ok) {
       await releaseClaim(job.claimKey);
       console.error(`[free-editions] email provider rejected ${edition.id} for subscriber ${sub.id}`);
@@ -99,10 +100,11 @@ export async function dispatchFreeEditions(opts: {
   sendOne: (subscriberId: string) => Promise<FreeOneResult>;
 }): Promise<FreeDispatchReport> {
   const now = opts.now ?? new Date();
-  if (!freeEditionsEnabled()) {
+  const runtime = await freeRuntime();
+  if (!runtime.active) {
     return { enabled: false, outcome: "disabled", sent: 0, failed: 0, skipped: 0, deferred: 0, errors: [] };
   }
-  const address = freeMailingAddress();
+  const address = runtime.address;
   let subscribers: FreeSubscriberList;
   try {
     subscribers = await listSubscribers();
@@ -116,7 +118,7 @@ export async function dispatchFreeEditions(opts: {
     enabled: true,
     mailingAddress: address,
     now,
-    editions: FREE_EDITIONS,
+    editions: runtime.editions,
     subscribers,
   });
   if (plan.outcome === "no-address") {
@@ -151,9 +153,9 @@ export async function dispatchFreeEditions(opts: {
       report.deferred += jobs.length;
       continue;
     }
-    const edition = editionById(jobs[0].editionId);
+    const edition = runtime.editions.find((e) => e.id === jobs[0].editionId) ?? editionById(jobs[0].editionId);
     if (!edition) continue;
-    const pdf = await ensureFreeEditionPdf(edition, jobs[0].date);
+    const pdf = await ensureFreeEditionPdf(edition, jobs[0].date, runtime.upgradeText);
     if (!pdf) {
       const message = `Could not render the ${key} free edition. Subscribers were not emailed.`;
       report.errors.push(message);

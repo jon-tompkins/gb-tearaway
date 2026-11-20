@@ -1,7 +1,6 @@
 import { notFound } from "next/navigation";
 import { editionSendLabel } from "@/lib/free/copy";
-import { liveEditions } from "@/lib/free/editions";
-import { freeEditionAccess } from "@/lib/free/flag";
+import { freeEditionGate, publicEditions } from "@/lib/free/runtime";
 import { FreeSignup, type FreeEditionChoice } from "./FreeSignup";
 import { FreeShell } from "./shell";
 
@@ -12,9 +11,10 @@ export const metadata = {
   description: "Get a shared daily puzzle page by email. Pick an age, confirm your address. No account and no child names.",
 };
 
-export default function FreePage() {
-  if (!freeEditionAccess().ok) notFound();
-  const editions: FreeEditionChoice[] = liveEditions().map((e) => ({
+export default async function FreePage() {
+  const gate = await freeEditionGate();
+  if (!gate.ok) notFound();
+  const editions: FreeEditionChoice[] = publicEditions(gate.runtime.editions).map((e) => ({
     id: e.id,
     ageKey: e.ageKey,
     ageLabel: e.ageLabel,

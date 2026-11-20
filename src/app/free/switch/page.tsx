@@ -1,7 +1,6 @@
 import { notFound } from "next/navigation";
 import { editionSendLabel } from "@/lib/free/copy";
-import { liveEditions } from "@/lib/free/editions";
-import { freeEditionAccess } from "@/lib/free/flag";
+import { freeEditionGate, publicEditions } from "@/lib/free/runtime";
 import { readSwitchToken } from "@/lib/free/flow";
 import { loadSubscriber } from "@/lib/free/repo";
 import { FreeShell } from "../shell";
@@ -13,7 +12,8 @@ export default async function SwitchPage({
 }: {
   searchParams: Promise<{ token?: string; status?: string }>;
 }) {
-  if (!freeEditionAccess().ok) notFound();
+  const gate = await freeEditionGate();
+  if (!gate.ok) notFound();
   const { token, status } = await searchParams;
   if (status === "updated") {
     return (
@@ -26,7 +26,7 @@ export default async function SwitchPage({
 
   const payload = readSwitchToken(token);
   const sub = payload ? await loadSubscriber(payload.s) : null;
-  const editions = liveEditions();
+  const editions = publicEditions(gate.runtime.editions);
   const invalid = !payload || !sub || sub.status === "unsubscribed";
 
   return (

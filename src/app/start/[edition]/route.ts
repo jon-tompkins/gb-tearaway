@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { freeUpgradeUrl } from "@/lib/free/copy";
-import { editionById } from "@/lib/free/editions";
 import { requestOrigin } from "@/lib/free/flag";
+import { loadFreeAdmin } from "@/lib/free/runtime";
 
 export const dynamic = "force-dynamic";
 
@@ -12,7 +12,7 @@ export const dynamic = "force-dynamic";
  */
 export async function GET(req: Request, ctx: { params: Promise<{ edition: string }> }) {
   const { edition } = await ctx.params;
-  const known = editionById(edition);
+  const known = (await loadFreeAdmin()).editions.find((e) => e.id === edition && !e.archived);
   if (!known) return NextResponse.redirect(new URL("/app/setup", requestOrigin(req)));
   return NextResponse.redirect(freeUpgradeUrl(known.id, requestOrigin(req), "print"));
 }

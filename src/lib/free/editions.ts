@@ -27,10 +27,22 @@ export interface FreeEdition {
   timezone: string;
   /** Fixed local hour. Every launch edition is 6:00. */
   sendHour: number;
+  /** Minute past sendHour. Defaults to 0. */
+  sendMinute?: number;
   weatherCity?: string;
   weatherZip?: string;
+  weatherLat?: number;
+  weatherLon?: number;
+  /** False turns weather off even if a city is set. Unset means "on when a city or coordinates exist". */
+  weatherOn?: boolean;
   /** Offered on /free and delivered. False entries are config only. */
   live: boolean;
+  /** Stop today's send without removing the edition from the signup list. */
+  paused?: boolean;
+  /** Hidden from signup and delivery. Subscribers are kept. */
+  archived?: boolean;
+  /** When set, only these modules may be drawn. The Easier heavy-card filter still wins. */
+  rotationModules?: ModuleId[];
 }
 
 const EASIER = { level: "easier" as const, levelLabel: "Easier", ageBand: "4-6" as const, difficulty: 3 };
@@ -247,10 +259,29 @@ function dayNumber(dateISO: string): number {
   return Math.floor(Date.UTC(year, month - 1, day) / 86_400_000);
 }
 
+export function editionHasWeather(edition: FreeEdition): boolean {
+  if (edition.weatherOn === false || edition.archived) return false;
+  return !!(edition.weatherCity || (typeof edition.weatherLat === "number" && typeof edition.weatherLon === "number"));
+}
+
+/** Modules the admin can tick. Weather is added by the city switch, not this list. */
+export function rotationCatalog(): ModuleId[] {
+  const out: ModuleId[] = [];
+  for (const list of Object.values(POOLS)) {
+    for (const id of list) if (!out.includes(id)) out.push(id);
+  }
+  return out;
+}
+
+export function heavyForEasier(id: ModuleId): boolean {
+  return HEAVY_FOR_EASIER.has(id);
+}
+
 function poolFor(pool: Pool, edition: FreeEdition): readonly ModuleId[] {
-  const list = POOLS[pool];
-  if (edition.level !== "easier") return list;
-  return list.filter((id) => !HEAVY_FOR_EASIER.has(id));
+  const base = POOLS[pool].filter((id) => edition.level !== "easier" || !HEAVY_FOR_EASIER.has(id));
+  if (!edition.rotationModules) return base;
+  const picked = base.filter((id) => edition.rotationModules!.includes(id));
+  return picked.length ? picked : base;
 }
 
 function pickModule(pool: readonly ModuleId[], dateISO: string, salt: number, used: Set<ModuleId>): ModuleId {
@@ -329,7 +360,7 @@ export function slotsForEdition(edition: FreeEdition, dateISO: string): ModuleSl
   );
   const slots: ModuleSlot[] = [];
   for (const spec of picked) {
-    const shrink = !!edition.weatherCity && !!spec.shrinkForWeather;
+    const shrink = editionHasWeather(edition) && !!spec.shrinkForWeather;
     slots.push(makeSlot(slots.length, spec.moduleId, shrink ? "half" : spec.size, spec.column, edition.difficulty));
     if (shrink) slots.push(makeSlot(slots.length, "weather", "half", spec.column, edition.difficulty));
   }

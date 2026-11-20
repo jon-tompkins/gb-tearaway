@@ -280,6 +280,8 @@ async function geocodeCity(city: string): Promise<Geo | null> {
 export async function fetchWeather(opts: {
   zip?: string;
   city?: string;
+  latitude?: number;
+  longitude?: number;
   timezone?: string;
   ageBand?: AgeBand;
   /**
@@ -295,6 +297,9 @@ export async function fetchWeather(opts: {
     opts.allowMock ? mockWeather(age, label) : null;
   try {
     const geo =
+      (typeof opts.latitude === "number" && typeof opts.longitude === "number"
+        ? { name: (opts.city || "local").trim(), latitude: opts.latitude, longitude: opts.longitude }
+        : null) ||
       (opts.zip?.trim() ? await geocodeZip(opts.zip) : null) ||
       (opts.city?.trim() ? await geocodeCity(opts.city) : null);
     if (!geo) return mockOr(placeGuess);

@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { freeEditionAccess } from "@/lib/free/flag";
+import { freeEditionGate } from "@/lib/free/runtime";
 import { FreeShell } from "../shell";
 
 export const dynamic = "force-dynamic";
@@ -9,7 +9,7 @@ export default async function UnsubscribePage({
 }: {
   searchParams: Promise<{ token?: string }>;
 }) {
-  if (!freeEditionAccess().ok) notFound();
+  if (!(await freeEditionGate()).ok) notFound();
   const { token } = await searchParams;
   return (
     <FreeShell>

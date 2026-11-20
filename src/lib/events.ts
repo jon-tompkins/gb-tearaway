@@ -15,7 +15,8 @@ export type UsageEventType =
   | "free_pdf_clicked"
   | "free_unsubscribed"
   | "free_to_custom_started"
-  | "free_to_trial_started";
+  | "free_to_trial_started"
+  | "free_admin_change";
 
 export interface UsageEvent {
   ts?: string;
