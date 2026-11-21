@@ -70,10 +70,10 @@ export default async function HomePage() {
               Morning ritual · screen-free
             </p>
             <h1 className="mt-3 font-display text-4xl leading-[1.05] tracking-tight text-ink sm:text-5xl">
-              Made for your kid. Weather for your town.
+              A page you can grow with your kid.
             </h1>
             <p className="mt-5 max-w-xl text-lg leading-relaxed text-ink-soft">
-              A printable morning page with puzzles at the right difficulty — you set it for each kid, and you can tune every card — plus today's sky for your ZIP. Kid-safe news, checked against the source. 30 days free, no card needed.
+              Start with Easier, Medium, or Harder, then dial each card up or down as they grow — a 1–20 control on every puzzle. Kid-safe news, checked against the source. Add your ZIP for today's weather. 30 days free, no card needed.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <GetStartedButton className="btn-primary" label="Start 30 days free" />
