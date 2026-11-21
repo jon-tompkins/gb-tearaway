@@ -49,7 +49,7 @@ test("difficulty dial stops match the 1–20 scale", () => {
 
 test("homepage places the difficulty demo below the hero", () => {
   const home = readFileSync("src/app/page.tsx", "utf8");
-  const headline = home.indexOf("Made for your kid. Weather for your town.");
+  const headline = home.indexOf("A page you can grow with your kid.");
   const demo = home.indexOf("<DifficultyDemo");
   const sample = home.indexOf('id="sample"');
   assert.ok(headline !== -1 && demo > headline && sample > demo);
