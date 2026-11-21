@@ -34,4 +34,18 @@ export const SAMPLE_NEWS: SampleNewsStory[] = [
     blurb: "Gardeners planted flowers that butterflies like to visit. Families can walk the path and count the colors they see.",
     wonder: "Butterflies taste with their feet.",
   },
+  {
+    bands: ["4-6", "7-9", "10-12"],
+    headline: "Class builds a robot that waters plants",
+    location: "San Diego",
+    blurb: "Fifth graders built a small robot that rolls between pots and gives each plant a drink. It beeps when the soil is dry.",
+    wonder: "The word robot comes from a Czech word for hard work.",
+  },
+  {
+    bands: ["4-6", "7-9", "10-12"],
+    headline: "Library hosts a puzzle-game afternoon",
+    location: "Boston",
+    blurb: "The library set up a table of puzzle games families can play together. Kids take turns, and the high score is written on a paper chart.",
+    wonder: "The first video game, Tennis for Two, was built in 1958.",
+  },
 ];

@@ -3,7 +3,7 @@ import { connection } from "next/server";
 import { DifficultyDemo } from "@/components/DifficultyDemo";
 import { GetStartedButton } from "@/components/GetStartedButton";
 import { HomeHeaderActions } from "@/components/HomeHeaderActions";
-import { MODULE_CATALOG, MODULE_CATEGORIES } from "@/lib/modules";
+import { MODULE_CATALOG, MODULE_CATEGORIES, STARTER_MODULE_IDS, type ModuleMeta } from "@/lib/modules";
 import { getHiddenModules } from "@/lib/visibility";
 import { FAQ } from "@/lib/faq";
 import { PLANS } from "@/lib/plans";
@@ -19,6 +19,40 @@ function safeExample(id: Parameters<typeof moduleExample>[0]): ModuleExample | n
   }
 }
 
+function ModuleTile({ m }: { m: ModuleMeta }) {
+  const ex = safeExample(m.id);
+  return (
+    <Link
+      href={`/modules/${m.id}`}
+      className="group block overflow-hidden rounded-xl border border-rule bg-paper transition hover:border-ink/40"
+    >
+      <div className="relative h-36 overflow-hidden border-b border-rule/60 bg-[#fbf8f1] p-3">
+        {ex?.svg ? (
+          <div
+            className="flex h-full items-center justify-center gap-2 [&_svg]:h-full [&_svg]:max-h-full [&_svg]:w-auto [&_svg]:max-w-full"
+            dangerouslySetInnerHTML={{ __html: ex.svg + (ex.locator ? `<div style="width:38%;flex:none">${ex.locator.replace(/<div class="geo-cap">.*?<\/div>/, "")}</div>` : "") }}
+          />
+        ) : ex?.text ? (
+          <div className="font-mono text-[0.68rem] leading-snug text-ink">
+            {ex.text.slice(0, 6).map((line, i) => (
+              <p key={i} className={i === 0 ? "font-semibold" : ""}>
+                {line}
+              </p>
+            ))}
+          </div>
+        ) : null}
+        {!ex?.svg ? (
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-[#fbf8f1] to-transparent" />
+        ) : null}
+      </div>
+      <div className="px-3 py-2.5">
+        <p className="text-sm font-semibold text-ink group-hover:underline">{m.name}</p>
+        <p className="mt-0.5 text-xs leading-snug text-ink-soft">{m.blurb}</p>
+      </div>
+    </Link>
+  );
+}
+
 // The module showcase leaves out admin-hidden modules; refresh every few minutes.
 export const revalidate = 300;
 
@@ -29,7 +63,7 @@ const PILLARS = [
   },
   {
     title: "Puzzles that fit the kid",
-    body: "Mazes, sudoku, crosswords, word finds, riddles, and number patterns, with a word of the day and a real public-domain poem. Every card has its own difficulty dial.",
+    body: "Mazes, sudoku, crosswords, word finds, riddles, and number patterns, with a word of the day and a real public-domain poem. Every module has its own difficulty dial.",
   },
   {
     title: "Paper, not a screen",
@@ -38,7 +72,7 @@ const PILLARS = [
 ];
 
 const STEPS = [
-  { n: "1", title: "Pick the cards", body: "Choose modules and card sizes for your kid’s page. You can move them around and swap them anytime." },
+  { n: "1", title: "Pick the modules", body: "Choose modules and sizes for your kid’s page. You can move them around and swap them anytime." },
   { n: "2", title: "Set a morning time", body: "Choose when it arrives: by email with a printable PDF, or waiting on your dashboard." },
   { n: "3", title: "Print & hand it over", body: "It’s fresh every day, so tomorrow’s page is new. Stick it on the fridge or take it to breakfast." },
 ];
@@ -49,6 +83,7 @@ export default async function HomePage() {
   await connection();
   const hidden = new Set<string>(await getHiddenModules().catch(() => []));
   const visible = MODULE_CATALOG.filter((m) => !hidden.has(m.id));
+  const starter = STARTER_MODULE_IDS.map((id) => visible.find((m) => m.id === id)).filter((m): m is ModuleMeta => !!m);
   const showcase = MODULE_CATEGORIES.map((c) => ({
     category: c,
     modules: visible.filter((m) => m.category === c.id),
@@ -134,8 +169,8 @@ export default async function HomePage() {
           <div className="order-1 lg:order-2">
             <h2 className="font-display text-2xl text-ink sm:text-3xl">A real page, not a feed</h2>
             <p className="mt-2 max-w-xl text-ink-soft">
-              This is exactly what lands in your inbox. You choose the cards and their sizes, and the rest
-              is new every morning and tuned to your kid.
+              This is exactly what lands in your inbox. You choose the modules and their sizes, and the rest
+              is new every morning. You set the difficulty.
             </p>
             <div className="mt-6 space-y-4">
               {PILLARS.map((p) => (
@@ -154,11 +189,11 @@ export default async function HomePage() {
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
               <h2 className="font-display text-2xl text-ink sm:text-3xl">
-                {visible.length} cards to build with
+                {visible.length} modules to build with
               </h2>
               <p className="mt-1 text-sm font-semibold text-stamp">{visible.length} modules and growing</p>
               <p className="mt-2 max-w-2xl text-ink-soft">
-                Mix and match cards in three sizes, from a quick joke to a big crossword. One card
+                Mix and match modules in three sizes, from a quick joke to a big crossword. One spot
                 can also rotate through a few modules, like sudoku one day and battleship the next.
               </p>
             </div>
@@ -167,44 +202,28 @@ export default async function HomePage() {
             </Link>
           </div>
           <div className="mt-8 space-y-10">
+            {starter.length > 0 ? (
+              <div>
+                <h3 className="font-display text-xl text-ink">Start with these</h3>
+                <p className="mt-1 text-sm text-ink-soft">
+                  {starter.length === STARTER_MODULE_IDS.length
+                    ? "Nine modules for a first morning page. The full list is below."
+                    : "A few modules for a first morning page. The full list is below."}
+                </p>
+                <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  {starter.map((m) => (
+                    <ModuleTile key={m.id} m={m} />
+                  ))}
+                </div>
+              </div>
+            ) : null}
             {showcase.map(({ category, modules }) => (
               <div key={category.id}>
                 <h3 className="font-display text-xl text-ink">{category.name}</h3>
                 <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                  {modules.map((m) => {
-                    const ex = safeExample(m.id);
-                    return (
-                      <Link
-                        key={m.id}
-                        href={`/modules/${m.id}`}
-                        className="group block overflow-hidden rounded-xl border border-rule bg-paper transition hover:border-ink/40"
-                      >
-                        <div className="relative h-36 overflow-hidden border-b border-rule/60 bg-[#fbf8f1] p-3">
-                          {ex?.svg ? (
-                            <div
-                              className="flex h-full items-center justify-center gap-2 [&_svg]:h-full [&_svg]:max-h-full [&_svg]:w-auto [&_svg]:max-w-full"
-                              dangerouslySetInnerHTML={{ __html: ex.svg + (ex.locator ? `<div style="width:38%;flex:none">${ex.locator.replace(/<div class="geo-cap">.*?<\/div>/, "")}</div>` : "") }}
-                            />
-                          ) : ex?.text ? (
-                            <div className="font-mono text-[0.68rem] leading-snug text-ink">
-                              {ex.text.slice(0, 6).map((line, i) => (
-                                <p key={i} className={i === 0 ? "font-semibold" : ""}>
-                                  {line}
-                                </p>
-                              ))}
-                            </div>
-                          ) : null}
-                          {!ex?.svg ? (
-                            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-[#fbf8f1] to-transparent" />
-                          ) : null}
-                        </div>
-                        <div className="px-3 py-2.5">
-                          <p className="text-sm font-semibold text-ink group-hover:underline">{m.name}</p>
-                          <p className="mt-0.5 text-xs leading-snug text-ink-soft">{m.blurb}</p>
-                        </div>
-                      </Link>
-                    );
-                  })}
+                  {modules.map((m) => (
+                    <ModuleTile key={m.id} m={m} />
+                  ))}
                 </div>
               </div>
             ))}
@@ -320,7 +339,7 @@ export default async function HomePage() {
             <h2 className="font-display text-2xl sm:text-3xl">Tomorrow’s page could be on the table.</h2>
             <p className="mt-2 text-cream/75">Set it up tonight, and it arrives with breakfast.</p>
           </div>
-          <GetStartedButton className="inline-flex items-center rounded-full bg-cream px-6 py-3 font-semibold text-ink transition hover:bg-paper" />
+          <GetStartedButton className="inline-flex items-center rounded-full bg-cream px-6 py-3 font-semibold text-ink transition hover:bg-paper" label="Start 30 days free" />
         </div>
       </section>
 
@@ -330,7 +349,7 @@ export default async function HomePage() {
           <Link href="/modules" className="hover:text-ink">Modules</Link>
           <Link href="/supplies" className="hover:text-ink">Supplies</Link>
           <Link href="/app" className="hover:text-ink">Dashboard</Link>
-          <Link href="/app/setup" className="hover:text-ink">Get started</Link>
+          <Link href="/app/setup" className="hover:text-ink">Start 30 days free</Link>
           <Link href="/about" className="hover:text-ink">About</Link>
           <Link href="/faq" className="hover:text-ink">FAQ</Link>
           <Link href="/privacy" className="hover:text-ink">Privacy</Link>
