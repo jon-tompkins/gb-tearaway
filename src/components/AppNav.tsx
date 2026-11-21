@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { AuthButton } from "./AuthButton";
+import { openSupportChat } from "./SupportChat";
 
 const LINKS = [
   { href: "/app", label: "Dashboard", exact: true },
@@ -33,13 +34,24 @@ export function AppNav() {
   return (
     <header className="sticky top-0 z-40 border-b border-rule/70 bg-cream/90 backdrop-blur-md">
       <div className="mx-auto flex max-w-5xl flex-col items-center gap-2 px-4 py-3 sm:flex-row sm:justify-between sm:gap-3">
-        <Link href="/" className="group flex items-center gap-2">
-          <img src="/logo-mark.png" alt="" width={32} height={32} className="h-8 w-8 shrink-0 rounded-md" />
-          <span className="masthead-display text-lg leading-none text-ink group-hover:text-stamp">
-            Back of the Box
-          </span>
-        </Link>
-        <nav aria-label="Parent app" className="flex w-full items-center justify-center gap-1 overflow-x-auto text-sm sm:w-auto sm:justify-end">
+        <div className="flex w-full items-center justify-between gap-2 sm:w-auto">
+          <Link href="/" className="group flex min-w-0 items-center gap-2">
+            <img src="/logo-mark.png" alt="" width={32} height={32} className="h-8 w-8 shrink-0 rounded-md" />
+            <span className="masthead-display text-lg leading-none text-ink group-hover:text-stamp">
+              Back of the Box
+            </span>
+          </Link>
+          {pathname === "/app/setup" ? (
+            <button
+              type="button"
+              onClick={() => openSupportChat()}
+              className="inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-full px-3 text-sm font-semibold whitespace-nowrap text-ink-soft hover:bg-paper hover:text-ink sm:hidden"
+            >
+              Help
+            </button>
+          ) : null}
+        </div>
+        <nav aria-label="Parent app" className="flex w-full items-center justify-start gap-1 overflow-x-auto text-sm sm:w-auto sm:justify-end">
           {links.map((link) => {
             const active = link.exact
               ? pathname === link.href
@@ -48,7 +60,7 @@ export function AppNav() {
               <Link
                 key={link.href}
                 href={link.href}
-                className={`rounded-full px-3 py-1.5 whitespace-nowrap transition ${
+                className={`shrink-0 rounded-full px-3 py-1.5 whitespace-nowrap transition ${
                   active ? "bg-ink text-cream" : "text-ink-soft hover:bg-paper hover:text-ink"
                 }`}
               >
@@ -56,7 +68,7 @@ export function AppNav() {
               </Link>
             );
           })}
-          <span className="mx-1 h-5 w-px bg-rule/70" aria-hidden />
+          <span className="mx-1 h-5 w-px shrink-0 bg-rule/70" aria-hidden />
           <AuthButton compact />
         </nav>
       </div>
