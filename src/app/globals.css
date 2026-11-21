@@ -159,3 +159,77 @@ button:disabled { cursor: not-allowed; }
     linear-gradient(90deg, rgba(196, 92, 38, 0.06) 1px, transparent 1px);
   background-size: 28px 28px;
 }
+
+/* Homepage difficulty demo. Stops are dialPercent() for levels 3, 7, 11, 16. */
+.difficulty-demo-motion { display: block; }
+.difficulty-demo-still { display: none; }
+
+.difficulty-demo-anim {
+  animation-duration: 16s;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+.difficulty-demo-f0 { opacity: 1; animation-name: difficulty-demo-f0; }
+.difficulty-demo-f1,
+.difficulty-demo-f2,
+.difficulty-demo-f3 { opacity: 0; }
+.difficulty-demo-f1 { animation-name: difficulty-demo-f1; }
+.difficulty-demo-f2 { animation-name: difficulty-demo-f2; }
+.difficulty-demo-f3 { animation-name: difficulty-demo-f3; }
+
+.difficulty-demo-fill {
+  left: 0;
+  width: 10.526%;
+  animation-name: difficulty-demo-fill;
+}
+.difficulty-demo-thumb {
+  left: 10.526%;
+  transform: translate(-50%, -50%);
+  animation-name: difficulty-demo-thumb;
+}
+
+.difficulty-demo-motion.is-paused .difficulty-demo-anim {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .difficulty-demo-motion { display: none !important; }
+  .difficulty-demo-still { display: block !important; }
+  .difficulty-demo-anim { animation: none !important; }
+}
+
+@keyframes difficulty-demo-f0 {
+  0%, 22% { opacity: 1; }
+  25%, 97% { opacity: 0; }
+  100% { opacity: 1; }
+}
+@keyframes difficulty-demo-f1 {
+  0%, 22% { opacity: 0; }
+  25%, 47% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+@keyframes difficulty-demo-f2 {
+  0%, 47% { opacity: 0; }
+  50%, 72% { opacity: 1; }
+  75%, 100% { opacity: 0; }
+}
+@keyframes difficulty-demo-f3 {
+  0%, 72% { opacity: 0; }
+  75%, 97% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes difficulty-demo-thumb {
+  0%, 22% { left: 10.526%; }
+  25%, 47% { left: 31.579%; }
+  50%, 72% { left: 52.632%; }
+  75%, 97% { left: 78.947%; }
+  100% { left: 10.526%; }
+}
+@keyframes difficulty-demo-fill {
+  0%, 22% { width: 10.526%; }
+  25%, 47% { width: 31.579%; }
+  50%, 72% { width: 52.632%; }
+  75%, 97% { width: 78.947%; }
+  100% { width: 10.526%; }
+}

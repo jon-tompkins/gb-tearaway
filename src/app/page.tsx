@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { connection } from "next/server";
+import { DifficultyDemo } from "@/components/DifficultyDemo";
 import { GetStartedButton } from "@/components/GetStartedButton";
 import { HomeHeaderActions } from "@/components/HomeHeaderActions";
 import { MODULE_CATALOG, MODULE_CATEGORIES } from "@/lib/modules";
@@ -114,6 +115,8 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+
+      <DifficultyDemo />
 
       <section id="sample" className="mx-auto max-w-6xl scroll-mt-6 px-4 py-16">
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-[1fr_0.85fr] lg:items-center">
