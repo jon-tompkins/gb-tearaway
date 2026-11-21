@@ -94,6 +94,9 @@ export default function SetupClient({ examples }: { examples: ExampleMap }) {
 
   useEffect(() => setTimezone(detectTimezone()), []);
   useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [step]);
+  useEffect(() => {
     const q = new URLSearchParams(window.location.search);
     if (q.get("utm_source") !== "free_edition") return;
     const mark = "botb-free-setup";

@@ -43,9 +43,9 @@ export const SAMPLE_NEWS: SampleNewsStory[] = [
   },
   {
     bands: ["4-6", "7-9", "10-12"],
-    headline: "Library hosts a puzzle-game afternoon",
+    headline: "Library opens a video-game hour",
     location: "Boston",
-    blurb: "The library set up a table of puzzle games families can play together. Kids take turns, and the high score is written on a paper chart.",
+    blurb: "Families play a puzzle video game together on the library's big screen. Kids take turns with the controller, and the high score is written on a paper chart.",
     wonder: "The first video game, Tennis for Two, was built in 1958.",
   },
 ];

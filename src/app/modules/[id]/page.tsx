@@ -11,6 +11,7 @@ import { MODULE_INFO } from "@/lib/moduleInfo";
 import { MODULE_HOW_TO } from "@/lib/moduleHowTo";
 import { moduleExample } from "@/lib/moduleExample";
 import { AppNav } from "@/components/AppNav";
+import { GetStartedButton } from "@/components/GetStartedButton";
 
 function sizeLabel(sz: SlotSize): string {
   return sz === "half" ? "½ card" : sz === "double" ? "2× card (tall)" : "1× card";
@@ -138,9 +139,7 @@ export default async function ModuleDetail({ params }: { params: Promise<{ id: s
       </section>
 
       <div className="mt-10 border-t border-rule/60 pt-6">
-        <Link href="/app/setup" className="btn-primary">
-          Start 30 days free
-        </Link>
+        <GetStartedButton className="btn-primary whitespace-nowrap" label="Start 30 days free" signedInHref="/app/setup" />
       </div>
     </main>
     </>

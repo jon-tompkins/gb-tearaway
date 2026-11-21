@@ -344,12 +344,12 @@ export default async function HomePage() {
       </section>
 
       <footer className="mx-auto flex max-w-6xl flex-col items-center gap-3 px-4 py-8 text-xs text-ink-soft sm:flex-row sm:justify-between">
-        <span>Back of the Box · made for the fridge, not the feed</span>
-        <nav className="flex gap-4">
+        <span className="max-w-full text-center">Back of the Box · made for the fridge, not the feed</span>
+        <nav className="flex w-full max-w-full flex-wrap items-center justify-center gap-x-4 gap-y-2 sm:w-auto sm:justify-end">
           <Link href="/modules" className="hover:text-ink">Modules</Link>
           <Link href="/supplies" className="hover:text-ink">Supplies</Link>
           <Link href="/app" className="hover:text-ink">Dashboard</Link>
-          <Link href="/app/setup" className="hover:text-ink">Start 30 days free</Link>
+          <GetStartedButton className="whitespace-nowrap text-inherit hover:text-ink" label="Start 30 days free" signedInHref="/app/setup" />
           <Link href="/about" className="hover:text-ink">About</Link>
           <Link href="/faq" className="hover:text-ink">FAQ</Link>
           <Link href="/privacy" className="hover:text-ink">Privacy</Link>

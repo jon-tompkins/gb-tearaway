@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { AppShell } from "@/components/AppNav";
+import { GetStartedButton } from "@/components/GetStartedButton";
 import { HowItWorks } from "@/components/HowItWorks";
 import { MODULE_CATALOG, MODULE_CATEGORIES, moduleAudience, moduleSize } from "@/lib/modules";
 import { useModuleVisibility } from "@/lib/useModuleVisibility";
@@ -59,9 +60,7 @@ export function ModulesBrowser({ examples }: { examples: ExampleMap }) {
     <AppShell title="Modules" subtitle={`Everything you can put on a ${NOUN.one}. Browse here, then add them when you build a page.`}>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <HowItWorks />
-        <Link href="/app/setup" className="btn-primary text-sm">
-          Start 30 days free
-        </Link>
+        <GetStartedButton className="btn-primary whitespace-nowrap text-sm" label="Start 30 days free" signedInHref="/app/setup" />
       </div>
       <div className="mb-4 space-y-2">
         <div className="flex flex-wrap gap-1.5">
