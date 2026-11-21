@@ -58,8 +58,9 @@ test("each news module has its own sample story, and world records lead with the
 test("homepage, module pages, and setup use the parent-set difficulty wording", () => {
   const home = read("src/app/page.tsx");
   const hero = home.slice(home.indexOf("<h1"), home.indexOf("See Modules"));
-  assert.match(hero, /Made for your kid\. Weather for your town\./);
-  assert.match(hero, /you can tune every card/);
+  assert.match(hero, /A page you can grow with your kid\./);
+  assert.match(hero, /dial each card up or down as they grow — a 1–20 control on every puzzle/);
+  assert.equal(hero.includes("Made for your kid. Weather for your town."), false);
   assert.equal(home.includes("tuned to your kid"), false);
   assert.match(home, /You set the difficulty\./);
   assert.match(home, /modules to build with/);
