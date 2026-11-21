@@ -15,11 +15,12 @@ test("homepage no longer says first month", () => {
 test("homepage hero headline and primary button", () => {
   const home = read("src/app/page.tsx");
   const hero = home.slice(home.indexOf("<h1"), home.indexOf("See Modules"));
-  assert.match(hero, /Made for your kid\. Weather for your town\./);
+  assert.match(hero, /A page you can grow with your kid\./);
   assert.equal(hero.includes("A new puzzle page for your kid, every morning."), false);
+  assert.equal(hero.includes("Made for your kid. Weather for your town."), false);
   assert.match(
     hero,
-    /A printable morning page with puzzles at the right difficulty — you set it for each kid, and you can tune every card — plus today's sky for your ZIP\. Kid-safe news, checked against the source\. 30 days free, no card needed\./,
+    /Start with Easier, Medium, or Harder, then dial each card up or down as they grow — a 1–20 control on every puzzle\. Kid-safe news, checked against the source\. Add your ZIP for today's weather\. 30 days free, no card needed\./,
   );
   assert.match(hero, /<GetStartedButton className="btn-primary" label="Start 30 days free" \/>/);
   assert.equal(hero.includes("callbackUrl"), false);
