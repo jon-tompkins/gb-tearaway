@@ -432,7 +432,7 @@ export default function SetupClient({ examples }: { examples: ExampleMap }) {
               </div>
             </div>
             {error ? <p className="text-sm text-stamp">{error}</p> : null}
-            <div className="flex flex-wrap items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3" data-help-clear="">
               <button type="button" className="btn-secondary" onClick={() => setStep(2)}>← Back</button>
               <button type="submit" className="btn-primary" disabled={busy}>{busy ? "Creating…" : "Create page"}</button>
               <button type="button" className="btn-secondary" onClick={() => router.push("/app")}>Cancel</button>
