@@ -28,6 +28,7 @@ export function SupportChat() {
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const end = useRef<HTMLDivElement>(null);
+  const [tucked, setTucked] = useState(false);
 
   useEffect(() => {
     try {
@@ -45,6 +46,23 @@ export function SupportChat() {
     }
     end.current?.scrollIntoView({ block: "end" });
   }, [msgs, open, busy]);
+
+  // The closed Help button sits in the corner. Tuck it while the demo card or a
+  // footer is on screen so it does not cover Pause, the caption, or Terms.
+  useEffect(() => {
+    const targets = document.querySelectorAll("[data-help-clear], footer");
+    if (targets.length === 0) return;
+    const hitting = new Set<Element>();
+    const observer = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        if (entry.isIntersecting) hitting.add(entry.target);
+        else hitting.delete(entry.target);
+      }
+      setTucked(hitting.size > 0);
+    });
+    targets.forEach((target) => observer.observe(target));
+    return () => observer.disconnect();
+  }, [pathname]);
 
   const show = pathname === "/" || pathname === "/app" || pathname.startsWith("/app/");
   if (!show) return null;
@@ -112,7 +130,7 @@ export function SupportChat() {
           </form>
         </div>
       ) : null}
-      {!open ? (
+      {!open && !tucked ? (
         <button type="button" onClick={() => setOpen(true)} aria-label="Help" className="btn-primary h-10 w-10 rounded-full p-0 text-base shadow-lg sm:h-auto sm:w-auto sm:px-4 sm:py-2 sm:text-sm">
           <span className="sm:hidden" aria-hidden>?</span>
           <span className="hidden sm:inline">Help</span>

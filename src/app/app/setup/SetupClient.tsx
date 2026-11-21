@@ -226,7 +226,7 @@ export default function SetupClient({ examples }: { examples: ExampleMap }) {
 
   return (
     <AppShell title={`Create ${NOUN.one}`} subtitle="Pick who it's for, tap the modules you want, and watch the page fill up.">
-      <form onSubmit={onSubmit} className="mx-auto max-w-5xl space-y-6">
+      <form onSubmit={onSubmit} className="mx-auto max-w-5xl space-y-6 pb-24">
         <div className="flex items-center justify-between">
           {stepDots}
           <HowItWorks />
