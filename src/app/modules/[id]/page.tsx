@@ -11,6 +11,7 @@ import { MODULE_INFO } from "@/lib/moduleInfo";
 import { MODULE_HOW_TO } from "@/lib/moduleHowTo";
 import { moduleExample } from "@/lib/moduleExample";
 import { AppNav } from "@/components/AppNav";
+import { GetStartedButton } from "@/components/GetStartedButton";
 
 function sizeLabel(sz: SlotSize): string {
   return sz === "half" ? "½ card" : sz === "double" ? "2× card (tall)" : "1× card";
@@ -21,7 +22,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   if (!isModuleId(id)) return {};
   const meta = moduleById(id);
   const title = `${meta.name} for kids: printable daily puzzle | Back of the Box`;
-  const description = `${meta.blurb} Fresh every morning on your kid's printed Back of the Box page, tuned to their age.`;
+  const description = `${meta.blurb} Fresh every morning on your kid's printed Back of the Box page. The parent sets the difficulty.`;
   return {
     title,
     description,
@@ -138,9 +139,7 @@ export default async function ModuleDetail({ params }: { params: Promise<{ id: s
       </section>
 
       <div className="mt-10 border-t border-rule/60 pt-6">
-        <Link href="/app" className="btn-primary">
-          Build a page
-        </Link>
+        <GetStartedButton className="btn-primary whitespace-nowrap" label="Start 30 days free" signedInHref="/app/setup" />
       </div>
     </main>
     </>
