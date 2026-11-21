@@ -47,21 +47,53 @@ export function SupportChat() {
     end.current?.scrollIntoView({ block: "end" });
   }, [msgs, open, busy]);
 
-  // The closed Help button sits in the corner. Tuck it while the demo card or a
-  // footer is on screen so it does not cover Pause, the caption, or Terms.
+  // The closed Help button sits in the corner. Tuck it while a marked control,
+  // the demo card, or a footer is on screen. New markers (setup step 3) are
+  // picked up when they mount, including after Back then Next.
   useEffect(() => {
-    const targets = document.querySelectorAll("[data-help-clear], footer");
-    if (targets.length === 0) return;
+    const selector = "[data-help-clear], footer";
     const hitting = new Set<Element>();
-    const observer = new IntersectionObserver((entries) => {
+    const observed = new Set<Element>();
+    const intersection = new IntersectionObserver((entries) => {
       for (const entry of entries) {
         if (entry.isIntersecting) hitting.add(entry.target);
         else hitting.delete(entry.target);
       }
       setTucked(hitting.size > 0);
     });
-    targets.forEach((target) => observer.observe(target));
-    return () => observer.disconnect();
+    const watch = (el: Element) => {
+      if (observed.has(el)) return;
+      observed.add(el);
+      intersection.observe(el);
+    };
+    const scan = (root: ParentNode) => {
+      if (root instanceof Element && root.matches(selector)) watch(root);
+      root.querySelectorAll(selector).forEach(watch);
+    };
+    scan(document);
+    const mutations = new MutationObserver((records) => {
+      for (const record of records) {
+        record.addedNodes.forEach((node) => {
+          if (node instanceof Element) scan(node);
+        });
+        record.removedNodes.forEach((node) => {
+          if (!(node instanceof Element)) return;
+          const gone = [node, ...node.querySelectorAll(selector)];
+          for (const el of gone) {
+            if (!observed.has(el)) continue;
+            observed.delete(el);
+            hitting.delete(el);
+            intersection.unobserve(el);
+          }
+        });
+      }
+      setTucked(hitting.size > 0);
+    });
+    mutations.observe(document.body, { childList: true, subtree: true });
+    return () => {
+      mutations.disconnect();
+      intersection.disconnect();
+    };
   }, [pathname]);
 
   const show = pathname === "/" || pathname === "/app" || pathname.startsWith("/app/");
