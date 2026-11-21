@@ -51,7 +51,7 @@ export function AppNav() {
             </button>
           ) : null}
         </div>
-        <nav aria-label="Parent app" className="flex w-full items-center justify-start gap-1 overflow-x-auto text-sm sm:w-auto sm:justify-end">
+        <nav aria-label="Parent app" className="flex w-full flex-wrap items-center justify-start gap-1 text-sm sm:w-auto sm:flex-nowrap sm:justify-end">
           {links.map((link) => {
             const active = link.exact
               ? pathname === link.href
@@ -86,7 +86,7 @@ export function AppShell({
   subtitle?: string;
 }) {
   return (
-    <div className="flex min-h-full flex-col bg-cream">
+    <div className="flex min-h-dvh flex-col bg-cream">
       <AppNav />
       <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-6 sm:py-8">
         {title ? (

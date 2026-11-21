@@ -57,9 +57,9 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${display.variable} ${body.variable} ${mono.variable} h-full antialiased`}
+      className={`${display.variable} ${body.variable} ${mono.variable} min-h-dvh antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-cream text-ink">
+      <body className="flex min-h-dvh flex-col bg-cream text-ink">
         <Providers>
           {children}
           <SupportChat />
