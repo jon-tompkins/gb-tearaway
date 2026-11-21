@@ -20,6 +20,7 @@ test("difficulty demo renders the caption", () => {
   assert.equal(html.split(DIFFICULTY_DEMO_CAPTION).length - 1, 1);
   assert.match(html, /aria-label="Difficulty demo showing a maze at levels 3, 7, 11, and 16"/);
   assert.match(html, /aria-label="Pause the difficulty demo"/);
+  assert.match(html, /pb-24/);
   assert.match(html, /aria-pressed="false"/);
   assert.match(html, />Pause</);
   for (const frame of DIFFICULTY_DEMO_FRAMES) {

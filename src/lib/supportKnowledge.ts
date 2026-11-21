@@ -8,10 +8,10 @@ const FAQ: Array<[string, string]> = [
   ["What does it cost?", "Your first 30 days are free, and you don't need a card during the trial. After that it's one simple plan for up to five kids: $5 a month, or $39 a year (under $3.30 a month). Cancel anytime. Sign in with Google to save your setup and get a page every morning."],
   ["I don't have a printer. How do I get started?", "An ink-free thermal printer is cheap to run and never needs ink. The supplies page at /supplies explains how they work and lists printers and paper."],
   ["What do I need to print it?", "Any home printer works, since the page is made for US Letter."],
-  ["What ages is it for?", "About 4 to 12. You set an age when you make the page, and each card has its own 1-20 dial. Sudoku goes from 4x4 up to 9x9, mazes grow, and news cards start at level 5."],
+  ["What ages is it for?", "About 4 to 12. You set an age when you make the page, and each module has its own 1-20 dial. Sudoku goes from 4x4 up to 9x9, mazes grow, and news modules start at level 5."],
   ["Where does the news come from?", "From real outlets: Smithsonian, NASA, Science News Explores, Mongabay, Popular Science, IEEE Spectrum, Good News Network, and others. Each story is rewritten for kids, checked against the source article, and printed with its location. Crime, politics, and anything scary are left out."],
   ["Does my kid need an account or a screen?", "No. Parents set it up, and kids just get the paper. We only ask for the kid's first name, and there are no ads."],
-  ["Can I make pages for more than one kid?", "Yes. Each kid gets their own page with its own cards, difficulty, and delivery time."],
+  ["Can I make pages for more than one kid?", "Yes. Each kid gets their own page with its own modules, difficulty, and delivery time."],
   ["Can I print a puzzle booklet for a binder?", "Yes. The Booklet tool at /app/booklet makes a black-and-white PDF of mazes, word finds or color-by-number pages (up to 60) with a wider binding margin for hole punching, plus answer pages for mazes and word finds. It is free to print at home. A shipped, professionally printed booklet may come later."],
 ];
 
@@ -20,16 +20,16 @@ const FACTS = `PRICING
 - Access codes (format BOX-XXXX-XXXX) add free months; they can be redeemed on the billing page in the app.
 
 HOW IT WORKS
-- A parent signs in with Google, adds each kid as a profile (first name and age), and picks the cards (modules) for their page.
+- A parent signs in with Google, adds each kid as a profile (first name and age), and picks the modules for their page.
 - A fresh one-page puzzle-and-news sheet is generated every morning and emailed to the parent as a printable PDF, and can also be opened in the app.
 - Answers for puzzles sit behind a QR code (or in the app), never on the paper, so kids solve first.
-- Each kid has their own page, cards, difficulty and delivery time.
+- Each kid has their own page, modules, difficulty and delivery time.
 
 PRINTING
 - Any home printer on US Letter paper. No printer? An ink-free thermal printer works and never needs ink; details at /supplies.
 
 AGES AND DIFFICULTY
-- Roughly ages 4-12. Each card has its own 1-20 difficulty dial.
+- Roughly ages 4-12. Each module has its own 1-20 difficulty dial. The parent sets it, and can raise the dial later.
 
 PRIVACY
 - Kids never have accounts or logins; they are profiles under the parent. Parents sign in with Google. Only a kid's first name is collected. No ads.`;

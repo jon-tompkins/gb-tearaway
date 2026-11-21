@@ -23,7 +23,7 @@ export const FAQ: FaqItem[] = [
   },
   {
     q: "Who is it for, and how hard is it?",
-    a: "Anyone who likes a morning page. You choose a difficulty (Easier, Medium or Harder) when you make the page, with suggested ages of 4 to 12 as a starting point, and each card has its own 1–20 dial. Sudoku goes from 4×4 up to 9×9, mazes grow, and news cards start at level 5.",
+    a: "Anyone who likes a morning page. You choose a difficulty (Easier, Medium or Harder) when you make the page, with suggested ages of 4 to 12 as a starting point, and each module has its own 1–20 dial. Sudoku goes from 4×4 up to 9×9, mazes grow, and news modules start at level 5.",
   },
   {
     q: "Where does the news come from?",
@@ -35,7 +35,7 @@ export const FAQ: FaqItem[] = [
   },
   {
     q: "Can I make pages for more than one kid?",
-    a: "Yes. Each kid gets their own page with its own cards, difficulty, and delivery time.",
+    a: "Yes. Each kid gets their own page with its own modules, difficulty, and delivery time.",
   },
   {
     q: "How does the page get to us?",

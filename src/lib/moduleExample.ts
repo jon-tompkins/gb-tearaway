@@ -45,13 +45,13 @@ export interface ModuleExample {
 const BAND: AgeBand = "7-9";
 const DIFF = 8;
 
-/** Each public news tile shows a different story from the sample-news bank. */
+/** Each public news tile shows its own story from the sample-news bank. */
 const NEWS_TILE: Record<"news_world" | "news_national" | "news_city" | "news_tech" | "news_gamer", number> = {
   news_world: 0,
   news_national: 1,
   news_city: 2,
-  news_tech: 0,
-  news_gamer: 1,
+  news_tech: 3,
+  news_gamer: 4,
 };
 
 /** A representative example of a module's output (deterministic, seeded). */
@@ -148,7 +148,7 @@ export function moduleExample(id: ModuleId): ModuleExample {
     }
     case "records": {
       const r = pickRecord(BAND, rng);
-      return { text: [r.category, r.record, r.extra], note: "One a day from the bank — this is a sample." };
+      return { text: [`World record · ${r.category}`, r.record, r.extra], note: "One a day from the bank — this is a sample." };
     }
     case "quote": {
       const q = pickQuote(BAND, rng);

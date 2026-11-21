@@ -78,7 +78,7 @@ export function DifficultyDemo() {
       aria-label="Difficulty demo showing a maze at levels 3, 7, 11, and 16"
       className="border-b border-rule/50"
     >
-      <div className="mx-auto grid max-w-6xl items-center gap-8 px-4 py-10 sm:py-14 lg:grid-cols-[minmax(0,1fr)_24rem] lg:gap-16">
+      <div className="mx-auto grid max-w-6xl items-center gap-8 px-4 pb-24 pt-10 sm:py-14 lg:grid-cols-[minmax(0,1fr)_24rem] lg:gap-16">
         <div className="max-w-xl">
           <p className="text-xs font-bold uppercase tracking-[0.22em] text-stamp">Difficulty · 1–20</p>
           <h2 className="mt-2 font-display text-2xl text-ink sm:text-3xl">You pick the level</h2>

@@ -25,7 +25,6 @@ import { HowItWorks } from "@/components/HowItWorks";
 export type ExampleMap = Partial<Record<string, { svg?: string; locator?: string; text?: string[] }>>;
 
 type Who = "kid" | "grownup";
-const LOCATION_MODULES: ModuleId[] = ["weather", "news_national", "news_world"];
 
 function Preview({ id, examples }: { id: ModuleId; examples: ExampleMap }) {
   const ex = examples[id];
@@ -55,7 +54,7 @@ const GROWNUP_PRESETS: { id: string; name: string; emoji: string; blurb: string;
   { id: "sharp", name: "Keep Sharp", emoji: "🧠", blurb: "Logic, number patterns and trivia", ids: ["logicgrid", "sudoku", "sequence", "records", "fact", "weather"] },
 ];
 
-const MAX_PICK_UNITS_MSG = "The page is full. Remove a card to make room.";
+const MAX_PICK_UNITS_MSG = "The page is full. Remove a module to make room.";
 
 export default function SetupClient({ examples }: { examples: ExampleMap }) {
   const router = useRouter();
@@ -94,6 +93,9 @@ export default function SetupClient({ examples }: { examples: ExampleMap }) {
   const [picked, setPicked] = useState<ModuleId[]>(() => fitPrefix(presetIds("puzzle", "kid")));
 
   useEffect(() => setTimezone(detectTimezone()), []);
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [step]);
   useEffect(() => {
     const q = new URLSearchParams(window.location.search);
     if (q.get("utm_source") !== "free_edition") return;
@@ -156,7 +158,7 @@ export default function SetupClient({ examples }: { examples: ExampleMap }) {
   );
   const slots = packModulesIntoSlots(picked, paperSize);
   const columns = Array.from(new Set(slots.map((s) => s.column ?? 0))).sort();
-  const needsZip = picked.some((id) => LOCATION_MODULES.includes(id));
+  const needsZip = picked.includes("weather");
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -223,7 +225,7 @@ export default function SetupClient({ examples }: { examples: ExampleMap }) {
   );
 
   return (
-    <AppShell title={`Create ${NOUN.one}`} subtitle="Pick who it's for, tap the cards you want, and watch the page fill up.">
+    <AppShell title={`Create ${NOUN.one}`} subtitle="Pick who it's for, tap the modules you want, and watch the page fill up.">
       <form onSubmit={onSubmit} className="mx-auto max-w-5xl space-y-6">
         <div className="flex items-center justify-between">
           {stepDots}
@@ -261,6 +263,7 @@ export default function SetupClient({ examples }: { examples: ExampleMap }) {
                       </button>
                     ))}
                   </div>
+                  <p className="mt-2 text-sm text-ink-soft">Each module also has a 1–20 dial you can raise later.</p>
                 </div>
               )}
             </div>
@@ -286,7 +289,7 @@ export default function SetupClient({ examples }: { examples: ExampleMap }) {
               <div className="card space-y-3">
                 <div>
                   <h2 className="font-display text-lg text-ink">Start from a mix, or pick your own</h2>
-                  <p className="text-sm text-ink-soft">Tap a mix to preload the page, then add or remove cards below.</p>
+                  <p className="text-sm text-ink-soft">A mix is a head start. Tap one to fill the page, then add or remove modules below.</p>
                 </div>
                 <div className="grid gap-2 sm:grid-cols-3">
                   {presets.map((t) => (
@@ -315,29 +318,40 @@ export default function SetupClient({ examples }: { examples: ExampleMap }) {
                 ))}
               </div>
               {msg ? <p className="text-sm text-stamp">{msg}</p> : null}
-              <div className="grid gap-3 sm:grid-cols-2">
-                {available.map((m) => {
-                  const on = picked.includes(m.id);
+              <div className="space-y-6">
+                {MODULE_CATEGORIES.map((category) => {
+                  const modules = available.filter((m) => m.category === category.id);
+                  if (modules.length === 0) return null;
                   return (
-                    <button
-                      key={m.id}
-                      type="button"
-                      onClick={() => toggle(m.id)}
-                      aria-pressed={on}
-                      className={`overflow-hidden rounded-xl border text-left transition ${on ? "border-ink ring-2 ring-ink" : "border-rule hover:border-ink/40"} bg-paper`}
-                    >
-                      <div className="relative h-28 overflow-hidden border-b border-rule/60 bg-[#fbf8f1] p-2">
-                        <Preview id={m.id} examples={examples} />
-                        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-6 bg-gradient-to-t from-[#fbf8f1] to-transparent" />
-                        <span className={`absolute right-2 top-2 rounded-full px-2 py-0.5 text-[0.65rem] font-bold ${on ? "bg-ink text-cream" : "bg-paper text-ink-soft border border-rule"}`}>
-                          {on ? "✓ Added" : "+ Add"}
-                        </span>
+                    <section key={category.id}>
+                      <h3 className="font-display text-base text-ink">{category.name}</h3>
+                      <div className="mt-2 grid gap-3 sm:grid-cols-2">
+                        {modules.map((m) => {
+                          const on = picked.includes(m.id);
+                          return (
+                            <button
+                              key={m.id}
+                              type="button"
+                              onClick={() => toggle(m.id)}
+                              aria-pressed={on}
+                              className={`overflow-hidden rounded-xl border text-left transition ${on ? "border-ink ring-2 ring-ink" : "border-rule hover:border-ink/40"} bg-paper`}
+                            >
+                              <div className="relative h-28 overflow-hidden border-b border-rule/60 bg-[#fbf8f1] p-2">
+                                <Preview id={m.id} examples={examples} />
+                                <div className="pointer-events-none absolute inset-x-0 bottom-0 h-6 bg-gradient-to-t from-[#fbf8f1] to-transparent" />
+                                <span className={`absolute right-2 top-2 rounded-full px-2 py-0.5 text-[0.65rem] font-bold ${on ? "bg-ink text-cream" : "bg-paper text-ink-soft border border-rule"}`}>
+                                  {on ? "✓ Added" : "+ Add"}
+                                </span>
+                              </div>
+                              <div className="px-3 py-2">
+                                <div className="text-sm font-semibold text-ink">{m.name}</div>
+                                <div className="line-clamp-2 text-xs text-ink-soft">{m.blurb}</div>
+                              </div>
+                            </button>
+                          );
+                        })}
                       </div>
-                      <div className="px-3 py-2">
-                        <div className="text-sm font-semibold text-ink">{m.name}</div>
-                        <div className="line-clamp-2 text-xs text-ink-soft">{m.blurb}</div>
-                      </div>
-                    </button>
+                    </section>
                   );
                 })}
               </div>
@@ -346,7 +360,7 @@ export default function SetupClient({ examples }: { examples: ExampleMap }) {
             <aside className="lg:sticky lg:top-4 lg:self-start">
               <div className="card space-y-2">
                 <h3 className="font-display text-base text-ink">Your page</h3>
-                {picked.length === 0 ? <p className="text-xs text-ink-soft">Tap cards to add them here.</p> : null}
+                {picked.length === 0 ? <p className="text-xs text-ink-soft">Tap modules to add them here.</p> : null}
                 <div className="grid grid-cols-2 gap-1.5 rounded-lg border border-rule bg-[#fbf8f1] p-1.5">
                   {(columns.length ? columns : [0, 1]).map((c) => (
                     <div key={c} className="flex flex-col gap-1.5">
@@ -369,7 +383,7 @@ export default function SetupClient({ examples }: { examples: ExampleMap }) {
                     </div>
                   ))}
                 </div>
-                <p className="text-[0.7rem] text-ink-soft">{picked.length} cards. ↑↓ changes the order; cards flow into the two columns.</p>
+                <p className="text-[0.7rem] text-ink-soft">{picked.length} modules. ↑↓ changes the order; they flow into the two columns.</p>
                 <div className="flex gap-2 pt-1">
                   <button type="button" className="btn-secondary text-sm" onClick={() => setStep(1)}>← Back</button>
                   <button type="button" className="btn-primary text-sm" disabled={picked.length === 0} onClick={() => setStep(3)}>Next →</button>
