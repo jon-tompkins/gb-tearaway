@@ -8,6 +8,13 @@ type Msg = { role: "user" | "assistant"; content: string };
 const STORE = "botb_support_chat";
 const INTRO = "Ask a question, request a module, or send Jon a message.";
 
+const openers = new Set<() => void>();
+
+/** Open the support chat from somewhere else, such as the setup nav. */
+export function openSupportChat() {
+  openers.forEach((open) => open());
+}
+
 function visitorId(): string {
   try {
     let v = localStorage.getItem("botb_vid") ?? "";
@@ -29,6 +36,7 @@ export function SupportChat() {
   const [busy, setBusy] = useState(false);
   const end = useRef<HTMLDivElement>(null);
   const [tucked, setTucked] = useState(false);
+  const [phone, setPhone] = useState(false);
 
   useEffect(() => {
     try {
@@ -96,7 +104,23 @@ export function SupportChat() {
     };
   }, [pathname]);
 
+  useEffect(() => {
+    const open = () => setOpen(true);
+    openers.add(open);
+    return () => {
+      openers.delete(open);
+    };
+  }, []);
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 639px)");
+    const apply = () => setPhone(mq.matches);
+    apply();
+    mq.addEventListener("change", apply);
+    return () => mq.removeEventListener("change", apply);
+  }, []);
+
   const show = pathname === "/" || pathname === "/app" || pathname.startsWith("/app/");
+  const hideFloat = pathname === "/app/setup" && phone;
   if (!show) return null;
 
   async function send(e: React.FormEvent) {
@@ -162,8 +186,13 @@ export function SupportChat() {
           </form>
         </div>
       ) : null}
-      {!open && !tucked ? (
-        <button type="button" onClick={() => setOpen(true)} aria-label="Help" className="btn-primary h-10 w-10 rounded-full p-0 text-base shadow-lg sm:h-auto sm:w-auto sm:px-4 sm:py-2 sm:text-sm">
+      {!open && !tucked && !hideFloat ? (
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          aria-label="Help"
+          className="btn-primary h-10 w-10 rounded-full p-0 text-base shadow-lg sm:h-auto sm:w-auto sm:px-4 sm:py-2 sm:text-sm"
+        >
           <span className="sm:hidden" aria-hidden>?</span>
           <span className="hidden sm:inline">Help</span>
         </button>

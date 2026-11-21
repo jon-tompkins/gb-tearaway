@@ -10,6 +10,15 @@ test("help tucks for the demo card and the footer, and setup keeps room under Ca
   assert.match(chat, /new MutationObserver/);
   assert.match(chat, /\[data-help-clear\], footer/);
   assert.match(chat, /!open && !tucked/);
+  assert.match(chat, /max-width: 639px/);
+  assert.match(chat, /!hideFloat/);
+  assert.match(chat, /export function openSupportChat/);
+
+  const nav = read("src/components/AppNav.tsx");
+  assert.match(nav, /openSupportChat/);
+  assert.match(nav, /pathname === "\/app\/setup"/);
+  assert.match(nav, /min-h-11 min-w-11/);
+  assert.match(nav, /sm:hidden/);
 
   const demo = read("src/components/DifficultyDemo.tsx");
   assert.match(demo, /data-help-clear/);
